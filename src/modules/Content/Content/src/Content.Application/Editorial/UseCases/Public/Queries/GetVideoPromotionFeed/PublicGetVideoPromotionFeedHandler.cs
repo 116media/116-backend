@@ -1,6 +1,6 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.Content.Application.Editorial.Constants;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
@@ -17,12 +17,12 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoPro
 /// empty spots.
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
-/// <param name="videoDtoFactory">Builds video projections with their thumbnails resolved.</param>
-/// <param name="contentLookupFactory">Resolves the categories the cards name.</param>
+/// <param name="videoDtoService">Builds video projections with their thumbnails resolved.</param>
+/// <param name="contentLookupService">Resolves the categories the cards name.</param>
 public class PublicGetVideoPromotionFeedHandler(
     IVideoRepository videoRepository,
-    IVideoDtoFactory videoDtoFactory,
-    IContentLookupFactory contentLookupFactory
+    IVideoDtoService videoDtoService,
+    IContentLookupService contentLookupService
 ) : IQueryHandler<PublicGetVideoPromotionFeedQuery, PublicGetVideoPromotionFeedResult>
 {
     private const int FreeVideoPoolSize = EditorialFeedConstants.FreeVideoPoolSize;
@@ -61,13 +61,13 @@ public class PublicGetVideoPromotionFeedHandler(
 
         // One query covers every spot and the strip, so the feed never resolves a thumbnail per card.
         IReadOnlyList<VideoEntity> allFeedVideos = [.. spot1Videos, .. spot2Videos, .. spot3Videos, .. shuffledPool];
-        IReadOnlyDictionary<Guid, FileReferenceDto> thumbnails = await videoDtoFactory.ResolveThumbnailsAsync(
+        IReadOnlyDictionary<Guid, FileReferenceDto> thumbnails = await videoDtoService.ResolveThumbnailsAsync(
             allFeedVideos,
             cancellationToken
         );
-        ContentLookups lookups = await contentLookupFactory.ResolveForVideosAsync(allFeedVideos, cancellationToken);
+        ContentLookups lookups = await contentLookupService.ResolveForVideosAsync(allFeedVideos, cancellationToken);
 
-        IReadOnlySet<Guid> videosWithLyrics = await videoDtoFactory.ResolveVideosWithLyricsAsync(
+        IReadOnlySet<Guid> videosWithLyrics = await videoDtoService.ResolveVideosWithLyricsAsync(
             allFeedVideos,
             cancellationToken
         );

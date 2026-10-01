@@ -1,4 +1,5 @@
 using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoFeed;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -32,13 +33,18 @@ public class PublicGetVideoFeedHandlerTests : BaseContentHandlerTest
         _videoRepositoryMock = MockVideoRepository.Create();
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new PublicGetVideoFeedHandler(
-            _categoryRepositoryMock.Object,
-            _contentTypeRepositoryMock.Object,
-            CreateCategoryDtoFactory(_fileStorageMock.Object),
-            CreateContentLookupFactory(),
-            _videoRepositoryMock.Object,
-            _fileStorageMock.Object,
-            Mapper
+            new PublicVideoFeedService(
+                _categoryRepositoryMock.Object,
+                _contentTypeRepositoryMock.Object,
+                _videoRepositoryMock.Object
+            ),
+            CreateCategoryDtoService(_fileStorageMock.Object),
+            new VideoDtoService(
+                Mapper,
+                _fileStorageMock.Object,
+                _videoRepositoryMock.Object,
+                CreateContentLookupService()
+            )
         );
     }
 

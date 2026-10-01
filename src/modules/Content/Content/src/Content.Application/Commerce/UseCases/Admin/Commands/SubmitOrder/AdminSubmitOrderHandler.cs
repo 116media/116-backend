@@ -10,11 +10,11 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder;
 /// Handles the <see cref="AdminSubmitOrderCommand" /> to submit a Draft order for payment.
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
-/// <param name="submitOrderFactory">Factory for the order submission flow.</param>
+/// <param name="submitOrderService">Service for the order submission flow.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminSubmitOrderHandler(
     IContentOrderRepository contentOrderRepository,
-    ISubmitOrderFactory submitOrderFactory,
+    ISubmitOrderService submitOrderService,
     ContentI18n i18n
 ) : ICommandHandler<AdminSubmitOrderCommand, AdminSubmitOrderResult>
 {
@@ -33,7 +33,7 @@ public class AdminSubmitOrderHandler(
 
         if (order is not null)
         {
-            await submitOrderFactory.SubmitAsync(order: order, ct: cancellationToken);
+            await submitOrderService.SubmitAsync(order: order, ct: cancellationToken);
             return new AdminSubmitOrderResult(IsSuccess: true);
         }
 

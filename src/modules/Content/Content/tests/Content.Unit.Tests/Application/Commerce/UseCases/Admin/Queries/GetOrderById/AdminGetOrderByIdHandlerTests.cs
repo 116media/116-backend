@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Content.Application.Commerce.Factories;
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderById;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -41,10 +41,8 @@ public class AdminGetOrderByIdHandlerTests : BaseContentHandlerTest
         _userLookupMock = MockUserLookupService.Create();
         _handler = new AdminGetOrderByIdHandler(
             _orderRepositoryMock.Object,
-            _fileStorageMock.Object,
-            Mapper,
-            CreateOrderDtoFactory(),
-            new PaymentDtoFactory(Mapper, _userLookupMock.Object, CreateOrderDtoFactory()),
+            CreateOrderDtoService(),
+            new PaymentDtoService(Mapper, _userLookupMock.Object, CreateOrderDtoService(), _fileStorageMock.Object),
             TestErrorsFactory.CreateContentI18n()
         );
     }

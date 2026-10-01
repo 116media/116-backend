@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.Pagination;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllArtists;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -27,7 +27,7 @@ public class AdminGetAllArtistsHandlerTests
         Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminGetAllArtistsHandler(
             _artistRepositoryMock.Object,
-            new ArtistDtoFactory(fileStorageMock.Object)
+            new ArtistDtoService(fileStorageMock.Object)
         );
     }
 

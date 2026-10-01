@@ -107,4 +107,27 @@ public static class RoleMapper
         var dto = mapper.Map<RoleWithPermissionsDto>(role);
         return dto with { Permissions = role.RolePermissions.ToPermissionDtos(mapper) };
     }
+
+    /// <summary>
+    /// Maps a role carrying a fresh grant, whose association has no Permission navigation loaded
+    /// yet; the permission in hand fills it.
+    /// </summary>
+    /// <param name="role">The role aggregate with the grant applied.</param>
+    /// <param name="mapper">The Mapster mapper.</param>
+    /// <param name="granted">The permission just granted.</param>
+    /// <returns>The role with its permissions.</returns>
+    public static RoleWithPermissionsDto ToRoleWithPermissionsDto(
+        this RoleEntity role,
+        IMapper mapper,
+        PermissionEntity granted
+    )
+    {
+        var dto = mapper.Map<RoleWithPermissionsDto>(role);
+        IReadOnlyCollection<PermissionDto> permissions = role
+            .RolePermissions.Select(rp =>
+                (rp.PermissionId == granted.Id ? granted : rp.Permission).ToPermissionDto(mapper)
+            )
+            .ToList();
+        return dto with { Permissions = permissions };
+    }
 }

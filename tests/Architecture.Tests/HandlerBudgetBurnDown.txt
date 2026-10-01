@@ -1,0 +1,9 @@
+# Handlers over the dependency budget on the day the rule landed.
+#
+# One handler class name per line; blank lines and lines starting with '#' are ignored.
+# HandlerDependencyBudgetTests fails on a handler over budget that is not listed here, and on a
+# listed handler that dropped under budget without being removed.
+#
+# This file may only ever shrink.
+#
+# It is currently empty: the 61 handlers over budget when the rule landed were all brought under it.

@@ -1,11 +1,10 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Content.Application.Commerce.Factories;
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderPayment;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.TestData;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Mocks.Factories;
 using _116.Content.TestData.Mocks.Repositories;
 using _116.Content.TestData.Mocks.Services;
 using _116.Identity.Contracts.Application.DTOs;
@@ -28,7 +27,7 @@ namespace _116.Content.Unit.Tests.Application.Commerce.UseCases.Admin.Queries.Ge
 /// </summary>
 public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
 {
-    private readonly Mock<IOrderPaymentFactory> _orderPaymentFactoryMock;
+    private readonly Mock<IOrderPaymentService> _orderPaymentServiceMock;
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly Mock<IUserLookupService> _userLookupMock;
@@ -36,16 +35,14 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
 
     public AdminGetOrderPaymentHandlerTests()
     {
-        _orderPaymentFactoryMock = MockOrderPaymentFactory.Create();
+        _orderPaymentServiceMock = MockOrderPaymentService.Create();
         _orderRepositoryMock = MockContentOrderRepository.Create();
         _fileStorageMock = MockFileStorageService.Create();
         _userLookupMock = MockUserLookupService.Create();
         _handler = new AdminGetOrderPaymentHandler(
-            _orderPaymentFactoryMock.Object,
+            _orderPaymentServiceMock.Object,
             _orderRepositoryMock.Object,
-            _fileStorageMock.Object,
-            Mapper,
-            new PaymentDtoFactory(Mapper, _userLookupMock.Object, CreateOrderDtoFactory())
+            new PaymentDtoService(Mapper, _userLookupMock.Object, CreateOrderDtoService(), _fileStorageMock.Object)
         );
     }
 
@@ -60,7 +57,7 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
         ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(orderId, proofFileId);
         FileReferenceDto proofFile = FileReferenceDtoFactory.CreateWithId(proofFileId);
 
-        _orderPaymentFactoryMock.SetupGetByOrderId(orderId, payment);
+        _orderPaymentServiceMock.SetupGetByOrderId(orderId, payment);
         _fileStorageMock.SetupResolve(proofFile);
 
         var query = new AdminGetOrderPaymentQuery(OrderId: orderId);
@@ -80,7 +77,7 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
         Guid orderId = Guid.NewGuid();
         ContentPaymentEntity payment = ContentPaymentFactory.Create(orderId);
 
-        _orderPaymentFactoryMock.SetupGetByOrderId(orderId, payment);
+        _orderPaymentServiceMock.SetupGetByOrderId(orderId, payment);
 
         var query = new AdminGetOrderPaymentQuery(OrderId: orderId);
 
@@ -101,7 +98,7 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
         ContentPaymentEntity payment = ContentPaymentFactory.CreateVerified(orderId);
         Guid verifierId = payment.VerifiedById!.Value;
 
-        _orderPaymentFactoryMock.SetupGetByOrderId(orderId, payment);
+        _orderPaymentServiceMock.SetupGetByOrderId(orderId, payment);
         _userLookupMock.SetupGetUserProfilesByIds(
             new Dictionary<Guid, UserProfileDto>
             {
@@ -132,7 +129,7 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
         Guid orderId = Guid.NewGuid();
         ContentPaymentEntity payment = ContentPaymentFactory.Create(orderId);
 
-        _orderPaymentFactoryMock.SetupGetByOrderId(orderId, payment);
+        _orderPaymentServiceMock.SetupGetByOrderId(orderId, payment);
 
         var query = new AdminGetOrderPaymentQuery(OrderId: orderId);
 
@@ -162,7 +159,7 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _orderPaymentFactoryMock.Verify(
+        _orderPaymentServiceMock.Verify(
             x => x.GetByOrderIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never
         );

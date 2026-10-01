@@ -23,7 +23,7 @@ Splitting them keeps provider swap *and* delivery policy independent:
 
 ## Message model
 
-Declared in `Application/Shared/Services/` **next to the port that exchanges
+Declared in `Application/Shared/Ports/` **next to the port that exchanges
 them** — the codebase has no `Models/` folder; its convention for in-process
 carrier records is co-location with the owning port (`ImageColors` inside
 `IImageColorService.cs`, `ArtistDirectoryRow`/`ArtistTotals` inside
@@ -60,7 +60,7 @@ Rules:
 
 ## IEmailSender — the transport port
 
-`Application/Shared/Services/IEmailSender.cs`:
+`Application/Shared/Ports/IEmailSenderService.cs` (implemented in `Mailer.Infrastructure/Services`):
 
 ```csharp
 /// <summary>
@@ -91,7 +91,7 @@ public class EmailDeliveryException(string message, bool isTransient = true)
 
 ## IMailer — the application port
 
-`Application/Shared/Services/IMailer.cs`:
+`Mailer.Contracts/Application/Services/IEmailService.cs` (implemented by the application service `Application/Notifications/Services/OutboxEmailService.cs`):
 
 ```csharp
 /// <summary>

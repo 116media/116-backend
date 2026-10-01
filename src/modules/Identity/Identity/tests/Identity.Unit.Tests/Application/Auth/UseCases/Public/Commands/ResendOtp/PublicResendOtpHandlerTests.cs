@@ -1,4 +1,4 @@
-using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp.Contracts;
 using _116.Identity.Application.Shared.Repositories;
@@ -19,16 +19,16 @@ namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Public.Commands.Res
 /// </summary>
 public class PublicResendOtpHandlerTests
 {
-    private readonly Mock<IPublicResendOtpFactory> _otpFactoryMock;
+    private readonly Mock<IPublicResendOtpService> _otpServiceMock;
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly PublicResendOtpHandler _handler;
 
     public PublicResendOtpHandlerTests()
     {
-        _otpFactoryMock = new Mock<IPublicResendOtpFactory>();
+        _otpServiceMock = new Mock<IPublicResendOtpService>();
         _authRepositoryMock = MockAuthRepository.Create();
 
-        _handler = new PublicResendOtpHandler(_otpFactoryMock.Object, _authRepositoryMock.Object);
+        _handler = new PublicResendOtpHandler(_otpServiceMock.Object, _authRepositoryMock.Object);
     }
 
     #region Success Cases
@@ -47,7 +47,7 @@ public class PublicResendOtpHandlerTests
         _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _otpFactoryMock
+        _otpServiceMock
             .Setup(x => x.ResendOtpAsync(user.Id, It.IsAny<OtpPurpose>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new OtpCreationResult(otp, TestConstants.Otp.DefaultCode));
 
@@ -72,7 +72,7 @@ public class PublicResendOtpHandlerTests
         _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _otpFactoryMock
+        _otpServiceMock
             .Setup(x => x.ResendOtpAsync(user.Id, It.IsAny<OtpPurpose>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new OtpCreationResult(otp, TestConstants.Otp.DefaultCode));
 
@@ -80,7 +80,7 @@ public class PublicResendOtpHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _otpFactoryMock.Verify(
+        _otpServiceMock.Verify(
             x => x.ResendOtpAsync(user.Id, It.IsAny<OtpPurpose>(), It.IsAny<CancellationToken>()),
             Times.Once
         );
@@ -99,7 +99,7 @@ public class PublicResendOtpHandlerTests
         _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _otpFactoryMock
+        _otpServiceMock
             .Setup(x => x.ResendOtpAsync(user.Id, It.IsAny<OtpPurpose>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((OtpCreationResult?)null);
 
@@ -124,7 +124,7 @@ public class PublicResendOtpHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _otpFactoryMock.Verify(
+        _otpServiceMock.Verify(
             x => x.ResendOtpAsync(It.IsAny<Guid>(), It.IsAny<OtpPurpose>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
@@ -164,7 +164,7 @@ public class PublicResendOtpHandlerTests
         _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _otpFactoryMock
+        _otpServiceMock
             .Setup(x => x.ResendOtpAsync(user.Id, It.IsAny<OtpPurpose>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new OtpCreationResult(otp, TestConstants.Otp.DefaultCode));
 
@@ -212,7 +212,7 @@ public class PublicResendOtpHandlerTests
         _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _otpFactoryMock
+        _otpServiceMock
             .Setup(x => x.ResendOtpAsync(user.Id, It.IsAny<OtpPurpose>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new OtpCreationResult(otp, TestConstants.Otp.DefaultCode));
 
@@ -220,7 +220,7 @@ public class PublicResendOtpHandlerTests
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _otpFactoryMock.Verify(x => x.ResendOtpAsync(user.Id, It.IsAny<OtpPurpose>(), cts.Token), Times.Once);
+        _otpServiceMock.Verify(x => x.ResendOtpAsync(user.Id, It.IsAny<OtpPurpose>(), cts.Token), Times.Once);
     }
 
     #endregion

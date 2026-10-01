@@ -37,7 +37,7 @@ public class PublicGetPopularArticlesHandlerTests : BaseContentHandlerTest
         _handler = new PublicGetPopularArticlesHandler(
             _articleRepositoryMock.Object,
             _fileStorageMock.Object,
-            CreateContentLookupFactory()
+            CreateContentLookupService()
         );
     }
 

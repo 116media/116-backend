@@ -1,29 +1,24 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.Specifications;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Editorial.UseCases.Public.Commands.VoteOnTranslationRevision.Contracts;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Content.Domain.Enums;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Commands.VoteOnTranslationRevision;
 
 /// <summary>
-/// Handles the <see cref="PublicVoteOnTranslationRevisionCommand" /> to record a community vote
-/// on a pending translation revision, auto-accepting it once the net approval threshold is met.
+/// Handles the <see cref="PublicVoteOnTranslationRevisionCommand" /> to vote on a translation
+/// revision, applying it to the translation when the vote crosses the auto-accept threshold.
 /// </summary>
-/// <param name="revisionRepository">Repository for translation revision data access operations.</param>
-/// <param name="voteRepository">Repository for translation revision vote data access operations.</param>
-/// <param name="translationRepository">Repository for lyrics translation data access operations.</param>
+/// <param name="voteService">Service casting and tallying the vote.</param>
+/// <param name="translationRepository">Repository loading the translation an accepted revision applies to.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicVoteOnTranslationRevisionHandler(
-    ITranslationRevisionRepository revisionRepository,
-    ITranslationVoteRepository voteRepository,
+    IPublicTranslationRevisionVoteService voteService,
     ITranslationRepository translationRepository,
-    IContentUnitOfWork unitOfWork,
-    ContentI18n i18n
+    IContentUnitOfWork unitOfWork
 ) : ICommandHandler<PublicVoteOnTranslationRevisionCommand, PublicVoteOnTranslationRevisionResult>
 {
     /// <inheritdoc />
@@ -32,63 +27,29 @@ public class PublicVoteOnTranslationRevisionHandler(
         CancellationToken cancellationToken
     )
     {
-        LyricsTranslationRevisionEntity revision = await revisionRepository.GetByIdOrThrowAsync(
-            id: command.RevisionId,
-            cancellationToken: cancellationToken
-        );
-
-        bool alreadyVoted = await voteRepository.HasVotedAsync(
-            revisionId: command.RevisionId,
-            userId: command.UserId,
-            cancellationToken: cancellationToken
-        );
-
-        if (alreadyVoted)
-        {
-            throw i18n.Translation.AlreadyVoted();
-        }
-
-        // Tally existing votes BEFORE adding this one — GetNetApprovalsAsync queries the
-        // database directly, which does not see an entity that's only been added to the
-        // change tracker and not yet flushed. The just-cast vote's own contribution is added
-        // in below explicitly rather than re-querying after the (still unsaved) insert.
-        int netApprovalsBeforeThisVote = await voteRepository.GetNetApprovalsAsync(
-            revisionId: command.RevisionId,
-            cancellationToken: cancellationToken
-        );
-
-        // Unique (RevisionId, UserId) index is the real, DB-level backstop enforcement of the
-        // pre-check above.
-        var vote = LyricsTranslationVoteEntity.Create(
-            id: Guid.NewGuid(),
+        TranslationRevisionVoteData tally = await voteService.CastVoteAsync(
             revisionId: command.RevisionId,
             userId: command.UserId,
             vote: command.Vote,
-            comment: command.Comment
+            comment: command.Comment,
+            cancellationToken: cancellationToken
         );
-        await voteRepository.AddAsync(vote: vote, cancellationToken: cancellationToken);
 
-        int netApprovals = netApprovalsBeforeThisVote + (command.Vote == EnumVote.Approve ? 1 : -1);
-
-        bool isStillPending = new PendingTranslationRevisionSpecification().IsSatisfiedBy(revision);
-
-        if (netApprovals >= TranslationConstants.AutoAcceptThreshold && isStillPending)
+        if (
+            tally.NetApprovals >= TranslationConstants.AutoAcceptThreshold
+            && new PendingTranslationRevisionSpecification().IsSatisfiedBy(tally.Revision)
+            && tally.Revision.Accept(decidedByUserId: null)
+        )
         {
-            if (revision.Accept(decidedByUserId: null))
-            {
-                LyricsTranslationEntity translation = await translationRepository.GetByIdOrThrowAsync(
-                    id: revision.TranslationId,
-                    cancellationToken: cancellationToken
-                );
-                translation.ApplyAcceptedRevision(newText: revision.ProposedText);
-            }
+            LyricsTranslationEntity translation = await translationRepository.GetByIdOrThrowAsync(
+                id: tally.Revision.TranslationId,
+                cancellationToken: cancellationToken
+            );
+            translation.ApplyAcceptedRevision(newText: tally.Revision.ProposedText);
         }
 
-        // Both the revision's acceptance and the translation's applied text commit together in
-        // this single call — the two-step apply is atomic here, unlike spec 11's submission
-        // approval sequence which spans two separate commits.
+        // The acceptance and the applied text commit together.
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
         return new PublicVoteOnTranslationRevisionResult(IsSuccess: true);
     }
 }

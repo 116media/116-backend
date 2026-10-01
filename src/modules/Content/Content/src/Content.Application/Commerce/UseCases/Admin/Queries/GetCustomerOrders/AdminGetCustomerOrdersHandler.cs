@@ -1,6 +1,6 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.BuildingBlocks.Application.Pagination;
-using _116.Content.Application.Commerce.Factories;
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -11,10 +11,10 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetCustomerOr
 /// Handles the <see cref="AdminGetCustomerOrdersQuery" /> to retrieve paginated orders for a specific customer.
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
-/// <param name="orderDtoFactory">Builds order projections with their lookups resolved.</param>
+/// <param name="orderDtoService">Builds order projections with their lookups resolved.</param>
 public class AdminGetCustomerOrdersHandler(
     IContentOrderRepository contentOrderRepository,
-    IContentOrderDtoFactory orderDtoFactory
+    IContentOrderDtoService orderDtoService
 ) : IQueryHandler<AdminGetCustomerOrdersQuery, AdminGetCustomerOrdersResult>
 {
     /// <inheritdoc />
@@ -35,7 +35,7 @@ public class AdminGetCustomerOrdersHandler(
             ct: cancellationToken
         );
 
-        IReadOnlyList<ContentOrderSummaryDto> dtoList = await orderDtoFactory.CreateManySummariesAsync(
+        IReadOnlyList<ContentOrderSummaryDto> dtoList = await orderDtoService.CreateManySummariesAsync(
             orders,
             cancellationToken
         );

@@ -24,7 +24,7 @@ public class AdminCreateOrderHandlerTests
 {
     private readonly Mock<ICustomerRepository> _customerRepositoryMock;
     private readonly Mock<IPackageRepository> _packageRepositoryMock;
-    private readonly Mock<ICreateOrderFactory> _createOrderFactoryMock;
+    private readonly Mock<ICreateOrderService> _createOrderServiceMock;
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminCreateOrderHandler _handler;
@@ -33,8 +33,8 @@ public class AdminCreateOrderHandlerTests
     {
         _customerRepositoryMock = MockCustomerRepository.Create();
         _packageRepositoryMock = MockPackageRepository.Create();
-        _createOrderFactoryMock = new Mock<ICreateOrderFactory>();
-        _createOrderFactoryMock
+        _createOrderServiceMock = new Mock<ICreateOrderService>();
+        _createOrderServiceMock
             .Setup(x =>
                 x.PopulateFromPackageAsync(
                     It.IsAny<ContentOrderEntity>(),
@@ -46,12 +46,15 @@ public class AdminCreateOrderHandlerTests
         _orderRepositoryMock = MockContentOrderRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminCreateOrderHandler(
-            _customerRepositoryMock.Object,
-            _packageRepositoryMock.Object,
-            _createOrderFactoryMock.Object,
-            _orderRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            new AdminCreateOrderService(
+                _customerRepositoryMock.Object,
+                _packageRepositoryMock.Object,
+                _orderRepositoryMock.Object,
+                MockCategoryRepository.Create().SetupGetByIds([]).Object,
+                MockContentTypeRepository.Create().SetupGetByIds([]).Object,
+                TestErrorsFactory.CreateContentI18n()
+            ),
+            _unitOfWorkMock.Object
         );
     }
 

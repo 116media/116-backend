@@ -1,4 +1,4 @@
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
@@ -37,9 +37,9 @@ public class VideoMapperTests(PostgresFixture postgres) : BaseRepositoryTest(pos
         await using var readContext = CreateDbContext<ContentDbContext>();
         VideoEntity loaded = await readContext.Videos.FirstAsync(v => v.Id == video.Id);
 
-        var videoDtoFactory = Resolve<IVideoDtoFactory>();
+        var videoDtoService = Resolve<IVideoDtoService>();
         IReadOnlyList<VideoEntity> videos = [loaded];
-        VideoSummaryDto dto = (await videoDtoFactory.CreateManyAsync(videos)).Single();
+        VideoSummaryDto dto = (await videoDtoService.CreateManyAsync(videos)).Single();
 
         dto.Id.Should().Be(loaded.Id);
         dto.CategoryId.Should().Be(category.Id);
@@ -68,9 +68,9 @@ public class VideoMapperTests(PostgresFixture postgres) : BaseRepositoryTest(pos
         await using var readContext = CreateDbContext<ContentDbContext>();
         VideoEntity loaded = await readContext.Videos.FirstAsync(v => v.Id == video.Id);
 
-        var videoDtoFactory = Resolve<IVideoDtoFactory>();
+        var videoDtoService = Resolve<IVideoDtoService>();
         IReadOnlyList<VideoEntity> videos = [loaded];
-        VideoSummaryDto dto = (await videoDtoFactory.CreateManyAsync(videos)).Single();
+        VideoSummaryDto dto = (await videoDtoService.CreateManyAsync(videos)).Single();
 
         dto.ThumbnailUrl.Should().BeNull();
     }
@@ -94,8 +94,8 @@ public class VideoMapperTests(PostgresFixture postgres) : BaseRepositoryTest(pos
         await using var readContext = CreateDbContext<ContentDbContext>();
         VideoEntity loaded = await readContext.Videos.Include(v => v.Tags).FirstAsync(v => v.Id == video.Id);
 
-        var videoDtoFactory = Resolve<IVideoDtoFactory>();
-        VideoDetailDto dto = await videoDtoFactory.CreateDetailAsync(loaded);
+        var videoDtoService = Resolve<IVideoDtoService>();
+        VideoDetailDto dto = await videoDtoService.CreateDetailAsync(loaded);
 
         dto.Id.Should().Be(loaded.Id);
         dto.CategoryId.Should().Be(category.Id);
@@ -124,8 +124,8 @@ public class VideoMapperTests(PostgresFixture postgres) : BaseRepositoryTest(pos
         await using var readContext = CreateDbContext<ContentDbContext>();
         List<VideoEntity> loaded = await readContext.Videos.ToListAsync();
 
-        var videoDtoFactory = Resolve<IVideoDtoFactory>();
-        IReadOnlyList<VideoSummaryDto> dtos = await videoDtoFactory.CreateManyAsync(loaded);
+        var videoDtoService = Resolve<IVideoDtoService>();
+        IReadOnlyList<VideoSummaryDto> dtos = await videoDtoService.CreateManyAsync(loaded);
 
         dtos.Should().HaveCount(2);
     }

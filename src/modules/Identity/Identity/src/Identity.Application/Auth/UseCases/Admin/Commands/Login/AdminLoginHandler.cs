@@ -1,9 +1,9 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login.Contracts;
-using _116.Identity.Application.Session.Factories.Contracts;
+using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Mappers;
-using _116.Identity.Application.User.Services;
+using _116.Identity.Application.User.Ports;
 using _116.Storage.Contracts.Application.DTOs;
 using MapsterMapper;
 
@@ -12,13 +12,13 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
 /// <summary>
 /// Handles the <see cref="AdminLoginCommand" /> to authenticate admin users.
 /// </summary>
-/// <param name="authFactory">Factory for handling admin user authentication logic.</param>
-/// <param name="sessionFactory">Factory for creating authentication sessions.</param>
+/// <param name="authService">Service for handling admin user authentication logic.</param>
+/// <param name="sessionService">Service for creating authentication sessions.</param>
 /// <param name="avatarService">Resolves and stores the user's avatar.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminLoginHandler(
-    IAdminLoginAuthFactory authFactory,
-    ISessionFactory sessionFactory,
+    IAdminLoginAuthService authService,
+    ISessionService sessionService,
     IAvatarService avatarService,
     IMapper mapper
 ) : ICommandHandler<AdminLoginCommand, AdminLoginResult>
@@ -29,14 +29,14 @@ public class AdminLoginHandler(
     public async Task<AdminLoginResult> Handle(AdminLoginCommand command, CancellationToken cancellationToken)
     {
         // Authenticate admin user and get associated data
-        AdminLoginAuthData authData = await authFactory.AuthenticateAsync(
+        AdminLoginAuthData authData = await authService.AuthenticateAsync(
             email: command.Email,
             password: command.Password,
             cancellationToken: cancellationToken
         );
 
         // Create authentication session with tokens
-        SessionResult sessionData = await sessionFactory.CreateSessionAsync(
+        SessionResult sessionData = await sessionService.CreateSessionAsync(
             user: authData.User,
             userPermissions: authData.UserPermissions,
             cancellationToken: cancellationToken

@@ -1,7 +1,7 @@
 using _116.Content.Application.Editorial.UseCases.Public.Commands.RequestLyricsTranslation;
 using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Ports;
 using _116.Content.Application.Shared.Repositories;
-using _116.Content.Application.Shared.Services;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.TestData.Factories;

@@ -9,8 +9,7 @@ using _116.Identity.Application.Adapters.SocialAuth;
 using _116.Identity.Application.Adapters.Wangkanai.Detection;
 using _116.Identity.Application.Auth.EventHandlers;
 using _116.Identity.Application.Auth.Exceptions.Handlers;
-using _116.Identity.Application.Auth.Factories;
-using _116.Identity.Application.Auth.Factories.Contracts;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword;
@@ -37,10 +36,17 @@ using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.Contracts;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.AssignPermissionToRole;
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.AssignPermissionToRole.Contracts;
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.RemovePermissionFromRole;
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.RemovePermissionFromRole.Contracts;
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeletePermission;
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeletePermission.Contracts;
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeleteRole;
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeleteRole.Contracts;
 using _116.Identity.Application.Session.Cache;
 using _116.Identity.Application.Session.EventHandlers;
-using _116.Identity.Application.Session.Factories;
-using _116.Identity.Application.Session.Factories.Contracts;
+using _116.Identity.Application.Session.Ports;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Shared.Authorizations.Contracts;
@@ -55,7 +61,11 @@ using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Application.User.EventHandlers;
-using _116.Identity.Application.User.Services;
+using _116.Identity.Application.User.Ports;
+using _116.Identity.Application.User.UseCases.Admin.Commands.AssignRoleToUser;
+using _116.Identity.Application.User.UseCases.Admin.Commands.AssignRoleToUser.Contracts;
+using _116.Identity.Application.User.UseCases.Admin.Commands.RemoveRoleFromUser;
+using _116.Identity.Application.User.UseCases.Admin.Commands.RemoveRoleFromUser.Contracts;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar.Contracts;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile;
@@ -126,7 +136,7 @@ public static class IdentityModule
         services.AddScoped<AuthorizationErrorMessage>();
         services.AddScoped<ConflictErrorMessage>();
 
-        // Register error factory classes
+        // Register error service classes
         services.AddScoped<UserErrors>();
         services.AddScoped<SessionErrors>();
         services.AddScoped<IdentityI18n>();
@@ -171,15 +181,16 @@ public static class IdentityModule
         services.AddScoped<ITokenDeliveryService, TokenDeliveryService>();
         services.AddScoped<ISessionExportService, SessionExportService>();
 
-        // Register authentication factories
-        services.AddScoped<ISessionFactory, SessionFactory>();
-        services.AddScoped<IOtpVerificationFactory, OtpVerificationFactory>();
-        services.AddScoped<IPublicSignUpAuthFactory, PublicSignUpAuthFactory>();
-        services.AddScoped<IAdminLoginAuthFactory, AdminLoginAuthFactory>();
-        services.AddScoped<IPublicLoginAuthFactory, PublicLoginAuthFactory>();
-        services.AddScoped<IPublicSocialLoginAuthFactory, PublicSocialLoginAuthFactory>();
+        // Register authentication services
+        services.AddScoped<ISessionService, SessionService>();
+        services.AddScoped<IOtpVerificationService, OtpVerificationService>();
+        services.AddScoped<ICredentialInvalidationService, CredentialInvalidationService>();
+        services.AddScoped<IPublicSignUpAuthService, PublicSignUpAuthService>();
+        services.AddScoped<IAdminLoginAuthService, AdminLoginAuthService>();
+        services.AddScoped<IPublicLoginAuthService, PublicLoginAuthService>();
+        services.AddScoped<IPublicSocialLoginAuthService, PublicSocialLoginAuthService>();
 
-        // Social-login token verification: keyed adapters resolved through the factory.
+        // Social-login token verification: keyed adapters resolved through the service.
         services.Configure<SocialAuthOptions>(options =>
         {
             options.GoogleClientId = SocialAuthEnv.GoogleClientId.Value;
@@ -198,19 +209,25 @@ public static class IdentityModule
             (sp, _) => sp.GetRequiredService<FacebookTokenVerifier>()
         );
         services.AddScoped<ISocialTokenVerifierFactory, SocialTokenVerifierFactory>();
-        services.AddScoped<IPublicUpdateProfileAuthFactory, PublicUpdateProfileAuthFactory>();
-        services.AddScoped<IAdminUpdateProfileAuthFactory, AdminUpdateProfileAuthFactory>();
-        services.AddScoped<IPublicUpdateAvatarAuthFactory, PublicUpdateAvatarAuthFactory>();
-        services.AddScoped<IAdminUpdateAvatarAuthFactory, AdminUpdateAvatarAuthFactory>();
-        services.AddScoped<IPublicResetPasswordAuthFactory, PublicResetPasswordAuthFactory>();
-        services.AddScoped<IAdminResetPasswordAuthFactory, AdminResetPasswordAuthFactory>();
-        services.AddScoped<IPublicForgotPasswordOtpFactory, PublicForgotPasswordOtpFactory>();
-        services.AddScoped<IAdminForgotPasswordOtpFactory, AdminForgotPasswordOtpFactory>();
-        services.AddScoped<IPublicResendOtpFactory, PublicResendOtpFactory>();
-        services.AddScoped<IAdminResendOtpFactory, AdminResendOtpFactory>();
-        services.AddScoped<IPublicSignOutSessionFactory, PublicSignOutSessionFactory>();
-        services.AddScoped<IAdminSignOutSessionFactory, AdminSignOutSessionFactory>();
-        services.AddScoped<IRefreshTokenFactory, RefreshTokenFactory>();
+        services.AddScoped<IPublicUpdateProfileAuthService, PublicUpdateProfileAuthService>();
+        services.AddScoped<IAdminUpdateProfileAuthService, AdminUpdateProfileAuthService>();
+        services.AddScoped<IPublicUpdateAvatarAuthService, PublicUpdateAvatarAuthService>();
+        services.AddScoped<IAdminUpdateAvatarAuthService, AdminUpdateAvatarAuthService>();
+        services.AddScoped<IAdminAssignRoleToUserService, AdminAssignRoleToUserService>();
+        services.AddScoped<IAdminRemoveRoleFromUserService, AdminRemoveRoleFromUserService>();
+        services.AddScoped<IAdminAssignPermissionToRoleService, AdminAssignPermissionToRoleService>();
+        services.AddScoped<IAdminRemovePermissionFromRoleService, AdminRemovePermissionFromRoleService>();
+        services.AddScoped<IAdminSoftDeleteRoleService, AdminSoftDeleteRoleService>();
+        services.AddScoped<IAdminSoftDeletePermissionService, AdminSoftDeletePermissionService>();
+        services.AddScoped<IPublicResetPasswordAuthService, PublicResetPasswordAuthService>();
+        services.AddScoped<IAdminResetPasswordAuthService, AdminResetPasswordAuthService>();
+        services.AddScoped<IPublicForgotPasswordOtpService, PublicForgotPasswordOtpService>();
+        services.AddScoped<IAdminForgotPasswordOtpService, AdminForgotPasswordOtpService>();
+        services.AddScoped<IPublicResendOtpService, PublicResendOtpService>();
+        services.AddScoped<IAdminResendOtpService, AdminResendOtpService>();
+        services.AddScoped<IPublicSignOutSessionService, PublicSignOutSessionService>();
+        services.AddScoped<IAdminSignOutSessionService, AdminSignOutSessionService>();
+        services.AddScoped<IRefreshTokenRotationService, RefreshTokenRotationService>();
 
         services.AddScheduledJob<ExpiredOtpCleanupJob>(cronExpression: IdentityConstants.ExpiredOtpCleanupCron);
 

@@ -1,6 +1,6 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.BuildingBlocks.Application.Pagination;
-using _116.Content.Application.Catalog.Factories;
+using _116.Content.Application.Catalog.Services;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -11,10 +11,10 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Queries.GetAllCategori
 /// Handles the <see cref="AdminGetAllCategoriesQuery" /> to retrieve a paginated list of categories.
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
-/// <param name="categoryDtoFactory">Builds category projections with their posters resolved.</param>
+/// <param name="categoryDtoService">Builds category projections with their posters resolved.</param>
 public class AdminGetAllCategoriesHandler(
     ICategoryRepository categoryRepository,
-    ICategoryDtoFactory categoryDtoFactory
+    ICategoryDtoService categoryDtoService
 ) : IQueryHandler<AdminGetAllCategoriesQuery, AdminGetAllCategoriesResult>
 {
     /// <inheritdoc />
@@ -34,7 +34,7 @@ public class AdminGetAllCategoriesHandler(
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<CategoryDto> dtoList = await categoryDtoFactory.CreateManyAsync(categories, cancellationToken);
+        IReadOnlyList<CategoryDto> dtoList = await categoryDtoService.CreateManyAsync(categories, cancellationToken);
 
         var paginatedResult = new PaginatedResult<CategoryDto>(
             pageIndex: pageIndex,

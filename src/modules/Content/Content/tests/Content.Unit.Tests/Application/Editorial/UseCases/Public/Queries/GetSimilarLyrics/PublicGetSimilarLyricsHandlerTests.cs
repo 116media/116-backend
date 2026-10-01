@@ -29,7 +29,7 @@ public class PublicGetSimilarLyricsHandlerTests : BaseContentHandlerTest
         _handler = new PublicGetSimilarLyricsHandler(
             _lyricsRepositoryMock.Object,
             fileStorageMock.Object,
-            CreateContentLookupFactory()
+            CreateContentLookupService()
         );
     }
 

@@ -27,7 +27,7 @@ public class PublicGetActiveCategoriesHandlerTests : BaseContentHandlerTest
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new PublicGetActiveCategoriesHandler(
             _categoryRepositoryMock.Object,
-            CreateCategoryDtoFactory(_fileStorageMock.Object)
+            CreateCategoryDtoService(_fileStorageMock.Object)
         );
     }
 

@@ -54,10 +54,17 @@ public static class ArchitectureRule
     /// <param name="because">What the rule protects, quoted back on failure.</param>
     public static void ShouldHold(this TestResult result, string because)
     {
-        IReadOnlyList<string> offenders =
-        [
-            .. (result.FailingTypeNames ?? []).Where(name => !Allowed.Contains(name)).Order(),
-        ];
+        (result.FailingTypeNames ?? []).ShouldHold(because);
+    }
+
+    /// <summary>
+    /// Asserts a reflection-based rule holds, ignoring types named in <c>KnownViolations.txt</c>.
+    /// </summary>
+    /// <param name="failingTypeNames">The fully-qualified names of the types the rule flagged.</param>
+    /// <param name="because">What the rule protects, quoted back on failure.</param>
+    public static void ShouldHold(this IEnumerable<string> failingTypeNames, string because)
+    {
+        IReadOnlyList<string> offenders = [.. failingTypeNames.Where(name => !Allowed.Contains(name)).Order()];
 
         offenders.Should().BeEmpty(because);
     }

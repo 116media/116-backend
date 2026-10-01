@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Catalog.Factories;
+using _116.Content.Application.Catalog.Services;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
@@ -14,11 +14,11 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreatePackage
 /// </summary>
 /// <param name="packageRepository">Repository for package data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="packageDtoFactory">Builds package projections with their categories resolved.</param>
+/// <param name="packageDtoService">Builds package projections with their categories resolved.</param>
 public class AdminCreatePackageHandler(
     IPackageRepository packageRepository,
     IContentUnitOfWork unitOfWork,
-    IPackageDtoFactory packageDtoFactory
+    IPackageDtoService packageDtoService
 ) : ICommandHandler<AdminCreatePackageCommand, AdminCreatePackageResult>
 {
     /// <inheritdoc />
@@ -37,7 +37,7 @@ public class AdminCreatePackageHandler(
             cancellationToken: cancellationToken
         );
 
-        PackageDto dto = await packageDtoFactory.CreateAsync(created, cancellationToken);
+        PackageDto dto = await packageDtoService.CreateAsync(created, cancellationToken);
         return new AdminCreatePackageResult(Package: dto);
     }
 }

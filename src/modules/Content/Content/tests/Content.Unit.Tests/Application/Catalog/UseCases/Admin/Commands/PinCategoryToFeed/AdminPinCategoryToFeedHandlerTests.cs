@@ -45,13 +45,16 @@ public class AdminPinCategoryToFeedHandlerTests : BaseContentHandlerTest
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminPinCategoryToFeedHandler(
+            new AdminPinCategoryToFeedService(
+                _categoryRepositoryMock.Object,
+                _contentTypeRepositoryMock.Object,
+                _videoRepositoryMock.Object,
+                TestErrorsFactory.CreateContentI18n(),
+                TimeProvider.System
+            ),
             _categoryRepositoryMock.Object,
-            _contentTypeRepositoryMock.Object,
-            _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            CreateCategoryDtoFactory(_fileStorageMock.Object),
-            TestErrorsFactory.CreateContentI18n(),
-            TimeProvider.System
+            CreateCategoryDtoService(_fileStorageMock.Object)
         );
     }
 

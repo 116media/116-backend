@@ -8,9 +8,9 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut;
 /// <summary>
 /// Handles the <see cref="AdminSignOutCommand" /> to sign out an admin user from current device.
 /// </summary>
-/// <param name="sessionFactory">Factory for handling admin user sign-out session management.</param>
+/// <param name="sessionService">Service for handling admin user sign-out session management.</param>
 /// <param name="authRepository">Repository for user data access operations.</param>
-public class AdminSignOutHandler(IAdminSignOutSessionFactory sessionFactory, IAuthRepository authRepository)
+public class AdminSignOutHandler(IAdminSignOutSessionService sessionService, IAuthRepository authRepository)
     : ICommandHandler<AdminSignOutCommand, AdminSignOutResult>
 {
     /// <summary>
@@ -26,7 +26,7 @@ public class AdminSignOutHandler(IAdminSignOutSessionFactory sessionFactory, IAu
 
         authRepository.IsUserAccountActive(user!);
 
-        await sessionFactory.SignOutAsync(refreshToken: command.RefreshToken, cancellationToken: cancellationToken);
+        await sessionService.SignOutAsync(refreshToken: command.RefreshToken, cancellationToken: cancellationToken);
 
         return new AdminSignOutResult(IsSuccess: true);
     }

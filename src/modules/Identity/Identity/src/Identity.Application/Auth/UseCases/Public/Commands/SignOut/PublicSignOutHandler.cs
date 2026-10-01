@@ -8,9 +8,9 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignOut;
 /// <summary>
 /// Handles the <see cref="PublicSignOutCommand" /> to sign out a user from current device.
 /// </summary>
-/// <param name="sessionFactory">Factory for handling user sign-out session management.</param>
+/// <param name="sessionService">Service for handling user sign-out session management.</param>
 /// <param name="authRepository">Repository for user data access operations.</param>
-public class PublicSignOutHandler(IPublicSignOutSessionFactory sessionFactory, IAuthRepository authRepository)
+public class PublicSignOutHandler(IPublicSignOutSessionService sessionService, IAuthRepository authRepository)
     : ICommandHandler<PublicSignOutCommand, PublicSignOutResult>
 {
     /// <summary>
@@ -26,7 +26,7 @@ public class PublicSignOutHandler(IPublicSignOutSessionFactory sessionFactory, I
 
         authRepository.IsUserAccountActive(user!);
 
-        await sessionFactory.SignOutAsync(refreshToken: command.RefreshToken, cancellationToken: cancellationToken);
+        await sessionService.SignOutAsync(refreshToken: command.RefreshToken, cancellationToken: cancellationToken);
 
         return new PublicSignOutResult(IsSuccess: true);
     }

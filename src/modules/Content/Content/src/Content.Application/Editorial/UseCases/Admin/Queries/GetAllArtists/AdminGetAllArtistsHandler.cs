@@ -1,6 +1,6 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.BuildingBlocks.Application.Pagination;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
@@ -13,8 +13,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllArtist
 /// Handles the <see cref="AdminGetAllArtistsQuery" /> to retrieve a paginated list of artist profiles.
 /// </summary>
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
-/// <param name="artistDtoFactory">Builds artist projections with their avatars resolved.</param>
-public class AdminGetAllArtistsHandler(IArtistRepository artistRepository, IArtistDtoFactory artistDtoFactory)
+/// <param name="artistDtoService">Builds artist projections with their avatars resolved.</param>
+public class AdminGetAllArtistsHandler(IArtistRepository artistRepository, IArtistDtoService artistDtoService)
     : IQueryHandler<AdminGetAllArtistsQuery, AdminGetAllArtistsResult>
 {
     /// <inheritdoc />
@@ -33,7 +33,7 @@ public class AdminGetAllArtistsHandler(IArtistRepository artistRepository, IArti
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<ArtistDto> dtoList = await artistDtoFactory.CreateManyAsync(
+        IReadOnlyList<ArtistDto> dtoList = await artistDtoService.CreateManyAsync(
             artistList.AsReadOnly(),
             cancellationToken
         );

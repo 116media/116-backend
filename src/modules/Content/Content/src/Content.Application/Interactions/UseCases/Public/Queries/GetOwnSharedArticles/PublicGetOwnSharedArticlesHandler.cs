@@ -13,7 +13,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnSh
 public class PublicGetOwnSharedArticlesHandler(
     IArticleInteractionRepository articleInteractionRepository,
     IFileStorageService fileStorage,
-    IContentLookupFactory contentLookupFactory
+    IContentLookupService contentLookupService
 ) : IQueryHandler<PublicGetOwnSharedArticlesQuery, PublicGetOwnSharedArticlesResult>
 {
     /// <inheritdoc />
@@ -43,7 +43,7 @@ public class PublicGetOwnSharedArticlesHandler(
         foreach (ArticleActivity activity in activities)
         {
             PublicArticleSummaryDto article = await activity.Article.ToPublicArticleSummaryDtoAsync(
-                await contentLookupFactory.ResolveForArticlesAsync([activity.Article], cancellationToken),
+                await contentLookupService.ResolveForArticlesAsync([activity.Article], cancellationToken),
                 fileStorage,
                 cancellationToken
             );

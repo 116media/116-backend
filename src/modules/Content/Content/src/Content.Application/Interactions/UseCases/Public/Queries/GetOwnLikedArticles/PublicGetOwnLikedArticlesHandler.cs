@@ -13,7 +13,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnLi
 public class PublicGetOwnLikedArticlesHandler(
     IArticleInteractionRepository articleInteractionRepository,
     IFileStorageService fileStorage,
-    IContentLookupFactory contentLookupFactory
+    IContentLookupService contentLookupService
 ) : IQueryHandler<PublicGetOwnLikedArticlesQuery, PublicGetOwnLikedArticlesResult>
 {
     /// <inheritdoc />
@@ -43,7 +43,7 @@ public class PublicGetOwnLikedArticlesHandler(
         foreach (ArticleActivity activity in activities)
         {
             PublicArticleSummaryDto article = await activity.Article.ToPublicArticleSummaryDtoAsync(
-                await contentLookupFactory.ResolveForArticlesAsync([activity.Article], cancellationToken),
+                await contentLookupService.ResolveForArticlesAsync([activity.Article], cancellationToken),
                 fileStorage,
                 cancellationToken
             );

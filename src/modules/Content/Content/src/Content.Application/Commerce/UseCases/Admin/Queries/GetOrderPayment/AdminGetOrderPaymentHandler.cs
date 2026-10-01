@@ -1,29 +1,20 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Commerce.Factories;
-using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Identity.Contracts.Application.Services;
-using _116.Storage.Contracts.Application.DTOs;
-using _116.Storage.Contracts.Application.Services;
-using MapsterMapper;
 
 namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderPayment;
 
 /// <summary>
-/// Handles the <see cref="AdminGetOrderPaymentQuery" /> to retrieve the payment record for an order.
+/// Handles the <see cref="AdminGetOrderPaymentQuery" /> to serve an order's payment with its proof.
 /// </summary>
-/// <param name="orderPaymentFactory">Shared factory for fetching and validating payment records.</param>
-/// <param name="contentOrderRepository">Repository for content order data access operations.</param>
-/// <param name="fileStorage">Storage's file contract.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="userLookup">Cross-module service for resolving admin user names.</param>
+/// <param name="orderPaymentService">Service resolving the order's payment.</param>
+/// <param name="contentOrderRepository">Repository asserting the order exists.</param>
+/// <param name="paymentDtoService">Service assembling the payment with its proof.</param>
 public class AdminGetOrderPaymentHandler(
-    IOrderPaymentFactory orderPaymentFactory,
+    IOrderPaymentService orderPaymentService,
     IContentOrderRepository contentOrderRepository,
-    IFileStorageService fileStorage,
-    IMapper mapper,
-    IPaymentDtoFactory paymentDtoFactory
+    IPaymentDtoService paymentDtoService
 ) : IQueryHandler<AdminGetOrderPaymentQuery, AdminGetOrderPaymentResult>
 {
     /// <inheritdoc />
@@ -33,19 +24,12 @@ public class AdminGetOrderPaymentHandler(
     )
     {
         await contentOrderRepository.GetByIdOrThrowAsync(id: query.OrderId, ct: cancellationToken);
-
-        ContentPaymentEntity payment = await orderPaymentFactory.GetByOrderIdOrThrowAsync(
+        ContentPaymentEntity payment = await orderPaymentService.GetByOrderIdOrThrowAsync(
             orderId: query.OrderId,
             ct: cancellationToken
         );
 
-        FileReferenceDto? proofFile = payment.PaymentProofFileId.HasValue
-            ? await fileStorage.ResolveAsync(payment.PaymentProofFileId.Value, cancellationToken)
-            : null;
-
-        var proofDto = proofFile.ToFileDto(mapper);
-        var dto = await paymentDtoFactory.CreateAsync(payment, proofDto, cancellationToken);
-
+        var dto = await paymentDtoService.CreateWithProofAsync(payment, cancellationToken);
         return new AdminGetOrderPaymentResult(Payment: dto);
     }
 }

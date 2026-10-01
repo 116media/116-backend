@@ -1,31 +1,24 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Shared.Errors.Facade;
-using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Editorial.Services;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArticle.Contracts;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Storage.Contracts.Application.Services;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArticle;
 
 /// <summary>
-/// Handles the <see cref="AdminCreateArticleCommand" /> to create a new article draft (step 1).
+/// Handles the <see cref="AdminCreateArticleCommand" /> to create an article.
 /// </summary>
-/// <param name="categoryRepository">Repository for category data access operations.</param>
-/// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="createArticleService">Service resolving and staging the article.</param>
+/// <param name="articleRepository">Repository reloading the committed article.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="fileStorage">Storage's file contract.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
+/// <param name="articleDtoService">Service assembling the article detail.</param>
 public class AdminCreateArticleHandler(
-    ICategoryRepository categoryRepository,
+    IAdminCreateArticleService createArticleService,
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
-    IFileStorageService fileStorage,
-    IMapper mapper,
-    ContentI18n i18n,
-    IContentLookupFactory contentLookupFactory
+    IArticleDtoService articleDtoService
 ) : ICommandHandler<AdminCreateArticleCommand, AdminCreateArticleResult>
 {
     /// <inheritdoc />
@@ -34,62 +27,14 @@ public class AdminCreateArticleHandler(
         CancellationToken cancellationToken
     )
     {
-        await categoryRepository.GetByIdOrThrowAsync(id: command.CategoryId, cancellationToken: cancellationToken);
-
-        ArticleEntity? existing = await articleRepository.GetBySlugAsync(
-            slug: command.Slug,
-            cancellationToken: cancellationToken
-        );
-
-        if (existing is not null)
-        {
-            throw i18n.Article.SlugAlreadyExists(slug: command.Slug);
-        }
-
-        ArticleEntity article = CreateArticle(command);
-
-        await articleRepository.AddAsync(article: article, cancellationToken: cancellationToken);
+        ArticleEntity article = await createArticleService.CreateAsync(command, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         ArticleEntity created = await articleRepository.GetByIdOrThrowAsync(
             id: article.Id,
             cancellationToken: cancellationToken
         );
-
-        var dto = await created.ToArticleDetailDtoAsync(
-            mapper,
-            await contentLookupFactory.ResolveForArticlesAsync([created], cancellationToken),
-            fileStorage,
-            cancellationToken
-        );
+        var dto = await articleDtoService.CreateDetailAsync(created, cancellationToken);
         return new AdminCreateArticleResult(Article: dto);
-    }
-
-    /// <summary>
-    /// Creates an <see cref="ArticleEntity"/> based on the command payload.
-    /// Produces a paid article when <see cref="AdminCreateArticleCommand.CustomerId"/> is present,
-    /// otherwise produces a free article.
-    /// </summary>
-    /// <param name="command">The command containing article creation data.</param>
-    /// <returns>A new <see cref="ArticleEntity"/> instance.</returns>
-    private ArticleEntity CreateArticle(AdminCreateArticleCommand command)
-    {
-        return command.CustomerId.HasValue
-            ? ArticleEntity.CreatePaid(
-                id: Guid.NewGuid(),
-                customerId: command.CustomerId.Value,
-                orderItemId: command.OrderItemId!.Value,
-                categoryId: command.CategoryId,
-                title: command.Title,
-                slug: command.Slug,
-                authorId: command.AuthorId
-            )
-            : ArticleEntity.CreateFree(
-                id: Guid.NewGuid(),
-                categoryId: command.CategoryId,
-                title: command.Title,
-                slug: command.Slug,
-                authorId: command.AuthorId
-            );
     }
 }

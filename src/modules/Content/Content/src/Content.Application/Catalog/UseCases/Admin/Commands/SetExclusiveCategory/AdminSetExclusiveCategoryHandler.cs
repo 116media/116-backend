@@ -1,28 +1,25 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Catalog.Factories;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Catalog.Services;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.SetExclusiveCategory.Contracts;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Content.Domain.Enums;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.SetExclusiveCategory;
 
 /// <summary>
-/// Handles the <see cref="AdminSetExclusiveCategoryCommand" /> to toggle the exclusive flag on a category.
-/// Enforces the mutex constraint: only one category can be exclusive at a time.
+/// Handles the <see cref="AdminSetExclusiveCategoryCommand" /> to move the exclusive flag onto a
+/// category, clearing its current holder in the same transaction.
 /// </summary>
-/// <param name="contentTypeRepository">Repository resolving the category's content type.</param>
-/// <param name="categoryRepository">Repository for category data access operations.</param>
+/// <param name="setExclusiveService">Service loading and gating the category.</param>
+/// <param name="categoryRepository">Repository resolving the current holder and reloading the result.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="categoryDtoFactory">Builds category projections with their posters resolved.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
+/// <param name="categoryDtoService">Service assembling the category DTO.</param>
 public class AdminSetExclusiveCategoryHandler(
+    IAdminSetExclusiveCategoryService setExclusiveService,
     ICategoryRepository categoryRepository,
-    IContentTypeRepository contentTypeRepository,
     IContentUnitOfWork unitOfWork,
-    ICategoryDtoFactory categoryDtoFactory,
-    ContentI18n i18n
+    ICategoryDtoService categoryDtoService
 ) : ICommandHandler<AdminSetExclusiveCategoryCommand, AdminSetExclusiveCategoryResult>
 {
     /// <inheritdoc />
@@ -33,25 +30,10 @@ public class AdminSetExclusiveCategoryHandler(
     {
         Guid id = Guid.Parse(command.Id);
 
-        CategoryEntity category = await categoryRepository.GetByIdOrThrowAsync(
-            id: id,
+        CategoryEntity category = await setExclusiveService.EnsureExclusivableAsync(
+            categoryId: id,
             cancellationToken: cancellationToken
         );
-
-        ContentTypeEntity contentType = await contentTypeRepository.GetByIdOrThrowAsync(
-            id: category.ContentTypeId,
-            cancellationToken: cancellationToken
-        );
-
-        if (!category.IsActive)
-        {
-            throw i18n.Category.CannotMakeInactiveExclusive();
-        }
-
-        if (contentType.Name != nameof(EnumCoreContentType.Video))
-        {
-            throw i18n.Category.OnlyVideoCategoryCanBeExclusive();
-        }
 
         await unitOfWork.ExecuteInTransactionAsync(
             async ct =>
@@ -74,8 +56,7 @@ public class AdminSetExclusiveCategoryHandler(
             id: id,
             cancellationToken: cancellationToken
         );
-
-        var dto = await categoryDtoFactory.CreateAsync(updated, cancellationToken);
+        var dto = await categoryDtoService.CreateAsync(updated, cancellationToken);
         return new AdminSetExclusiveCategoryResult(Category: dto);
     }
 }

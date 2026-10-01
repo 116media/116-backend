@@ -1,4 +1,4 @@
-using _116.Content.Application.Interactions.Factories;
+using _116.Content.Application.Interactions.Services;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
@@ -30,8 +30,8 @@ public class PlaylistMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
         await using var readContext = CreateDbContext<ContentDbContext>();
         List<PlaylistEntity> loaded = await readContext.Playlists.Include(p => p.Videos).ToListAsync();
 
-        var playlistDtoFactory = Resolve<IPlaylistDtoFactory>();
-        IReadOnlyList<PlaylistDto> dtos = await playlistDtoFactory.CreateManyAsync(loaded);
+        var playlistDtoService = Resolve<IPlaylistDtoService>();
+        IReadOnlyList<PlaylistDto> dtos = await playlistDtoService.CreateManyAsync(loaded);
 
         dtos.Should().ContainSingle();
         dtos[0].Id.Should().Be(playlist.Id);
@@ -68,8 +68,8 @@ public class PlaylistMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
         await using var readContext = CreateDbContext<ContentDbContext>();
         PlaylistEntity loaded = await readContext.Playlists.Include(p => p.Videos).FirstAsync(p => p.Id == playlist.Id);
 
-        var playlistDtoFactory = Resolve<IPlaylistDtoFactory>();
-        PlaylistDetailDto dto = await playlistDtoFactory.CreateDetailAsync(loaded);
+        var playlistDtoService = Resolve<IPlaylistDtoService>();
+        PlaylistDetailDto dto = await playlistDtoService.CreateDetailAsync(loaded);
 
         dto.Id.Should().Be(playlist.Id);
         dto.Videos.Should().ContainSingle();
@@ -88,8 +88,8 @@ public class PlaylistMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
         await using var readContext = CreateDbContext<ContentDbContext>();
         PlaylistEntity loaded = await readContext.Playlists.Include(p => p.Videos).FirstAsync(p => p.Id == playlist.Id);
 
-        var playlistDtoFactory = Resolve<IPlaylistDtoFactory>();
-        PlaylistDetailDto dto = await playlistDtoFactory.CreateDetailAsync(loaded);
+        var playlistDtoService = Resolve<IPlaylistDtoService>();
+        PlaylistDetailDto dto = await playlistDtoService.CreateDetailAsync(loaded);
 
         dto.Videos.Should().BeEmpty();
     }

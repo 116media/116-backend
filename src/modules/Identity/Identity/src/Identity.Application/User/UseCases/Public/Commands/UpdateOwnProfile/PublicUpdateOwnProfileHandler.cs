@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.Identity.Application.Shared.Mappers;
-using _116.Identity.Application.User.Services;
+using _116.Identity.Application.User.Ports;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.Contracts;
 using _116.Storage.Contracts.Application.DTOs;
 using MapsterMapper;
@@ -12,11 +12,11 @@ namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfi
 /// Handles the <see cref="PublicUpdateOwnProfileCommand" /> to update user's own profile information.
 /// This endpoint requires user authentication - only logged-in users can update their own profile.
 /// </summary>
-/// <param name="authFactory">Factory for handling user profile update logic.</param>
+/// <param name="authService">Service for handling user profile update logic.</param>
 /// <param name="avatarService">Resolves and stores the user's avatar.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicUpdateOwnProfileHandler(
-    IPublicUpdateProfileAuthFactory authFactory,
+    IPublicUpdateProfileAuthService authService,
     IAvatarService avatarService,
     IMapper mapper
 ) : ICommandHandler<PublicUpdateOwnProfileCommand, PublicUpdateOwnProfileResult>
@@ -35,7 +35,7 @@ public class PublicUpdateOwnProfileHandler(
         CancellationToken cancellationToken
     )
     {
-        PublicUpdateProfileAuthData authData = await authFactory.UpdateProfileAsync(
+        PublicUpdateProfileAuthData authData = await authService.UpdateProfileAsync(
             userId: command.UserId,
             sessionId: command.SessionId,
             email: command.Email,

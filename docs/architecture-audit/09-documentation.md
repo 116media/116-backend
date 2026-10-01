@@ -322,5 +322,5 @@ target), linked from both. Add a "Documentation" section to `README.md`. Cut the
 Of 307 docs: **~30 (10%)** durable and current; **~145 (47%)** shipped specs not archived; **~120
 (39%)** ephemeral (progress logs, TODOs, audit findings); **~2 (1%)** designs for unbuilt work; **~11
 (4%)** dead (broken paths / one-off scripts). The durable-and-current set worth keeping as-is:
-`factory-pattern.md`, `standalone-file-upload-pattern.md`, `testing/00-unit-vs-integration-rules.md`,
+`application-services.md`, `standalone-file-upload-pattern.md`, `testing/00-unit-vs-integration-rules.md`,
 `testing-audit/standards/`. Everything else needs a status decision.

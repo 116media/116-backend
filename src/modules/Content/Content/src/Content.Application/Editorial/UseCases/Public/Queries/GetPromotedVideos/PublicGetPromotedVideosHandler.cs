@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
@@ -11,8 +11,8 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPromoted
 /// Handles the <see cref="PublicGetPromotedVideosQuery" /> to retrieve all currently promoted published videos.
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
-/// <param name="videoDtoFactory">Builds video projections with their thumbnails resolved.</param>
-public class PublicGetPromotedVideosHandler(IVideoRepository videoRepository, IVideoDtoFactory videoDtoFactory)
+/// <param name="videoDtoService">Builds video projections with their thumbnails resolved.</param>
+public class PublicGetPromotedVideosHandler(IVideoRepository videoRepository, IVideoDtoService videoDtoService)
     : IQueryHandler<PublicGetPromotedVideosQuery, PublicGetPromotedVideosResult>
 {
     /// <inheritdoc />
@@ -25,7 +25,7 @@ public class PublicGetPromotedVideosHandler(IVideoRepository videoRepository, IV
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<PublicVideoSummaryDto> dtoList = await videoDtoFactory.CreatePublicManyAsync(
+        IReadOnlyList<PublicVideoSummaryDto> dtoList = await videoDtoService.CreatePublicManyAsync(
             videos,
             cancellationToken
         );

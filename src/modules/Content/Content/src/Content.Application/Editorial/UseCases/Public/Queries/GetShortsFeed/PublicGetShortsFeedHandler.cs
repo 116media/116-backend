@@ -1,11 +1,8 @@
 using _116.BuildingBlocks.Application.CQRS;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.DTOs;
-using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Identity.Contracts.Application.Services;
-using _116.Storage.Contracts.Application.Services;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetShortsFeed;
 
@@ -20,10 +17,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetShortsFe
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicGetShortsFeedHandler(
     IShortVideoRepository shortVideoRepository,
-    IUserLookupService userLookup,
-    IFileStorageService fileStorage,
-    IMapper mapper,
-    IVideoRepository videoRepository
+    IShortVideoDtoService shortVideoDtoService
 ) : IQueryHandler<PublicGetShortsFeedQuery, PublicGetShortsFeedResult>
 {
     /// <inheritdoc />
@@ -61,11 +55,8 @@ public class PublicGetShortsFeedHandler(
                 cancellationToken: cancellationToken
             );
 
-        IReadOnlyList<PublicShortVideoDto> items = await shortVideos.ToPublicShortVideoDtosAsync(
-            mapper,
-            userLookup,
-            fileStorage,
-            videoRepository,
+        IReadOnlyList<PublicShortVideoDto> items = await shortVideoDtoService.CreatePublicManyAsync(
+            shortVideos,
             liked,
             bookmarked,
             cancellationToken

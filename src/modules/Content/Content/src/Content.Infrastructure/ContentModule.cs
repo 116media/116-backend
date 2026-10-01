@@ -3,9 +3,22 @@ using _116.BuildingBlocks.Infrastructure;
 using _116.BuildingBlocks.Infrastructure.Seed;
 using _116.BuildingBlocks.Presentation.Exceptions.Handlers.Contracts;
 using _116.BuildingBlocks.Presentation.Extensions;
-using _116.Content.Application.Catalog.Factories;
+using _116.Content.Application.Catalog.Services;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.AddCategoryPricing;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.AddCategoryPricing.Contracts;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.AddPackageSlot;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.AddPackageSlot.Contracts;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategory;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategory.Contracts;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.PinCategoryToFeed;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.PinCategoryToFeed.Contracts;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.SetExclusiveCategory;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.SetExclusiveCategory.Contracts;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategory;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategory.Contracts;
+using _116.Content.Application.Catalog.UseCases.Public.Queries.GetExclusiveCategory;
+using _116.Content.Application.Catalog.UseCases.Public.Queries.GetExclusiveCategory.Contracts;
 using _116.Content.Application.Commerce.EventHandlers;
-using _116.Content.Application.Commerce.Factories;
 using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier.Contracts;
@@ -13,16 +26,56 @@ using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem.Contracts;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder.Contracts;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrder;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrder.Contracts;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrderItem;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrderItem.Contracts;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder.Contracts;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment.Contracts;
 using _116.Content.Application.Editorial.EventHandlers;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Ports;
 using _116.Content.Application.Editorial.Services;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveLyricsSubmission;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveLyricsSubmission.Contracts;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArticle;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArticle.Contracts;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtist;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtist.Contracts;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyrics;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyrics.Contracts;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo.Contracts;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteArticle;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteArticle.Contracts;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteVideo;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteVideo.Contracts;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.ResolveAlbumStreamingLinks;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.ResolveAlbumStreamingLinks.Contracts;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.ResolveSingleStreamingLinks;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.ResolveSingleStreamingLinks.Contracts;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticle;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticle.Contracts;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyrics;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyrics.Contracts;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo.Contracts;
+using _116.Content.Application.Editorial.UseCases.Public.Commands.SubmitLyrics;
+using _116.Content.Application.Editorial.UseCases.Public.Commands.SubmitLyrics.Contracts;
+using _116.Content.Application.Editorial.UseCases.Public.Commands.VoteOnLyricsRevision;
+using _116.Content.Application.Editorial.UseCases.Public.Commands.VoteOnLyricsRevision.Contracts;
+using _116.Content.Application.Editorial.UseCases.Public.Commands.VoteOnTranslationRevision;
+using _116.Content.Application.Editorial.UseCases.Public.Commands.VoteOnTranslationRevision.Contracts;
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistBySlug;
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistBySlug.Contracts;
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBySlug;
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBySlug.Contracts;
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoFeed;
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoFeed.Contracts;
 using _116.Content.Application.Interactions.EventHandlers;
-using _116.Content.Application.Interactions.Factories;
 using _116.Content.Application.Interactions.Persistence;
+using _116.Content.Application.Interactions.Services;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
@@ -30,8 +83,8 @@ using _116.Content.Application.Shared.EventHandlers;
 using _116.Content.Application.Shared.Exceptions.Handlers;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Ports;
 using _116.Content.Application.Shared.Repositories;
-using _116.Content.Application.Shared.Services;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Events;
 using _116.Content.Infrastructure.BackgroundJobs;
@@ -101,7 +154,7 @@ public static class ContentModule
         services.AddSingleton<IExceptionStrategy, StreamingLinkResolutionExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, DomainRuleExceptionStrategy>();
 
-        // Register error factory classes
+        // Register error service classes
         services.AddScoped<ArticleErrors>();
         services.AddScoped<VideoErrors>();
         services.AddScoped<ShortVideoErrors>();
@@ -242,28 +295,62 @@ public static class ContentModule
         >();
         services.AddScoped<IDomainEventHandler<CommentReplyAddedEvent>, CommentReplyAddedNotificationsHandler>();
 
-        // Commerce factories
-        services.AddScoped<IOrderPaymentFactory, OrderPaymentFactory>();
-        services.AddScoped<IVerifyPaymentFactory, AdminVerifyPaymentFactory>();
-        services.AddScoped<ISubmitOrderFactory, AdminSubmitOrderFactory>();
-        services.AddScoped<IAddOrderItemFactory, AdminAddOrderItemFactory>();
-        services.AddScoped<IAddItemTierFactory, AdminAddItemTierFactory>();
-        services.AddScoped<ICreateOrderFactory, AdminCreateOrderFactory>();
-        services.AddScoped<IContentOrderDtoFactory, ContentOrderDtoFactory>();
-        services.AddScoped<IPaymentDtoFactory, PaymentDtoFactory>();
+        // Commerce services
+        services.AddScoped<IOrderPaymentService, OrderPaymentService>();
+        services.AddScoped<IVerifyPaymentService, AdminVerifyPaymentService>();
+        services.AddScoped<ISubmitOrderService, AdminSubmitOrderService>();
+        services.AddScoped<IAddOrderItemService, AdminAddOrderItemService>();
+        services.AddScoped<IAddItemTierService, AdminAddItemTierService>();
+        services.AddScoped<ICreateOrderService, AdminCreateOrderService>();
+        services.AddScoped<IContentOrderDtoService, ContentOrderDtoService>();
+        services.AddScoped<IPaymentDtoService, PaymentDtoService>();
 
-        // Catalog factories
-        services.AddScoped<IContentLookupFactory, ContentLookupFactory>();
-        services.AddScoped<ICategoryDtoFactory, CategoryDtoFactory>();
-        services.AddScoped<IPackageDtoFactory, PackageDtoFactory>();
+        // Catalog services
+        services.AddScoped<IContentLookupService, ContentLookupService>();
+        services.AddScoped<ICategoryDtoService, CategoryDtoService>();
+        services.AddScoped<IPackageDtoService, PackageDtoService>();
 
-        // Editorial factories
-        services.AddScoped<IArtistDtoFactory, ArtistDtoFactory>();
-        services.AddScoped<IAlbumDtoFactory, AlbumDtoFactory>();
-        services.AddScoped<IVideoDtoFactory, VideoDtoFactory>();
+        // Editorial services
+        services.AddScoped<IArtistDtoService, ArtistDtoService>();
+        services.AddScoped<IAlbumDtoService, AlbumDtoService>();
+        services.AddScoped<IVideoDtoService, VideoDtoService>();
 
-        // Interactions factories
-        services.AddScoped<IPlaylistDtoFactory, PlaylistDtoFactory>();
+        // Interactions services
+        services.AddScoped<IPlaylistDtoService, PlaylistDtoService>();
+
+        // Application services extracted from the handlers over the dependency budget.
+        services.AddScoped<ICategoryPricingDtoService, CategoryPricingDtoService>();
+        services.AddScoped<IAdminAddCategoryPricingService, AdminAddCategoryPricingService>();
+        services.AddScoped<IAdminAddPackageSlotService, AdminAddPackageSlotService>();
+        services.AddScoped<IAdminCreateCategoryService, AdminCreateCategoryService>();
+        services.AddScoped<IAdminPinCategoryToFeedService, AdminPinCategoryToFeedService>();
+        services.AddScoped<IAdminSetExclusiveCategoryService, AdminSetExclusiveCategoryService>();
+        services.AddScoped<IAdminUpdateCategoryService, AdminUpdateCategoryService>();
+        services.AddScoped<IPublicExclusiveCategoryVideosService, PublicExclusiveCategoryVideosService>();
+        services.AddScoped<IAdminEditOrderService, AdminEditOrderService>();
+        services.AddScoped<IAdminEditOrderItemService, AdminEditOrderItemService>();
+        services.AddScoped<ILyricsDtoService, LyricsDtoService>();
+        services.AddScoped<IArticleDtoService, ArticleDtoService>();
+        services.AddScoped<IShortVideoDtoService, ShortVideoDtoService>();
+        services.AddScoped<IAdminApproveLyricsSubmissionService, AdminApproveLyricsSubmissionService>();
+        services.AddScoped<IAdminCreateArticleService, AdminCreateArticleService>();
+        services.AddScoped<IAdminCreateArtistService, AdminCreateArtistService>();
+        services.AddScoped<IAdminCreateLyricsService, AdminCreateLyricsService>();
+        services.AddScoped<IAdminCreateVideoService, AdminCreateVideoService>();
+        services.AddScoped<IAdminForceUnpromoteArticleService, AdminForceUnpromoteArticleService>();
+        services.AddScoped<IAdminForceUnpromoteVideoService, AdminForceUnpromoteVideoService>();
+        services.AddScoped<IAdminAlbumLinkResolutionService, AdminAlbumLinkResolutionService>();
+        services.AddScoped<IAdminSingleLinkResolutionService, AdminSingleLinkResolutionService>();
+        services.AddScoped<IAdminUpdateArticleService, AdminUpdateArticleService>();
+        services.AddScoped<IAdminUpdateLyricsService, AdminUpdateLyricsService>();
+        services.AddScoped<IAdminUpdateVideoService, AdminUpdateVideoService>();
+        services.AddScoped<IPublicSubmitLyricsService, PublicSubmitLyricsService>();
+        services.AddScoped<IPublicLyricsRevisionVoteService, PublicLyricsRevisionVoteService>();
+        services.AddScoped<IPublicTranslationRevisionVoteService, PublicTranslationRevisionVoteService>();
+        services.AddScoped<IPublicArtistPageService, PublicArtistPageService>();
+        services.AddScoped<IPublicLyricsPageService, PublicLyricsPageService>();
+        services.AddScoped<IPublicVideoFeedService, PublicVideoFeedService>();
+        services.AddScoped<IArticleCommentDtoService, ArticleCommentDtoService>();
 
         services
             .AddHttpClient<IYoutubeThumbnailService, YoutubeThumbnailService>()

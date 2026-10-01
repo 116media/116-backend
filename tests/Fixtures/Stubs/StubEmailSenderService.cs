@@ -1,5 +1,5 @@
 using _116.Mailer.Application.Shared.Exceptions;
-using _116.Mailer.Application.Shared.Services;
+using _116.Mailer.Application.Shared.Ports;
 
 namespace _116.Tests.Fixtures.Stubs;
 

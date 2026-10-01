@@ -41,11 +41,13 @@ public class AdminForceUnpromoteArticleHandlerTests
         );
 
         _handler = new AdminForceUnpromoteArticleHandler(
-            _articleRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            currentActor,
-            TestErrorsFactory.CreateContentI18n(),
-            TimeProvider.System
+            new AdminForceUnpromoteArticleService(
+                _articleRepositoryMock.Object,
+                currentActor,
+                TestErrorsFactory.CreateContentI18n(),
+                TimeProvider.System
+            ),
+            _unitOfWorkMock.Object
         );
     }
 

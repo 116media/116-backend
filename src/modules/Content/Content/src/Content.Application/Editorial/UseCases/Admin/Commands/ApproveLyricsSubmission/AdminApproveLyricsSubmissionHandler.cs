@@ -1,31 +1,21 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveLyricsSubmission.Contracts;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
-using _116.Content.Domain.Entities;
-using _116.Content.Domain.Enums;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveLyricsSubmission;
 
 /// <summary>
-/// Handles the <see cref="AdminApproveLyricsSubmissionCommand" /> to approve a pending
-/// community lyrics submission. Runs as two separate, individually-safe commits: creating the
-/// lyrics record first, then marking the submission approved and linked to it — the lyrics
-/// record's own commit succeeding on its own is a safe, retryable state, since a reconciliation
-/// query can detect and repair a submission left behind in <c>Pending</c> if the second commit
-/// never runs.
+/// Handles the <see cref="AdminApproveLyricsSubmissionCommand" /> to publish a community
+/// submission as a lyrics page and mark it approved in one transaction.
 /// </summary>
-/// <param name="submissionRepository">Repository for community lyrics submission data access operations.</param>
-/// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
-/// <param name="categoryRepository">Repository for category data access operations.</param>
+/// <param name="approveService">Service resolving the submission and building the page.</param>
+/// <param name="lyricsRepository">Repository staging the new page.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminApproveLyricsSubmissionHandler(
-    ILyricsSubmissionRepository submissionRepository,
+    IAdminApproveLyricsSubmissionService approveService,
     ILyricsRepository lyricsRepository,
-    ICategoryRepository categoryRepository,
-    IContentUnitOfWork unitOfWork,
-    ContentI18n i18n
+    IContentUnitOfWork unitOfWork
 ) : ICommandHandler<AdminApproveLyricsSubmissionCommand, AdminApproveLyricsSubmissionResult>
 {
     /// <inheritdoc />
@@ -34,60 +24,25 @@ public class AdminApproveLyricsSubmissionHandler(
         CancellationToken cancellationToken
     )
     {
-        LyricsSubmissionEntity submission = await submissionRepository.GetByIdOrThrowAsync(
-            id: command.Id,
-            cancellationToken: cancellationToken
-        );
-
-        if (submission.Status != EnumSubmissionStatus.Pending)
-        {
-            throw i18n.Submission.NotPending();
-        }
-
-        LyricsEntity? existing = await lyricsRepository.GetBySlugAsync(
+        ApprovedSubmissionData approval = await approveService.PrepareAsync(
+            submissionId: command.Id,
             slug: command.Slug,
+            reviewerId: command.ReviewerId,
             cancellationToken: cancellationToken
-        );
-
-        if (existing is not null)
-        {
-            throw i18n.Lyrics.SlugAlreadyExists(slug: command.Slug);
-        }
-
-        // Community submissions never carry a customer/order — the submitter never picks a
-        // category — so approval always assigns the seeded default free category, via
-        // LyricsEntity.CreateFree, never CreatePaid.
-        CategoryEntity? category = await categoryRepository.GetDefaultLyricsCategoryAsync(
-            cancellationToken: cancellationToken
-        );
-
-        if (category is null)
-        {
-            throw i18n.Category.DefaultLyricsCategoryNotConfigured();
-        }
-
-        LyricsEntity lyrics = LyricsEntity.CreateFree(
-            id: Guid.NewGuid(),
-            categoryId: category.Id,
-            videoId: null,
-            songTitle: submission.SongTitle,
-            artistName: submission.ArtistName,
-            lyricsText: submission.LyricsText,
-            language: submission.Language,
-            slug: command.Slug,
-            authorId: command.ReviewerId
         );
 
         await unitOfWork.ExecuteInTransactionAsync(
             async ct =>
             {
-                await lyricsRepository.AddAsync(lyrics: lyrics, cancellationToken: ct);
-
-                submission.Approve(reviewedByUserId: command.ReviewerId, publishedLyricsId: lyrics.Id);
+                await lyricsRepository.AddAsync(lyrics: approval.Lyrics, cancellationToken: ct);
+                approval.Submission.Approve(
+                    reviewedByUserId: command.ReviewerId,
+                    publishedLyricsId: approval.Lyrics.Id
+                );
             },
             cancellationToken: cancellationToken
         );
 
-        return new AdminApproveLyricsSubmissionResult(IsSuccess: true, LyricsId: lyrics.Id);
+        return new AdminApproveLyricsSubmissionResult(IsSuccess: true, LyricsId: approval.Lyrics.Id);
     }
 }

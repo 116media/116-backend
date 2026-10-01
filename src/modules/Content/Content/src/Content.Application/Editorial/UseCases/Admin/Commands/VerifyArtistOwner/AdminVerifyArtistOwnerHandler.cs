@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
@@ -15,12 +15,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.VerifyArtis
 /// </summary>
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="artistDtoFactory">Builds artist projections with their avatars resolved.</param>
+/// <param name="artistDtoService">Builds artist projections with their avatars resolved.</param>
 /// <param name="timeProvider">Clock stamping the ownership verification time.</param>
 public class AdminVerifyArtistOwnerHandler(
     IArtistRepository artistRepository,
     IContentUnitOfWork unitOfWork,
-    IArtistDtoFactory artistDtoFactory,
+    IArtistDtoService artistDtoService,
     TimeProvider timeProvider
 ) : ICommandHandler<AdminVerifyArtistOwnerCommand, AdminVerifyArtistOwnerResult>
 {
@@ -38,7 +38,7 @@ public class AdminVerifyArtistOwnerHandler(
         artist.ClaimOwnership(userId: command.UserId, now: timeProvider.GetUtcNow());
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        var dto = await artistDtoFactory.CreateAsync(artist, ct: cancellationToken);
+        var dto = await artistDtoService.CreateAsync(artist, ct: cancellationToken);
         return new AdminVerifyArtistOwnerResult(Artist: dto);
     }
 }

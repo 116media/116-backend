@@ -1,11 +1,9 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Identity.Application.Adapters.SocialAuth;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
-using _116.Identity.Application.Session.Factories.Contracts;
+using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Shared.DTOs;
-using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Mappers;
-using _116.Identity.Application.User.Services;
+using _116.Identity.Application.User.Ports;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
 using _116.Storage.Contracts.Application.DTOs;
@@ -14,32 +12,21 @@ using MapsterMapper;
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 
 /// <summary>
-/// Handles the <see cref="PublicSocialLoginCommand" /> for social authentication. Verifies the
-/// provider token, maps verification failures to localized errors, and hands the verified identity to
-/// the auth factory.
+/// Handles the <see cref="PublicSocialLoginCommand" /> to authenticate a user through a social
+/// provider token and open a session.
 /// </summary>
-/// <param name="authFactory">Factory for handling social authentication logic.</param>
-/// <param name="sessionFactory">Factory for creating authentication sessions.</param>
-/// <param name="avatarService">Resolves and stores the user's avatar.</param>
-/// <param name="verifierFactory">Resolves the provider token verifier.</param>
-/// <param name="i18n">Identity module i18n facade for localized errors.</param>
+/// <param name="authService">Service verifying the token and resolving the user.</param>
+/// <param name="sessionService">Service opening the session and issuing the tokens.</param>
+/// <param name="avatarService">Service resolving the user's avatar.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicSocialLoginHandler(
-    IPublicSocialLoginAuthFactory authFactory,
-    ISessionFactory sessionFactory,
+    IPublicSocialLoginAuthService authService,
+    ISessionService sessionService,
     IAvatarService avatarService,
-    ISocialTokenVerifierFactory verifierFactory,
-    IdentityI18n i18n,
     IMapper mapper
 ) : ICommandHandler<PublicSocialLoginCommand, PublicSocialLoginResult>
 {
-    /// <summary>
-    /// Handles the social login command by verifying the provider token and finding or creating a
-    /// user account.
-    /// </summary>
-    /// <param name="command">The social login command containing the provider and its token.</param>
-    /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>A <see cref="PublicSocialLoginResult" /> containing authentication information.</returns>
+    /// <inheritdoc />
     public async Task<PublicSocialLoginResult> Handle(
         PublicSocialLoginCommand command,
         CancellationToken cancellationToken
@@ -47,38 +34,23 @@ public class PublicSocialLoginHandler(
     {
         EnumAuthProvider provider = new AuthProvider(value: command.Provider).Value;
 
-        // An unsupported provider or an unverifiable token surfaces as an exception mapped by the
-        // global pipeline; the adapters stay i18n-free.
-        ISocialTokenVerifier verifier = verifierFactory.For(provider: provider);
-        SocialTokenPayload payload = await verifier.VerifyAsync(
+        PublicSocialLoginAuthData authData = await authService.AuthenticateAsync(
+            provider: provider,
             idToken: command.IdToken,
             cancellationToken: cancellationToken
         );
 
-        if (!payload.EmailVerified || string.IsNullOrWhiteSpace(value: payload.Email))
-        {
-            throw i18n.User.ProviderEmailNotVerified();
-        }
-
-        // Authenticate or create user from the verified payload and get associated data
-        PublicSocialLoginAuthData authData = await authFactory.AuthenticateOrCreateAsync(
-            payload: payload,
-            provider: provider,
-            cancellationToken: cancellationToken
-        );
-
-        // Create authentication session with tokens
-        SessionResult sessionData = await sessionFactory.CreateSessionAsync(
+        SessionResult sessionData = await sessionService.CreateSessionAsync(
             user: authData.User,
             userPermissions: authData.UserPermissions,
             cancellationToken: cancellationToken
         );
 
-        // Fetch user avatar
         FileDto? avatarDto = await avatarService.GetAvatarAsync(
             avatarFileId: authData.User.AvatarFileId,
             cancellationToken: cancellationToken
         );
+
         var userDto = authData.User.ToUserResponseDto(
             mapper: mapper,
             roles: authData.User.UserRoles.ToRoleDtos(mapper),

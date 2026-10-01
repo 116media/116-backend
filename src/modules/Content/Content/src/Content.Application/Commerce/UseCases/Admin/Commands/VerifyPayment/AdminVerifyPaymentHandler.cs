@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Commerce.Factories;
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment.Contracts;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Repositories;
@@ -11,13 +11,13 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPaymen
 /// Handles the <see cref="AdminVerifyPaymentCommand" /> to verify an order payment and stamp content promotions.
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
-/// <param name="orderPaymentFactory">Shared factory for fetching and validating payment records.</param>
-/// <param name="verifyPaymentFactory">Factory for the full payment verification and content stamping flow.</param>
+/// <param name="orderPaymentService">Shared service for fetching and validating payment records.</param>
+/// <param name="verifyPaymentService">Service for the full payment verification and content stamping flow.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminVerifyPaymentHandler(
     IContentOrderRepository contentOrderRepository,
-    IOrderPaymentFactory orderPaymentFactory,
-    IVerifyPaymentFactory verifyPaymentFactory,
+    IOrderPaymentService orderPaymentService,
+    IVerifyPaymentService verifyPaymentService,
     ContentI18n i18n
 ) : ICommandHandler<AdminVerifyPaymentCommand, AdminVerifyPaymentResult>
 {
@@ -36,12 +36,12 @@ public class AdminVerifyPaymentHandler(
 
         if (order is not null)
         {
-            ContentPaymentEntity payment = await orderPaymentFactory.GetByOrderIdOrThrowAsync(
+            ContentPaymentEntity payment = await orderPaymentService.GetByOrderIdOrThrowAsync(
                 orderId: orderId,
                 ct: cancellationToken
             );
 
-            await verifyPaymentFactory.VerifyAsync(
+            await verifyPaymentService.VerifyAsync(
                 order: order,
                 payment: payment,
                 adminUserId: command.AdminUserId,

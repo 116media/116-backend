@@ -1,0 +1,252 @@
+using _116.Identity.Application.Auth.Ports;
+using _116.Identity.Application.Auth.Repositories;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp;
+using _116.Identity.Application.Shared.Persistence;
+using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.Events;
+using _116.Identity.Domain.ValueObjects;
+using _116.Identity.TestData.Factories;
+using _116.Identity.TestData.Mocks.Infrastructure;
+using _116.Identity.TestData.Mocks.Repositories;
+using _116.Identity.TestData.Mocks.Services;
+using _116.Tests.TestData.Constants;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Public.Commands.ResendOtp;
+
+/// <summary>
+/// Unit tests for <see cref="PublicResendOtpService"/>.
+/// </summary>
+public class PublicResendOtpServiceTests
+{
+    private readonly Mock<IOtpRepository> _otpRepositoryMock;
+    private readonly Mock<IOtpService> _otpServiceMock;
+    private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
+    private readonly PublicResendOtpService _service;
+
+    public PublicResendOtpServiceTests()
+    {
+        _otpRepositoryMock = MockOtpRepository.Create();
+        _otpServiceMock = MockOtpService.Create();
+        _unitOfWorkMock = MockIdentityUnitOfWork.Create();
+
+        _service = new PublicResendOtpService(
+            _otpRepositoryMock.Object,
+            _otpServiceMock.Object,
+            _unitOfWorkMock.Object
+        );
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task ResendOtpAsync_ShouldPersistTheHashedEntityNotThePlainCode()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        OtpPurpose purpose = EnumOtpPurpose.EmailVerification;
+        OtpEntity otp = OtpFactory.CreateForEmailVerification(userId);
+
+        _otpServiceMock.SetupCreateOtpReturns(otp, TestConstants.Otp.DefaultCode);
+
+        // Act
+        OtpCreationResult? result = await _service.ResendOtpAsync(userId, purpose, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.PlainCode.Should().Be(TestConstants.Otp.DefaultCode);
+        result.Otp.CodeHash.Should().NotBe(result.PlainCode);
+        _otpRepositoryMock.Verify(
+            x =>
+                x.AddAsync(
+                    It.Is<OtpEntity>(o => o == result.Otp && o.CodeHash != result.PlainCode),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task ResendOtpAsync_WhenTheResendCapIsReached_ShouldMintNothing()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        OtpPurpose purpose = EnumOtpPurpose.EmailVerification;
+
+        _otpRepositoryMock.SetupCountRecentOtps(userId, purpose, TestConstants.Otp.MaxResendsPerWindow);
+
+        // Act
+        OtpCreationResult? result = await _service.ResendOtpAsync(userId, purpose, CancellationToken.None);
+
+        // Assert
+        result.Should().BeNull();
+        _otpServiceMock.Verify(x => x.CreateOtp(It.IsAny<Guid>(), It.IsAny<EnumOtpPurpose>()), Times.Never);
+        _otpRepositoryMock.Verify(x => x.AddAsync(It.IsAny<OtpEntity>(), It.IsAny<CancellationToken>()), Times.Never);
+        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ResendOtpAsync_WithValidData_ShouldReturnNewOtp()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        OtpPurpose purpose = EnumOtpPurpose.PasswordReset;
+        OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
+
+        _otpServiceMock.SetupCreateOtpReturns(otp);
+
+        // Act
+        OtpCreationResult? result = await _service.ResendOtpAsync(userId, purpose, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Otp.UserId.Should().Be(userId);
+    }
+
+    [Fact]
+    public async Task ResendOtpAsync_ShouldInvalidateExistingOtps()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        OtpPurpose purpose = EnumOtpPurpose.EmailVerification;
+        OtpEntity otp = OtpFactory.CreateForEmailVerification(userId);
+
+        _otpServiceMock.SetupCreateOtpReturns(otp);
+
+        // Act
+        await _service.ResendOtpAsync(userId, purpose, CancellationToken.None);
+
+        // Assert
+        _otpRepositoryMock.Verify(
+            x => x.InvalidateExistingOtpsAsync(userId, purpose, It.IsAny<Guid?>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task ResendOtpAsync_ShouldCreateNewOtp()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        OtpPurpose purpose = EnumOtpPurpose.PasswordReset;
+        OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
+
+        _otpServiceMock.SetupCreateOtpReturns(otp);
+
+        // Act
+        await _service.ResendOtpAsync(userId, purpose, CancellationToken.None);
+
+        // Assert
+        _otpServiceMock.Verify(x => x.CreateOtp(userId, purpose), Times.Once);
+    }
+
+    [Fact]
+    public async Task ResendOtpAsync_ShouldAddNewOtpToRepository()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        OtpPurpose purpose = EnumOtpPurpose.PasswordReset;
+        OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
+
+        _otpServiceMock.SetupCreateOtpReturns(otp);
+
+        // Act
+        await _service.ResendOtpAsync(userId, purpose, CancellationToken.None);
+
+        // Assert
+        _otpRepositoryMock.Verify(x => x.AddAsync(otp, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ResendOtpAsync_ShouldCommitTransaction()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        OtpPurpose purpose = EnumOtpPurpose.PasswordReset;
+        OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
+
+        _otpServiceMock.SetupCreateOtpReturns(otp);
+
+        // Act
+        await _service.ResendOtpAsync(userId, purpose, CancellationToken.None);
+
+        // Assert
+        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(EnumOtpPurpose.EmailVerification)]
+    [InlineData(EnumOtpPurpose.PasswordReset)]
+    public async Task ResendOtpAsync_WithDifferentPurposes_ShouldWork(EnumOtpPurpose purposeEnum)
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        OtpPurpose purpose = purposeEnum;
+        OtpEntity otp =
+            purposeEnum == EnumOtpPurpose.EmailVerification
+                ? OtpFactory.CreateForEmailVerification(userId)
+                : OtpFactory.CreateForPasswordReset(userId);
+
+        _otpServiceMock.SetupCreateOtpReturns(otp);
+
+        // Act
+        OtpCreationResult? result = await _service.ResendOtpAsync(userId, purpose, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Otp.UserId.Should().Be(userId);
+        result.Otp.Purpose.Value.Should().Be(purposeEnum);
+    }
+
+    #endregion
+
+    #region Cancellation Token Tests
+
+    [Fact]
+    public async Task ResendOtpAsync_WithCancellationToken_ShouldPassToAllDependencies()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        OtpPurpose purpose = EnumOtpPurpose.PasswordReset;
+        OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
+        using CancellationTokenSource cts = new();
+
+        _otpServiceMock.SetupCreateOtpReturns(otp);
+
+        // Act
+        await _service.ResendOtpAsync(userId, purpose, cts.Token);
+
+        // Assert
+        _otpRepositoryMock.Verify(
+            x => x.InvalidateExistingOtpsAsync(userId, purpose, It.IsAny<Guid?>(), cts.Token),
+            Times.Once
+        );
+        _otpRepositoryMock.Verify(x => x.AddAsync(otp, cts.Token), Times.Once);
+        _unitOfWorkMock.Verify(x => x.CommitAsync(cts.Token), Times.Once);
+    }
+
+    #endregion
+
+    [Fact]
+    public async Task ResendOtpAsync_ShouldRaiseTheIssuedEventCarryingThePlainCode()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        OtpPurpose purpose = EnumOtpPurpose.EmailVerification;
+        OtpEntity otp = OtpFactory.CreateForEmailVerification(userId);
+
+        _otpServiceMock.SetupCreateOtpReturns(otp, TestConstants.Otp.DefaultCode);
+
+        // Act
+        await _service.ResendOtpAsync(userId, purpose, CancellationToken.None);
+
+        // Assert
+        OtpIssuedEvent issued = otp.DomainEvents.OfType<OtpIssuedEvent>().Should().ContainSingle().Subject;
+
+        issued.PlainCode.Should().Be(TestConstants.Otp.DefaultCode);
+        issued.UserId.Should().Be(userId);
+    }
+}

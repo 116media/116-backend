@@ -38,9 +38,12 @@ public class PublicSubmitLyricsHandlerTests
         _submissionRepositoryMock = MockLyricsSubmissionRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new PublicSubmitLyricsHandler(
-            _artistRepositoryMock.Object,
-            _categoryRepositoryMock.Object,
-            _lyricsRepositoryMock.Object,
+            new PublicSubmitLyricsService(
+                _artistRepositoryMock.Object,
+                _categoryRepositoryMock.Object,
+                _lyricsRepositoryMock.Object,
+                _i18n
+            ),
             _submissionRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _i18n

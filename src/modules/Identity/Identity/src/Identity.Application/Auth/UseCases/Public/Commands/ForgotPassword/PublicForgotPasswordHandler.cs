@@ -1,6 +1,5 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.BuildingBlocks.Presentation.Constants;
-using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword.Contracts;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
@@ -12,11 +11,11 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword
 /// <summary>
 /// Handles the <see cref="PublicForgotPasswordCommand" /> to initiate password reset for existing users.
 /// </summary>
-/// <param name="otpFactory">Factory for handling forgot password OTP creation.</param>
+/// <param name="otpService">Service for handling forgot password OTP creation.</param>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="logger">Logger recording why a request was refused, since the caller is not told.</param>
 public class PublicForgotPasswordHandler(
-    IPublicForgotPasswordOtpFactory otpFactory,
+    IPublicForgotPasswordOtpService otpService,
     IAuthRepository authRepository,
     ILogger<PublicForgotPasswordHandler> logger
 ) : ICommandHandler<PublicForgotPasswordCommand, PublicForgotPasswordResult>
@@ -50,7 +49,7 @@ public class PublicForgotPasswordHandler(
             return new PublicForgotPasswordResult(IsSuccess: true, Email: command.Email);
         }
 
-        await otpFactory.CreatePasswordResetOtpAsync(userId: user!.Id, cancellationToken: cancellationToken);
+        await otpService.CreatePasswordResetOtpAsync(userId: user!.Id, cancellationToken: cancellationToken);
 
         return new PublicForgotPasswordResult(IsSuccess: true, Email: command.Email);
     }

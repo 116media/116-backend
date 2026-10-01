@@ -1,30 +1,24 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Editorial.Factories;
-using _116.Content.Application.Shared.Errors.Facade;
-using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Editorial.Services;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo.Contracts;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Content.Domain.Enums;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo;
 
 /// <summary>
-/// Handles the <see cref="AdminUpdateVideoCommand" /> to update all editable video fields.
-/// Allowed when the video status is <c>Draft</c>, <c>PendingPayment</c>, <c>PendingReview</c>,
-/// or <c>Rejected</c>.
+/// Handles the <see cref="AdminUpdateVideoCommand" /> to update a video.
 /// </summary>
-/// <param name="categoryRepository">Repository for category data access operations.</param>
-/// <param name="videoRepository">Repository for video data access operations.</param>
+/// <param name="updateVideoService">Service resolving and applying the update.</param>
+/// <param name="videoRepository">Repository reloading the committed video.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
-/// <param name="videoDtoFactory">Builds video projections with their thumbnails resolved.</param>
+/// <param name="videoDtoService">Service assembling the video detail.</param>
 public class AdminUpdateVideoHandler(
-    ICategoryRepository categoryRepository,
+    IAdminUpdateVideoService updateVideoService,
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
-    IVideoDtoFactory videoDtoFactory,
-    ContentI18n i18n
+    IVideoDtoService videoDtoService
 ) : ICommandHandler<AdminUpdateVideoCommand, AdminUpdateVideoResult>
 {
     /// <inheritdoc />
@@ -33,42 +27,14 @@ public class AdminUpdateVideoHandler(
         CancellationToken cancellationToken
     )
     {
-        Guid id = Guid.Parse(command.Id);
-
-        VideoEntity video = await videoRepository.GetByIdOrThrowAsync(id: id, cancellationToken: cancellationToken);
-
-        await categoryRepository.GetByIdOrThrowAsync(id: command.CategoryId, cancellationToken: cancellationToken);
-
-        if (command.Slug != video.Slug)
-        {
-            VideoEntity? slugConflict = await videoRepository.GetBySlugAsync(
-                slug: command.Slug,
-                cancellationToken: cancellationToken
-            );
-
-            if (slugConflict is not null && slugConflict.Id != video.Id)
-            {
-                throw i18n.Video.SlugAlreadyExists(slug: command.Slug);
-            }
-        }
-
-        video.Recategorize(categoryId: command.CategoryId);
-        video.Retitle(title: command.Title, slug: command.Slug);
-        video.ReviseDescription(description: command.Description);
-        video.AssignCommission(
-            customerId: command.CustomerId,
-            orderItemId: command.OrderItemId,
-            socialBoost: command.SocialBoost
-        );
-        video.ReviseSeo(metaTitle: command.MetaTitle, metaDescription: command.MetaDescription);
+        VideoEntity video = await updateVideoService.UpdateAsync(command, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         VideoEntity updated = await videoRepository.GetByIdOrThrowAsync(
             id: video.Id,
             cancellationToken: cancellationToken
         );
-
-        var dto = await videoDtoFactory.CreateDetailAsync(updated, cancellationToken);
+        var dto = await videoDtoService.CreateDetailAsync(updated, cancellationToken);
         return new AdminUpdateVideoResult(Video: dto);
     }
 }

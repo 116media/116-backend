@@ -33,7 +33,7 @@ public class AdminRemovePackageSlotHandlerTests : BaseContentHandlerTest
         _handler = new AdminRemovePackageSlotHandler(
             _packageRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            CreatePackageDtoFactory(),
+            CreatePackageDtoService(),
             TestErrorsFactory.CreateContentI18n()
         );
     }

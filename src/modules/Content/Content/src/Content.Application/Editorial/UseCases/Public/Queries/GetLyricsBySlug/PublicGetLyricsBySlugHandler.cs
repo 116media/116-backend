@@ -1,39 +1,26 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBySlug.Contracts;
 using _116.Content.Application.Shared.Errors.Facade;
-using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Identity.Contracts.Application.Services;
-using _116.Storage.Contracts.Application.Services;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBySlug;
 
 /// <summary>
-/// Handles the <see cref="PublicGetLyricsBySlugQuery" /> to retrieve a lyrics page by its slug.
+/// Handles the <see cref="PublicGetLyricsBySlugQuery" /> to serve a published lyrics page with
+/// its navigation shell.
 /// </summary>
-/// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
-/// <param name="videoRepository">Repository for video data access operations, used to resolve the linked video's slug.</param>
-/// <param name="artistRepository">Repository for artist profile data access operations, used to resolve the linked artist's slug.</param>
-/// <param name="albumRepository">Repository for album data access operations, used to resolve the linked album's name and sibling tracks.</param>
-/// <param name="streamingLinkRepository">Repository for resolving curated streaming platform links.</param>
-/// <param name="mapper">The Mapster mapper used for tags.</param>
-/// <param name="userLookup">Service for resolving author profiles from the Identity module.</param>
-/// <param name="fileStorage">Storage's file contract.</param>
+/// <param name="lyricsRepository">Repository resolving the lyrics and the like state.</param>
+/// <param name="pageService">Service assembling the page links.</param>
+/// <param name="lyricsDtoService">Service assembling the public lyrics detail.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetLyricsBySlugHandler(
     ILyricsRepository lyricsRepository,
-    IVideoRepository videoRepository,
-    IArtistRepository artistRepository,
-    IAlbumRepository albumRepository,
-    IStreamingLinkRepository streamingLinkRepository,
-    IMapper mapper,
-    IUserLookupService userLookup,
-    IFileStorageService fileStorage,
-    ContentI18n i18n,
-    IContentLookupFactory contentLookupFactory
+    IPublicLyricsPageService pageService,
+    ILyricsDtoService lyricsDtoService,
+    ContentI18n i18n
 ) : IQueryHandler<PublicGetLyricsBySlugQuery, PublicGetLyricsBySlugResult>
 {
     /// <inheritdoc />
@@ -52,65 +39,10 @@ public class PublicGetLyricsBySlugHandler(
             throw i18n.Lyrics.NotFound(id: Guid.Empty);
         }
 
-        string? videoSlug = null;
-        if (lyrics.VideoId is Guid videoId)
-        {
-            VideoEntity? video = await videoRepository.GetByIdAsync(id: videoId, cancellationToken: cancellationToken);
-            videoSlug = video?.Slug.Value;
-        }
-
-        string? artistSlug = null;
-        if (lyrics.ArtistId is Guid artistId)
-        {
-            ArtistEntity? artist = await artistRepository.GetByIdAsync(
-                id: artistId,
-                cancellationToken: cancellationToken
-            );
-            artistSlug = artist?.Slug.Value;
-        }
-
-        IReadOnlyList<AlbumTrackDto> albumTracks;
-        IReadOnlyList<StreamingLinkDto> streamingLinks;
-
-        if (lyrics.AlbumId is Guid albumId)
-        {
-            AlbumEntity? album = await albumRepository.GetByIdAsync(id: albumId, cancellationToken: cancellationToken);
-
-            List<LyricsEntity> siblingTracks = await lyricsRepository.GetPublishedByAlbumAsync(
-                albumId: albumId,
-                excludeLyricsId: lyrics.Id,
-                cancellationToken: cancellationToken
-            );
-            albumTracks = siblingTracks
-                .Select(track => new AlbumTrackDto(Slug: track.Slug, SongTitle: track.SongTitle))
-                .ToList();
-
-            IReadOnlyDictionary<EnumStreamingPlatform, string> curated = await streamingLinkRepository.GetByAlbumAsync(
-                albumId: albumId,
-                cancellationToken: cancellationToken
-            );
-            streamingLinks = StreamingLinkFactory
-                .CreateStreamingLinks(
-                    artistName: lyrics.ArtistName,
-                    releaseName: album?.Name ?? lyrics.SongTitle,
-                    curated: curated
-                )
-                .Select(link => new StreamingLinkDto(Platform: link.Platform.ToString(), Url: link.Url))
-                .ToList();
-        }
-        else
-        {
-            albumTracks = [];
-
-            IReadOnlyDictionary<EnumStreamingPlatform, string> curated = await streamingLinkRepository.GetByLyricsAsync(
-                lyricsId: lyrics.Id,
-                cancellationToken: cancellationToken
-            );
-            streamingLinks = StreamingLinkFactory
-                .CreateStreamingLinks(artistName: lyrics.ArtistName, releaseName: lyrics.SongTitle, curated: curated)
-                .Select(link => new StreamingLinkDto(Platform: link.Platform.ToString(), Url: link.Url))
-                .ToList();
-        }
+        LyricsPageLinks links = await pageService.ResolveLinksAsync(
+            lyrics: lyrics,
+            cancellationToken: cancellationToken
+        );
 
         bool isLiked =
             query.CurrentUserId is Guid currentUserId
@@ -120,20 +52,13 @@ public class PublicGetLyricsBySlugHandler(
                 cancellationToken: cancellationToken
             );
 
-        var dto = await lyrics.ToPublicLyricsDetailDtoAsync(
-            await contentLookupFactory.ResolveForLyricsAsync([lyrics], cancellationToken),
-            mapper,
-            userLookup,
-            fileStorage,
-            cancellationToken,
-            isLiked
-        );
+        var dto = await lyricsDtoService.CreatePublicDetailAsync(lyrics, isLiked, cancellationToken);
         return new PublicGetLyricsBySlugResult(
             Lyrics: dto,
-            VideoSlug: videoSlug,
-            ArtistSlug: artistSlug,
-            AlbumTracks: albumTracks,
-            StreamingLinks: streamingLinks
+            VideoSlug: links.VideoSlug,
+            ArtistSlug: links.ArtistSlug,
+            AlbumTracks: links.AlbumTracks,
+            StreamingLinks: links.StreamingLinks
         );
     }
 }

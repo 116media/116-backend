@@ -39,11 +39,14 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminCreateCategoryHandler(
-            _contentTypeRepositoryMock.Object,
+            new AdminCreateCategoryService(
+                _contentTypeRepositoryMock.Object,
+                _categoryRepositoryMock.Object,
+                TestErrorsFactory.CreateContentI18n()
+            ),
             _categoryRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            CreateCategoryDtoFactory(_fileStorageMock.Object),
-            TestErrorsFactory.CreateContentI18n()
+            CreateCategoryDtoService(_fileStorageMock.Object)
         );
     }
 

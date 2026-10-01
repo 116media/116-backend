@@ -1,6 +1,6 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Interactions.Factories;
 using _116.Content.Application.Interactions.Persistence;
+using _116.Content.Application.Interactions.Services;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
@@ -15,7 +15,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetPlayl
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetPlaylistByIdHandler(
     IPlaylistRepository playlistRepository,
-    IPlaylistDtoFactory playlistDtoFactory,
+    IPlaylistDtoService playlistDtoService,
     ContentI18n i18n
 ) : IQueryHandler<PublicGetPlaylistByIdQuery, PublicGetPlaylistByIdResult>
 {
@@ -37,7 +37,7 @@ public class PublicGetPlaylistByIdHandler(
                 throw i18n.Playlist.NotOwner();
             }
 
-            var dto = await playlistDtoFactory.CreateDetailAsync(playlist, cancellationToken);
+            var dto = await playlistDtoService.CreateDetailAsync(playlist, cancellationToken);
             return new PublicGetPlaylistByIdResult(Playlist: dto);
         }
 

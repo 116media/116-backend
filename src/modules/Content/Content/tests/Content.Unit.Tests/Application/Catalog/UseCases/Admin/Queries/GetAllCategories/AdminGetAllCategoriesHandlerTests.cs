@@ -28,7 +28,7 @@ public class AdminGetAllCategoriesHandlerTests : BaseContentHandlerTest
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminGetAllCategoriesHandler(
             _categoryRepositoryMock.Object,
-            CreateCategoryDtoFactory(_fileStorageMock.Object)
+            CreateCategoryDtoService(_fileStorageMock.Object)
         );
     }
 

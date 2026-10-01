@@ -1,9 +1,10 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtist;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.TestData;
 using _116.Content.TestData.Factories;
 using _116.Content.TestData.Mocks.Infrastructure;
 using _116.Content.TestData.Mocks.Repositories;
@@ -23,7 +24,7 @@ namespace _116.Content.Unit.Tests.Application.Editorial.UseCases.Admin.Commands.
 /// <summary>
 /// Unit tests for <see cref="AdminCreateArtistHandler"/>.
 /// </summary>
-public class AdminCreateArtistHandlerTests
+public class AdminCreateArtistHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IArtistRepository> _artistRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
@@ -35,11 +36,13 @@ public class AdminCreateArtistHandlerTests
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminCreateArtistHandler(
-            _artistRepositoryMock.Object,
+            new AdminCreateArtistService(
+                _artistRepositoryMock.Object,
+                TestErrorsFactory.CreateContentI18n(),
+                TimeProvider.System
+            ),
             _unitOfWorkMock.Object,
-            new ArtistDtoFactory(fileStorageMock.Object),
-            TestErrorsFactory.CreateContentI18n(),
-            TimeProvider.System
+            new ArtistDtoService(fileStorageMock.Object)
         );
     }
 

@@ -1,13 +1,11 @@
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.AssignPermissionToRole;
-using _116.Identity.Application.Shared.Errors.Facade;
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.AssignPermissionToRole.Contracts;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Storage.TestData.Mocks.Infrastructure;
 using _116.Tests.TestData;
 using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
@@ -17,81 +15,94 @@ using Xunit;
 namespace _116.Identity.Unit.Tests.Application.Roles.UseCases.Admin.Commands.AssignPermissionToRole;
 
 /// <summary>
-/// Unit tests for <see cref="AdminAssignPermissionToRoleHandler"/>.
+/// Unit tests for <see cref="AdminAssignPermissionToRoleHandler"/>: the grant call, the commit,
+/// the token bump and the response. The gates are covered by
+/// <c>AdminAssignPermissionToRoleServiceTests</c>.
 /// </summary>
 public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
 {
-    private readonly Mock<IRoleRepository> _roleRepositoryMock;
-    private readonly Mock<IPermissionRepository> _permissionRepositoryMock;
+    private readonly Mock<IAdminAssignPermissionToRoleService> _assignPermissionServiceMock;
     private readonly Mock<IUserTokenStateRepository> _tokenStateRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
-    private readonly IdentityI18n _userErrors;
     private readonly AdminAssignPermissionToRoleHandler _handler;
 
     public AdminAssignPermissionToRoleHandlerTests()
     {
-        _roleRepositoryMock = MockRoleRepository.Create();
-        _permissionRepositoryMock = MockPermissionRepository.Create();
+        _assignPermissionServiceMock = new Mock<IAdminAssignPermissionToRoleService>();
         _tokenStateRepositoryMock = new Mock<IUserTokenStateRepository>();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
-        _userErrors = TestErrorsFactory.CreateIdentityI18n();
 
         _handler = new AdminAssignPermissionToRoleHandler(
-            _roleRepositoryMock.Object,
-            _permissionRepositoryMock.Object,
+            _assignPermissionServiceMock.Object,
             _tokenStateRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            Mapper,
-            _userErrors
+            Mapper
         );
+    }
+
+    private (RoleEntity Role, PermissionEntity Permission, AdminAssignPermissionToRoleCommand Command) ArrangeGrant()
+    {
+        PermissionEntity permission = PermissionFactory.CreateDefault();
+        RoleEntity role = RoleFactory.CreateDefault();
+        role.GrantPermission(permission.Id);
+
+        _assignPermissionServiceMock
+            .Setup(x => x.GrantAsync(role.Id, permission.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PermissionGrantData(Role: role, Permission: permission));
+
+        return (role, permission, new AdminAssignPermissionToRoleCommand(role.Id.ToString(), permission.Id));
     }
 
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WithValidRoleAndPermission_ShouldAssignAndReturnResult()
+    public async Task Handle_WithValidRequest_ShouldReturnTheRoleWithTheFreshPermission()
     {
         // Arrange
-        PermissionEntity permission = PermissionFactory.CreateDefault();
-
-        RoleEntity role = RoleFactory.CreateDefault();
-
-        AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id.ToString(), PermissionId: permission.Id);
-
-        _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
-        _permissionRepositoryMock.SetupGetByIdOrThrow(permission);
+        (RoleEntity role, PermissionEntity permission, AdminAssignPermissionToRoleCommand command) = ArrangeGrant();
 
         // Act
         AdminAssignPermissionToRoleResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.Role.Id.Should().Be(role.Id);
-        role.HasPermission(permission.Id).Should().BeTrue();
-        _unitOfWorkMock.VerifyCommitCalled();
-        _tokenStateRepositoryMock.Verify(
-            x => x.BumpTokenVersionForRoleUsersAsync(role.Id, It.IsAny<CancellationToken>()),
-            Times.Once
-        );
+        result.Role.Permissions.Should().ContainSingle(p => p.Id == permission.Id && p.Resource == permission.Resource);
     }
 
     [Fact]
-    public async Task Handle_WithValidCommand_ShouldGrantThroughTheRoleAggregate()
+    public async Task Handle_ShouldCommitUnitOfWork()
     {
         // Arrange
-        PermissionEntity permission = PermissionFactory.CreateDefault();
-
-        RoleEntity role = RoleFactory.CreateDefault();
-
-        AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id.ToString(), PermissionId: permission.Id);
-
-        _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
-        _permissionRepositoryMock.SetupGetByIdOrThrow(permission);
+        (_, _, AdminAssignPermissionToRoleCommand command) = ArrangeGrant();
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        role.RolePermissions.Should().ContainSingle(rp => rp.RoleId == role.Id && rp.PermissionId == permission.Id);
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_ShouldBumpTheRoleHoldersTokenVersionAfterCommitting()
+    {
+        // Arrange
+        (RoleEntity role, _, AdminAssignPermissionToRoleCommand command) = ArrangeGrant();
+
+        var callOrder = new List<string>();
+        _unitOfWorkMock
+            .Setup(x => x.CommitAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => callOrder.Add("commit"))
+            .ReturnsAsync(1);
+        _tokenStateRepositoryMock
+            .Setup(x => x.BumpTokenVersionForRoleUsersAsync(role.Id, It.IsAny<CancellationToken>()))
+            .Callback(() => callOrder.Add("bump"))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        callOrder.Should().Equal("commit", "bump");
     }
 
     #endregion
@@ -99,176 +110,21 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
     #region Failure Cases
 
     [Fact]
-    public async Task Handle_WhenRoleNotFound_ShouldThrowNotFoundException()
+    public async Task Handle_WhenTheGrantIsRefused_ShouldNotCommitOrBump()
     {
         // Arrange
-        var nonExistentRoleId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
         var permissionId = Guid.NewGuid();
-        AdminAssignPermissionToRoleCommand command = new(
-            RoleId: nonExistentRoleId.ToString(),
-            PermissionId: permissionId
-        );
-
-        _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrowNotFound(nonExistentRoleId);
+        _assignPermissionServiceMock
+            .Setup(x => x.GrantAsync(roleId, permissionId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(TestErrorsFactory.CreateIdentityI18n().User.PermissionAlreadyAssignedToRole());
 
         // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<NotFoundException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenPermissionNotFound_ShouldThrowNotFoundException()
-    {
-        // Arrange
-        RoleEntity role = RoleFactory.CreateDefault();
-
-        var nonExistentPermissionId = Guid.NewGuid();
-        AdminAssignPermissionToRoleCommand command = new(
-            RoleId: role.Id.ToString(),
-            PermissionId: nonExistentPermissionId
-        );
-
-        _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
-        _permissionRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentPermissionId);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<NotFoundException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenRoleIsInactive_ShouldThrowBadRequestException()
-    {
-        // Arrange
-        PermissionEntity permission = PermissionFactory.CreateDefault();
-
-        RoleEntity inactiveRole = RoleFactory.CreateInactive();
-
-        AdminAssignPermissionToRoleCommand command = new(
-            RoleId: inactiveRole.Id.ToString(),
-            PermissionId: permission.Id
-        );
-
-        _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(inactiveRole);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenRoleIsDeleted_ShouldThrowBadRequestException()
-    {
-        // Arrange
-        PermissionEntity permission = PermissionFactory.CreateDefault();
-
-        RoleEntity deletedRole = RoleFactory.CreateDeleted();
-
-        AdminAssignPermissionToRoleCommand command = new(
-            RoleId: deletedRole.Id.ToString(),
-            PermissionId: permission.Id
-        );
-
-        _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(deletedRole);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenPermissionIsInactive_ShouldThrowBadRequestException()
-    {
-        // Arrange
-        PermissionEntity inactivePermission = PermissionFactory.CreateDefault();
-        inactivePermission.Deactivate();
-
-        RoleEntity role = RoleFactory.CreateDefault();
-
-        AdminAssignPermissionToRoleCommand command = new(
-            RoleId: role.Id.ToString(),
-            PermissionId: inactivePermission.Id
-        );
-
-        _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
-        _permissionRepositoryMock.SetupGetByIdOrThrow(inactivePermission);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenPermissionIsDeleted_ShouldThrowBadRequestException()
-    {
-        // Arrange
-        PermissionEntity deletedPermission = PermissionFactory.CreateDefault();
-        deletedPermission.SoftDelete(now: DateTime.UtcNow);
-
-        RoleEntity role = RoleFactory.CreateDefault();
-
-        AdminAssignPermissionToRoleCommand command = new(
-            RoleId: role.Id.ToString(),
-            PermissionId: deletedPermission.Id
-        );
-
-        _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
-        _permissionRepositoryMock.SetupGetByIdOrThrow(deletedPermission);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenPermissionAlreadyAssigned_ShouldThrowConflictException()
-    {
-        // Arrange
-        PermissionEntity permission = PermissionFactory.CreateDefault();
-
-        RoleEntity role = RoleFactory.CreateDefault();
-        role.GrantPermission(permission.Id);
-
-        AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id.ToString(), PermissionId: permission.Id);
-
-        _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
-        _permissionRepositoryMock.SetupGetByIdOrThrow(permission);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenPermissionAlreadyAssigned_ShouldNotCommit()
-    {
-        // Arrange
-        PermissionEntity permission = PermissionFactory.CreateDefault();
-
-        RoleEntity role = RoleFactory.CreateDefault();
-        role.GrantPermission(permission.Id);
-
-        AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id.ToString(), PermissionId: permission.Id);
-
-        _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
-        _permissionRepositoryMock.SetupGetByIdOrThrow(permission);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+        Func<Task> act = async () =>
+            await _handler.Handle(
+                new AdminAssignPermissionToRoleCommand(roleId.ToString(), permissionId),
+                CancellationToken.None
+            );
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
@@ -281,30 +137,21 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
 
     #endregion
 
-    #region Edge Cases
+    #region Cancellation Token Tests
 
     [Fact]
-    public async Task Handle_WithCancellationToken_ShouldPassToRepositories()
+    public async Task Handle_WithCancellationToken_ShouldPassToTheServiceAndUnitOfWork()
     {
         // Arrange
-        PermissionEntity permission = PermissionFactory.CreateDefault();
-
-        RoleEntity role = RoleFactory.CreateDefault();
-
-        AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id.ToString(), PermissionId: permission.Id);
-
+        (RoleEntity role, PermissionEntity permission, AdminAssignPermissionToRoleCommand command) = ArrangeGrant();
         using CancellationTokenSource cts = new();
-        _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
-        _permissionRepositoryMock.SetupGetByIdOrThrow(permission);
 
         // Act
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _roleRepositoryMock.Verify(
-            x => x.GetRoleByIdWithPermissionsOrThrowAsync(role.Id, cts.Token),
-            Times.AtLeastOnce
-        );
+        _assignPermissionServiceMock.Verify(x => x.GrantAsync(role.Id, permission.Id, cts.Token), Times.Once);
+        _unitOfWorkMock.Verify(x => x.CommitAsync(cts.Token), Times.Once);
     }
 
     #endregion

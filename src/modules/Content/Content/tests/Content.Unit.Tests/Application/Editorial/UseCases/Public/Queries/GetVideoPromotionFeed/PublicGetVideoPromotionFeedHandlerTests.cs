@@ -1,4 +1,4 @@
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoPromotionFeed;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoPromotionFeed.V1;
 using _116.Content.Application.Shared.DTOs;
@@ -32,13 +32,13 @@ public class PublicGetVideoPromotionFeedHandlerTests : BaseContentHandlerTest
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new PublicGetVideoPromotionFeedHandler(
             _videoRepositoryMock.Object,
-            new VideoDtoFactory(
+            new VideoDtoService(
                 Mapper,
                 _fileStorageMock.Object,
                 _videoRepositoryMock.Object,
-                CreateContentLookupFactory()
+                CreateContentLookupService()
             ),
-            CreateContentLookupFactory()
+            CreateContentLookupService()
         );
     }
 

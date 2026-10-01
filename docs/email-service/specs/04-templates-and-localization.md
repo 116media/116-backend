@@ -34,7 +34,7 @@ rules in this spec apply to all of them unchanged.
 
 ## Rendering
 
-`Application/Templates/EmailTemplateRenderer.cs` (registered behind
+`Application/Shared/Templates/Emails/EmailTemplateRenderer.cs` (registered behind
 `IEmailTemplateRenderer`):
 
 ```csharp
@@ -66,7 +66,7 @@ public record RenderedEmail(string Subject, string HtmlBody, string TextBody);
 Follow the `XxxErrorMessage` + `.resx` triple exactly:
 
 ```text
-Application/Templates/Messages/
+Application/Shared/Templates/Emails/Messages/
 ├── EmailTemplateMessage.cs        # localizer facade, one method per template part
 ├── EmailTemplateMessage.resx      # neutral (en source of truth)
 ├── EmailTemplateMessage.en.resx

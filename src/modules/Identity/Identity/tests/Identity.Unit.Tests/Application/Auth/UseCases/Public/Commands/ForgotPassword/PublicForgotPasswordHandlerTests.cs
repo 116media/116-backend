@@ -1,4 +1,4 @@
-using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword.Contracts;
 using _116.Identity.Application.Shared.Repositories;
@@ -20,17 +20,17 @@ namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Public.Commands.For
 public class PublicForgotPasswordHandlerTests
 {
     private readonly Mock<ILogger<PublicForgotPasswordHandler>> _loggerMock = new();
-    private readonly Mock<IPublicForgotPasswordOtpFactory> _otpFactoryMock;
+    private readonly Mock<IPublicForgotPasswordOtpService> _otpServiceMock;
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly PublicForgotPasswordHandler _handler;
 
     public PublicForgotPasswordHandlerTests()
     {
-        _otpFactoryMock = new Mock<IPublicForgotPasswordOtpFactory>();
+        _otpServiceMock = new Mock<IPublicForgotPasswordOtpService>();
         _authRepositoryMock = MockAuthRepository.Create();
 
         _handler = new PublicForgotPasswordHandler(
-            _otpFactoryMock.Object,
+            _otpServiceMock.Object,
             _authRepositoryMock.Object,
             _loggerMock.Object
         );
@@ -49,7 +49,7 @@ public class PublicForgotPasswordHandlerTests
 
         _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _otpFactoryMock
+        _otpServiceMock
             .Setup(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new OtpCreationResult(otp, TestConstants.Otp.DefaultCode));
 
@@ -70,7 +70,7 @@ public class PublicForgotPasswordHandlerTests
 
         _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _otpFactoryMock
+        _otpServiceMock
             .Setup(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(
                 new OtpCreationResult(OtpFactory.CreateForPasswordReset(user.Id), TestConstants.Otp.DefaultCode)
@@ -94,7 +94,7 @@ public class PublicForgotPasswordHandlerTests
 
         _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _otpFactoryMock
+        _otpServiceMock
             .Setup(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(
                 new OtpCreationResult(OtpFactory.CreateForPasswordReset(user.Id), TestConstants.Otp.DefaultCode)
@@ -104,7 +104,7 @@ public class PublicForgotPasswordHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _otpFactoryMock.Verify(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()), Times.Once);
+        _otpServiceMock.Verify(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -137,7 +137,7 @@ public class PublicForgotPasswordHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _otpFactoryMock.Verify(
+        _otpServiceMock.Verify(
             x => x.CreatePasswordResetOtpAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
@@ -200,7 +200,7 @@ public class PublicForgotPasswordHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _otpFactoryMock.Verify(
+        _otpServiceMock.Verify(
             x => x.CreatePasswordResetOtpAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
@@ -257,7 +257,7 @@ public class PublicForgotPasswordHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _otpFactoryMock.Verify(
+        _otpServiceMock.Verify(
             x => x.CreatePasswordResetOtpAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
@@ -295,7 +295,7 @@ public class PublicForgotPasswordHandlerTests
 
         _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
-        _otpFactoryMock
+        _otpServiceMock
             .Setup(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(
                 new OtpCreationResult(OtpFactory.CreateForPasswordReset(user.Id), TestConstants.Otp.DefaultCode)
@@ -305,7 +305,7 @@ public class PublicForgotPasswordHandlerTests
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _otpFactoryMock.Verify(x => x.CreatePasswordResetOtpAsync(user.Id, cts.Token), Times.Once);
+        _otpServiceMock.Verify(x => x.CreatePasswordResetOtpAsync(user.Id, cts.Token), Times.Once);
     }
 
     #endregion

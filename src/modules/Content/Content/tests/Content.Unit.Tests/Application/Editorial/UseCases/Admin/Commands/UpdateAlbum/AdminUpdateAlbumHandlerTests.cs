@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateAlbum;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -36,7 +36,7 @@ public class AdminUpdateAlbumHandlerTests
         _handler = new AdminUpdateAlbumHandler(
             _albumRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            new AlbumDtoFactory(fileStorageMock.Object)
+            new AlbumDtoService(fileStorageMock.Object)
         );
     }
 

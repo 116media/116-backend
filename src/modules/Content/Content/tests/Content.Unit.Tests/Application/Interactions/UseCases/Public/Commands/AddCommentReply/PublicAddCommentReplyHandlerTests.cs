@@ -1,4 +1,5 @@
 using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Application.Interactions.Services;
 using _116.Content.Application.Interactions.UseCases.Public.Commands.AddCommentReply;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -42,8 +43,7 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
         _handler = new PublicAddCommentReplyHandler(
             _articleCommentRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _userLookupMock.Object,
-            _fileStorageMock.Object,
+            new ArticleCommentDtoService(_userLookupMock.Object, _fileStorageMock.Object),
             TestErrorsFactory.CreateContentI18n()
         );
     }

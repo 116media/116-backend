@@ -36,7 +36,7 @@ public class PublicGetOwnArticleBookmarksHandlerTests : BaseContentHandlerTest
         _handler = new PublicGetOwnArticleBookmarksHandler(
             _articleInteractionRepositoryMock.Object,
             _fileStorageMock.Object,
-            CreateContentLookupFactory()
+            CreateContentLookupService()
         );
     }
 

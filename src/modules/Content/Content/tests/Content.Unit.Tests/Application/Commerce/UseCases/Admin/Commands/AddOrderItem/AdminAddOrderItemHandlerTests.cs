@@ -5,8 +5,8 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Mocks.Factories;
 using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
 using _116.Identity.TestData.Mocks.Repositories;
 using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
@@ -21,16 +21,16 @@ namespace _116.Content.Unit.Tests.Application.Commerce.UseCases.Admin.Commands.A
 public class AdminAddOrderItemHandlerTests
 {
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
-    private readonly Mock<IAddOrderItemFactory> _factoryMock;
+    private readonly Mock<IAddOrderItemService> _serviceMock;
     private readonly AdminAddOrderItemHandler _handler;
 
     public AdminAddOrderItemHandlerTests()
     {
         _orderRepositoryMock = MockContentOrderRepository.Create();
-        _factoryMock = MockAddOrderItemFactory.Create();
+        _serviceMock = MockAddOrderItemService.Create();
         _handler = new AdminAddOrderItemHandler(
             _orderRepositoryMock.Object,
-            _factoryMock.Object,
+            _serviceMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
     }
@@ -47,7 +47,7 @@ public class AdminAddOrderItemHandlerTests
         const string categoryName = "Artist Profile";
 
         _orderRepositoryMock.SetupGetByIdWithItems(order);
-        _factoryMock.SetupCreateItemAsync((item, categoryName, null));
+        _serviceMock.SetupCreateItemAsync((item, categoryName, null));
 
         var command = new AdminAddOrderItemCommand(
             OrderId: order.Id.ToString(),

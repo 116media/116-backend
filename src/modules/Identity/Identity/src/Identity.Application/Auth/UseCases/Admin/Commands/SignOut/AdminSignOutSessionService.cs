@@ -1,0 +1,43 @@
+using _116.Identity.Application.Auth.Ports;
+using _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut.Contracts;
+using _116.Identity.Application.Session.Repositories;
+using _116.Identity.Application.Shared.Persistence;
+using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
+
+namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut;
+
+/// <summary>
+/// Service implementation for handling admin user sign-out session management.
+/// </summary>
+/// <param name="sessionRepository">Repository for session data access operations.</param>
+/// <param name="refreshTokenService">Service for refresh token hashing.</param>
+/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+public class AdminSignOutSessionService(
+    ISessionRepository sessionRepository,
+    IRefreshTokenService refreshTokenService,
+    IIdentityUnitOfWork unitOfWork
+) : IAdminSignOutSessionService
+{
+    /// <summary>
+    /// Signs out an admin user by invalidating their session associated with the refresh token.
+    /// </summary>
+    public async Task SignOutAsync(string refreshToken, CancellationToken cancellationToken)
+    {
+        string refreshTokenHash = refreshTokenService.HashRefreshToken(refreshToken: refreshToken);
+        SessionEntity? session = await sessionRepository.GetByRefreshTokenHashAsync(
+            refreshTokenHash: refreshTokenHash,
+            cancellationToken: cancellationToken
+        );
+
+        if (session != null)
+        {
+            await sessionRepository.RevokeAsync(
+                sessionId: session.Id,
+                reason: EnumSessionRevokeReason.SelfSignOut,
+                cancellationToken: cancellationToken
+            );
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+        }
+    }
+}

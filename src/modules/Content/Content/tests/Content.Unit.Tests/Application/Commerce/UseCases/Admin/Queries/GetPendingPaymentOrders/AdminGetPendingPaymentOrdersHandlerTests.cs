@@ -25,7 +25,7 @@ public class AdminGetPendingPaymentOrdersHandlerTests : BaseContentHandlerTest
         _orderRepositoryMock = MockContentOrderRepository.Create();
         _handler = new AdminGetPendingPaymentOrdersHandler(
             _orderRepositoryMock.Object,
-            CreateOrderDtoFactory(_customer)
+            CreateOrderDtoService(_customer)
         );
     }
 

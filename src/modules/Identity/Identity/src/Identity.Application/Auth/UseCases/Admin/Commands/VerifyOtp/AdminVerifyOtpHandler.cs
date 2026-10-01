@@ -1,7 +1,5 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.BuildingBlocks.Application.Exceptions;
-using _116.Identity.Application.Auth.Factories.Contracts;
-using _116.Identity.Application.Auth.Repositories;
+using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
@@ -13,33 +11,17 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.VerifyOtp;
 /// Handles the <see cref="AdminVerifyOtpCommand" /> to verify OTP codes for admin account verification.
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
-/// <param name="otpRepository">Repository for OTP data access operations.</param>
-/// <param name="otpVerificationFactory">Factory validating the presented code and metering misses.</param>
-/// <param name="lockoutRepository">Repository clearing the failure counter on success.</param>
+/// <param name="otpVerificationService">Service consuming the outstanding OTP.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="timeProvider">Clock supplying the instant the code is judged against.</param>
 public class AdminVerifyOtpHandler(
     IAuthRepository authRepository,
-    IOtpRepository otpRepository,
-    IOtpVerificationFactory otpVerificationFactory,
-    IAccountLockoutRepository lockoutRepository,
-    IIdentityUnitOfWork unitOfWork,
-    TimeProvider timeProvider
+    IOtpVerificationService otpVerificationService,
+    IIdentityUnitOfWork unitOfWork
 ) : ICommandHandler<AdminVerifyOtpCommand, AdminVerifyOtpResult>
 {
-    /// <summary>
-    /// Handles the OTP verification command by validating the code and updating admin user verification status.
-    /// </summary>
-    /// <param name="command">The OTP verification command containing email and code.</param>
-    /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>A <see cref="AdminVerifyOtpResult" /> containing verification status and message.</returns>
-    /// <exception cref="NotFoundException">Thrown when no admin user or outstanding OTP is found.</exception>
-    /// <exception cref="BadRequestException">Thrown when OTP code is invalid.</exception>
-    /// <exception cref="AuthenticationException">Thrown when OTP is expired.</exception>
-    /// <exception cref="AuthorizationException">Thrown when max attempts are reached.</exception>
+    /// <inheritdoc />
     public async Task<AdminVerifyOtpResult> Handle(AdminVerifyOtpCommand command, CancellationToken cancellationToken)
     {
-        // Normalize email and purpose using value objects
         var email = new Email(value: command.Email);
         var purpose = new OtpPurpose(value: command.Purpose);
         UserEntity? user = await authRepository.GetUserWithRolesByEmailOrThrow(
@@ -47,34 +29,17 @@ public class AdminVerifyOtpHandler(
             cancellationToken: cancellationToken
         );
 
-        // Validate admin account status
         authRepository.IsUserAdmin(user!);
         authRepository.IsUserAccountActive(user!);
 
-        OtpEntity otp = await otpRepository.GetLatestOutstandingOtpOrThrowAsync(
+        await otpVerificationService.ConsumeOtpAsync(
             userId: user!.Id,
             purpose: purpose,
-            cancellationToken: cancellationToken
-        );
-
-        await otpVerificationFactory.ValidateOtpAsync(
-            otp: otp,
             code: command.Code,
-            userId: user.Id,
             cancellationToken: cancellationToken
         );
 
-        otp.MarkAsUsed(now: timeProvider.GetUtcNow().UtcDateTime);
         user.MarkVerifiedByOtp(purpose: purpose);
-
-        // Invalidate any remaining OTPs for this purpose
-        await otpRepository.InvalidateExistingOtpsAsync(
-            userId: user.Id,
-            purpose: purpose,
-            exceptOtpId: otp.Id,
-            cancellationToken: cancellationToken
-        );
-        await lockoutRepository.ClearFailedOtpAsync(userId: user.Id, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
         return new AdminVerifyOtpResult(IsSuccess: true);
     }

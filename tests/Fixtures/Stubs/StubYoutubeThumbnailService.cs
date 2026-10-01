@@ -1,4 +1,4 @@
-using _116.Content.Application.Editorial.Services;
+using _116.Content.Application.Editorial.Ports;
 using Microsoft.AspNetCore.Http;
 
 namespace _116.Tests.Fixtures.Stubs;

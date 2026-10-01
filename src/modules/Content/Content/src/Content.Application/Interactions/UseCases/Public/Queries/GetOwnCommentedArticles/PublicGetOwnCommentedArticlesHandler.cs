@@ -14,7 +14,7 @@ public class PublicGetOwnCommentedArticlesHandler(
     IArticleCommentRepository articleCommentRepository,
     IArticleInteractionRepository articleInteractionRepository,
     IFileStorageService fileStorage,
-    IContentLookupFactory contentLookupFactory
+    IContentLookupService contentLookupService
 ) : IQueryHandler<PublicGetOwnCommentedArticlesQuery, PublicGetOwnCommentedArticlesResult>
 {
     /// <inheritdoc />
@@ -45,7 +45,7 @@ public class PublicGetOwnCommentedArticlesHandler(
         foreach (CommentedArticleActivity activity in activities)
         {
             PublicArticleSummaryDto article = await activity.Article.ToPublicArticleSummaryDtoAsync(
-                await contentLookupFactory.ResolveForArticlesAsync([activity.Article], cancellationToken),
+                await contentLookupService.ResolveForArticlesAsync([activity.Article], cancellationToken),
                 fileStorage,
                 cancellationToken
             );

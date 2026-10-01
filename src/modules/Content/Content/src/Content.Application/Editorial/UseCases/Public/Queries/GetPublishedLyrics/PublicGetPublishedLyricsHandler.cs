@@ -17,7 +17,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishe
 public class PublicGetPublishedLyricsHandler(
     ILyricsRepository lyricsRepository,
     IFileStorageService fileStorage,
-    IContentLookupFactory contentLookupFactory
+    IContentLookupService contentLookupService
 ) : IQueryHandler<PublicGetPublishedLyricsQuery, PublicGetPublishedLyricsResult>
 {
     /// <inheritdoc />
@@ -50,7 +50,7 @@ public class PublicGetPublishedLyricsHandler(
         IReadOnlyList<PublicLyricsSummaryDto> dtoList = await lyricsList
             .AsReadOnly()
             .ToPublicLyricsSummaryDtosAsync(
-                await contentLookupFactory.ResolveForLyricsAsync(lyricsList.AsReadOnly(), cancellationToken),
+                await contentLookupService.ResolveForLyricsAsync(lyricsList.AsReadOnly(), cancellationToken),
                 fileStorage,
                 likedLyricsIds,
                 cancellationToken

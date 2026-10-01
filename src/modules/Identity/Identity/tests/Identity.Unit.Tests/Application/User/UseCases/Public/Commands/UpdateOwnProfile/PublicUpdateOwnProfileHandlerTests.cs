@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Identity.Application.User.Services;
+using _116.Identity.Application.User.Ports;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.Contracts;
 using _116.Identity.Domain.Entities;
@@ -17,16 +17,16 @@ namespace _116.Identity.Unit.Tests.Application.User.UseCases.Public.Commands.Upd
 /// </summary>
 public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
 {
-    private readonly Mock<IPublicUpdateProfileAuthFactory> _authFactoryMock;
+    private readonly Mock<IPublicUpdateProfileAuthService> _authServiceMock;
     private readonly Mock<IAvatarService> _avatarServiceMock;
     private readonly PublicUpdateOwnProfileHandler _handler;
 
     public PublicUpdateOwnProfileHandlerTests()
     {
-        _authFactoryMock = new Mock<IPublicUpdateProfileAuthFactory>();
+        _authServiceMock = new Mock<IPublicUpdateProfileAuthService>();
         _avatarServiceMock = MockAvatarService.Create();
 
-        _handler = new PublicUpdateOwnProfileHandler(_authFactoryMock.Object, _avatarServiceMock.Object, Mapper);
+        _handler = new PublicUpdateOwnProfileHandler(_authServiceMock.Object, _avatarServiceMock.Object, Mapper);
     }
 
     #region Success Cases
@@ -53,7 +53,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
 
         PublicUpdateProfileAuthData authData = new(User: user);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x =>
                 x.UpdateProfileAsync(
                     user.Id,
@@ -100,7 +100,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
 
         PublicUpdateProfileAuthData authData = new(User: user);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x =>
                 x.UpdateProfileAsync(
                     user.Id,
@@ -122,7 +122,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _authFactoryMock.Verify(
+        _authServiceMock.Verify(
             x =>
                 x.UpdateProfileAsync(
                     user.Id,
@@ -161,7 +161,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
 
         PublicUpdateProfileAuthData authData = new(User: user);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x =>
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),
@@ -208,7 +208,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
             PreferredLocale: null
         );
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x =>
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),
@@ -250,7 +250,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
             PreferredLocale: null
         );
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x =>
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),
@@ -292,7 +292,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
             PreferredLocale: null
         );
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x =>
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),
@@ -342,7 +342,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
 
         PublicUpdateProfileAuthData authData = new(User: user);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x =>
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),
@@ -364,7 +364,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _authFactoryMock.Verify(
+        _authServiceMock.Verify(
             x => x.UpdateProfileAsync(user.Id, sessionId, null, "newusername", null, null, null, null, null, cts.Token),
             Times.Once
         );
@@ -392,7 +392,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
 
         PublicUpdateProfileAuthData authData = new(User: user);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x =>
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),

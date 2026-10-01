@@ -8,7 +8,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="Storage.Infrastructure" />
+        <InternalsVisibleTo Include="Storage.Application" />
         <InternalsVisibleTo Include="Storage.Unit.Tests" />
         <InternalsVisibleTo Include="Storage.TestData" />
     </ItemGroup>

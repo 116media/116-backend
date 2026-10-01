@@ -1,4 +1,4 @@
-using _116.Identity.Application.Session.Services;
+using _116.Identity.Application.Session.Ports;
 using _116.Identity.Domain.Enums;
 
 namespace _116.Identity.Integration.Tests.Infrastructure.Services;

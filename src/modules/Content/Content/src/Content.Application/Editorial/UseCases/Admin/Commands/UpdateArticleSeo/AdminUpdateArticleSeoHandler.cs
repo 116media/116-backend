@@ -1,26 +1,21 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Storage.Contracts.Application.Services;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticleSeo;
 
 /// <summary>
-/// Handles the <see cref="AdminUpdateArticleSeoCommand" /> to update an article's SEO metadata.
+/// Handles the <see cref="AdminUpdateArticleSeoCommand" /> to revise an article's SEO fields.
 /// </summary>
-/// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="articleRepository">Repository loading and reloading the article.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="fileStorage">Storage's file contract.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="articleDtoService">Service assembling the article detail.</param>
 public class AdminUpdateArticleSeoHandler(
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
-    IFileStorageService fileStorage,
-    IMapper mapper,
-    IContentLookupFactory contentLookupFactory
+    IArticleDtoService articleDtoService
 ) : ICommandHandler<AdminUpdateArticleSeoCommand, AdminUpdateArticleSeoResult>
 {
     /// <inheritdoc />
@@ -30,7 +25,6 @@ public class AdminUpdateArticleSeoHandler(
     )
     {
         Guid id = Guid.Parse(command.Id);
-
         ArticleEntity article = await articleRepository.GetByIdOrThrowAsync(
             id: id,
             cancellationToken: cancellationToken
@@ -43,13 +37,7 @@ public class AdminUpdateArticleSeoHandler(
             id: article.Id,
             cancellationToken: cancellationToken
         );
-
-        var dto = await updated.ToArticleDetailDtoAsync(
-            mapper,
-            await contentLookupFactory.ResolveForArticlesAsync([updated], cancellationToken),
-            fileStorage,
-            cancellationToken
-        );
+        var dto = await articleDtoService.CreateDetailAsync(updated, cancellationToken);
         return new AdminUpdateArticleSeoResult(Article: dto);
     }
 }

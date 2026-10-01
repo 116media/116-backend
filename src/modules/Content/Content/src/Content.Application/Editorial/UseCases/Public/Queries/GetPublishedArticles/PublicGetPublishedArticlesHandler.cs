@@ -19,7 +19,7 @@ public class PublicGetPublishedArticlesHandler(
     IArticleRepository articleRepository,
     IArticleInteractionRepository articleInteractionRepository,
     IFileStorageService fileStorage,
-    IContentLookupFactory contentLookupFactory
+    IContentLookupService contentLookupService
 ) : IQueryHandler<PublicGetPublishedArticlesQuery, PublicGetPublishedArticlesResult>
 {
     /// <inheritdoc />
@@ -49,7 +49,7 @@ public class PublicGetPublishedArticlesHandler(
             );
 
         IReadOnlyList<PublicArticleSummaryDto> dtoList = await articles.ToPublicArticleSummaryDtosAsync(
-            await contentLookupFactory.ResolveForArticlesAsync(articles, cancellationToken),
+            await contentLookupService.ResolveForArticlesAsync(articles, cancellationToken),
             fileStorage,
             liked,
             bookmarked,

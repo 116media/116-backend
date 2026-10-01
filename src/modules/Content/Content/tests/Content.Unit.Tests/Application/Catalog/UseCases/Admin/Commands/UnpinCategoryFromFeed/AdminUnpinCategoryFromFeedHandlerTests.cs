@@ -37,7 +37,7 @@ public class AdminUnpinCategoryFromFeedHandlerTests : BaseContentHandlerTest
         _handler = new AdminUnpinCategoryFromFeedHandler(
             _categoryRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            CreateCategoryDtoFactory(_fileStorageMock.Object)
+            CreateCategoryDtoService(_fileStorageMock.Object)
         );
     }
 

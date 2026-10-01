@@ -1,28 +1,21 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Shared.Errors.Facade;
-using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Storage.Contracts.Application.Services;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateShortVideo;
 
 /// <summary>
-/// Handles the <see cref="AdminUpdateShortVideoCommand" /> to update short video metadata.
-/// The video file is replaced separately via the dedicated upload endpoint.
+/// Handles the <see cref="AdminUpdateShortVideoCommand" /> to retitle or relink a short.
 /// </summary>
-/// <param name="shortVideoRepository">Repository for short video data access operations.</param>
-/// <param name="fileStorage">Storage's file contract.</param>
+/// <param name="shortVideoRepository">Repository loading and reloading the short.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="shortVideoDtoService">Service assembling the short DTO.</param>
 public class AdminUpdateShortVideoHandler(
     IShortVideoRepository shortVideoRepository,
-    IFileStorageService fileStorage,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper,
-    IVideoRepository videoRepository
+    IShortVideoDtoService shortVideoDtoService
 ) : ICommandHandler<AdminUpdateShortVideoCommand, AdminUpdateShortVideoResult>
 {
     /// <inheritdoc />
@@ -32,7 +25,6 @@ public class AdminUpdateShortVideoHandler(
     )
     {
         Guid id = Guid.Parse(command.Id);
-
         ShortVideoEntity shortVideo = await shortVideoRepository.GetByIdOrThrowAsync(
             id: id,
             cancellationToken: cancellationToken
@@ -45,8 +37,7 @@ public class AdminUpdateShortVideoHandler(
             id: id,
             cancellationToken: cancellationToken
         );
-
-        var dto = await updated.ToShortVideoDtoAsync(mapper, fileStorage, videoRepository, cancellationToken);
+        var dto = await shortVideoDtoService.CreateAsync(updated, cancellationToken);
         return new AdminUpdateShortVideoResult(ShortVideo: dto);
     }
 }

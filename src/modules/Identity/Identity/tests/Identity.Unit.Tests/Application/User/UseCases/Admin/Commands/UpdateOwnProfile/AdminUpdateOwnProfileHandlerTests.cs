@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Identity.Application.User.Services;
+using _116.Identity.Application.User.Ports;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile.Contracts;
 using _116.Identity.Domain.Entities;
@@ -17,16 +17,16 @@ namespace _116.Identity.Unit.Tests.Application.User.UseCases.Admin.Commands.Upda
 /// </summary>
 public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
 {
-    private readonly Mock<IAdminUpdateProfileAuthFactory> _authFactoryMock;
+    private readonly Mock<IAdminUpdateProfileAuthService> _authServiceMock;
     private readonly Mock<IAvatarService> _avatarServiceMock;
     private readonly AdminUpdateOwnProfileHandler _handler;
 
     public AdminUpdateOwnProfileHandlerTests()
     {
-        _authFactoryMock = new Mock<IAdminUpdateProfileAuthFactory>();
+        _authServiceMock = new Mock<IAdminUpdateProfileAuthService>();
         _avatarServiceMock = MockAvatarService.Create();
 
-        _handler = new AdminUpdateOwnProfileHandler(_authFactoryMock.Object, _avatarServiceMock.Object, Mapper);
+        _handler = new AdminUpdateOwnProfileHandler(_authServiceMock.Object, _avatarServiceMock.Object, Mapper);
     }
 
     #region Success Cases
@@ -52,7 +52,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
 
         AdminUpdateProfileAuthData authData = new(User: user);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x =>
                 x.UpdateProfileAsync(
                     user.Id,
@@ -97,7 +97,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
 
         AdminUpdateProfileAuthData authData = new(User: user);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x =>
                 x.UpdateProfileAsync(
                     user.Id,
@@ -118,7 +118,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _authFactoryMock.Verify(
+        _authServiceMock.Verify(
             x =>
                 x.UpdateProfileAsync(
                     user.Id,
@@ -155,7 +155,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
 
         AdminUpdateProfileAuthData authData = new(User: user);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x =>
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),
@@ -200,7 +200,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
             PreferredLocale: null
         );
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x =>
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),
@@ -240,7 +240,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
             PreferredLocale: null
         );
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x =>
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),
@@ -288,7 +288,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
 
         AdminUpdateProfileAuthData authData = new(User: user);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x =>
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),
@@ -309,7 +309,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _authFactoryMock.Verify(
+        _authServiceMock.Verify(
             x => x.UpdateProfileAsync(user.Id, sessionId, "newusername", null, null, null, null, null, cts.Token),
             Times.Once
         );
@@ -336,7 +336,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
 
         AdminUpdateProfileAuthData authData = new(User: user);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x =>
                 x.UpdateProfileAsync(
                     It.IsAny<Guid>(),

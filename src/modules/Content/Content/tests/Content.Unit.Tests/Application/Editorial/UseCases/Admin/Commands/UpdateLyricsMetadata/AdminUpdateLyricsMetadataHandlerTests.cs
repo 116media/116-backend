@@ -40,10 +40,7 @@ public class AdminUpdateLyricsMetadataHandlerTests : BaseContentHandlerTest
         _handler = new AdminUpdateLyricsMetadataHandler(
             _lyricsRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            Mapper,
-            userLookupMock.Object,
-            fileStorageMock.Object,
-            CreateContentLookupFactory()
+            CreateLyricsDtoService(fileStorageMock.Object, userLookupMock.Object)
         );
     }
 

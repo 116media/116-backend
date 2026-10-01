@@ -37,12 +37,14 @@ public class AdminEditOrderItemHandlerTests : BaseContentHandlerTest
         _promotionLevelRepositoryMock = MockPromotionLevelRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminEditOrderItemHandler(
-            _orderRepositoryMock.Object,
-            _categoryRepositoryMock.Object,
-            _promotionLevelRepositoryMock.Object,
+            new AdminEditOrderItemService(
+                _orderRepositoryMock.Object,
+                _categoryRepositoryMock.Object,
+                _promotionLevelRepositoryMock.Object,
+                TestErrorsFactory.CreateContentI18n()
+            ),
             _unitOfWorkMock.Object,
-            CreateOrderDtoFactory(),
-            TestErrorsFactory.CreateContentI18n()
+            CreateOrderDtoService()
         );
     }
 

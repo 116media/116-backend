@@ -1,27 +1,24 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Catalog.Factories;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Catalog.Services;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategory.Contracts;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Content.Domain.Enums;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategory;
 
 /// <summary>
-/// Handles the <see cref="AdminCreateCategoryCommand" /> to create a new content category.
+/// Handles the <see cref="AdminCreateCategoryCommand" /> to create a category.
 /// </summary>
-/// <param name="contentTypeRepository">Repository for verifying lookup entities (content type).</param>
-/// <param name="categoryRepository">Repository for category data access operations.</param>
+/// <param name="createCategoryService">Service resolving and staging the category.</param>
+/// <param name="categoryRepository">Repository reloading the committed category.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="categoryDtoFactory">Builds category projections with their posters resolved.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
+/// <param name="categoryDtoService">Service assembling the category DTO.</param>
 public class AdminCreateCategoryHandler(
-    IContentTypeRepository contentTypeRepository,
+    IAdminCreateCategoryService createCategoryService,
     ICategoryRepository categoryRepository,
     IContentUnitOfWork unitOfWork,
-    ICategoryDtoFactory categoryDtoFactory,
-    ContentI18n i18n
+    ICategoryDtoService categoryDtoService
 ) : ICommandHandler<AdminCreateCategoryCommand, AdminCreateCategoryResult>
 {
     /// <inheritdoc />
@@ -30,60 +27,14 @@ public class AdminCreateCategoryHandler(
         CancellationToken cancellationToken
     )
     {
-        Guid contentTypeId = Guid.Parse(command.ContentTypeId);
-
-        ContentTypeEntity contentType = await contentTypeRepository.GetByIdOrThrowAsync(
-            id: contentTypeId,
-            cancellationToken: cancellationToken
-        );
-
-        CategoryEntity? existing = await categoryRepository.GetBySlugAsync(
-            slug: command.Slug,
-            cancellationToken: cancellationToken
-        );
-
-        if (existing is not null)
-        {
-            throw i18n.Category.AlreadyExists(slug: command.Slug);
-        }
-
-        if (command.IsExclusive)
-        {
-            if (contentType.Name != nameof(EnumCoreContentType.Video))
-            {
-                throw i18n.Category.OnlyVideoCategoryCanBeExclusive();
-            }
-
-            CategoryEntity? currentExclusive = await categoryRepository.GetExclusiveCategoryAsync(
-                cancellationToken: cancellationToken
-            );
-
-            if (currentExclusive is not null)
-            {
-                currentExclusive.ClearExclusive();
-            }
-        }
-
-        var category = CategoryEntity.Create(
-            id: Guid.NewGuid(),
-            contentTypeId: contentTypeId,
-            name: command.Name,
-            slug: command.Slug,
-            description: command.Description,
-            isFree: command.IsFree,
-            isGossip: command.IsGossip,
-            isExclusive: command.IsExclusive
-        );
-
-        await categoryRepository.AddAsync(category: category, cancellationToken: cancellationToken);
+        CategoryEntity category = await createCategoryService.CreateAsync(command, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         CategoryEntity created = await categoryRepository.GetByIdOrThrowAsync(
             id: category.Id,
             cancellationToken: cancellationToken
         );
-
-        var dto = await categoryDtoFactory.CreateAsync(created, cancellationToken);
+        var dto = await categoryDtoService.CreateAsync(created, cancellationToken);
         return new AdminCreateCategoryResult(Category: dto);
     }
 }

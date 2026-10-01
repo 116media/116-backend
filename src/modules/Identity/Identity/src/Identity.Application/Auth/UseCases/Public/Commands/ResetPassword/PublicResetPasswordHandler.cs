@@ -10,11 +10,11 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword;
 /// <summary>
 /// Handles the <see cref="PublicResetPasswordCommand" /> to reset user password using OTP verification.
 /// </summary>
-/// <param name="authFactory">Factory for handling user password reset logic.</param>
+/// <param name="authService">Service for handling user password reset logic.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
 /// <param name="timeProvider">Clock stamping the instant the code is spent.</param>
 public class PublicResetPasswordHandler(
-    IPublicResetPasswordAuthFactory authFactory,
+    IPublicResetPasswordAuthService authService,
     IOtpRepository otpRepository,
     TimeProvider timeProvider
 ) : ICommandHandler<PublicResetPasswordCommand, PublicResetPasswordResult>
@@ -36,7 +36,7 @@ public class PublicResetPasswordHandler(
         CancellationToken cancellationToken
     )
     {
-        PublicResetPasswordAuthData authData = await authFactory.GetUserForResetAsync(
+        PublicResetPasswordAuthData authData = await authService.GetUserForResetAsync(
             email: command.Email,
             cancellationToken: cancellationToken
         );
@@ -48,11 +48,10 @@ public class PublicResetPasswordHandler(
             cancellationToken: cancellationToken
         );
 
-        // Spend the code in the same unit of work as the new password, so it cannot be
-        // replayed against a second reset.
+        // Spend the code in the same unit of work as the new password, so it cannot be replayed against a second reset.
         verifiedOtp.MarkAsConsumed(now: timeProvider.GetUtcNow().UtcDateTime);
 
-        await authFactory.ResetPasswordAsync(
+        await authService.ResetPasswordAsync(
             user: authData.User,
             newPassword: command.NewPassword,
             cancellationToken: cancellationToken

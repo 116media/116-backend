@@ -1,35 +1,24 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Catalog.Constants;
-using _116.Content.Application.Catalog.Factories;
-using _116.Content.Application.Editorial.Constants;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Catalog.Services;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.PinCategoryToFeed.Contracts;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Content.Domain.Enums;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.PinCategoryToFeed;
 
 /// <summary>
-/// Handles the <see cref="AdminPinCategoryToFeedCommand" /> to pin a category to the content feed.
-/// Enforces the eligibility gate (active, video content type, minimum published videos) and the
-/// per-content-type cap, unpinning the oldest pinned category (FIFO) when the cap is exceeded.
+/// Handles the <see cref="AdminPinCategoryToFeedCommand" /> to pin a category to the video feed.
 /// </summary>
-/// <param name="contentTypeRepository">Repository resolving the category's content type.</param>
-/// <param name="categoryRepository">Repository for category data access operations.</param>
-/// <param name="videoRepository">Repository for video data access operations.</param>
+/// <param name="pinService">Service gating and applying the pin.</param>
+/// <param name="categoryRepository">Repository reloading the committed category.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="categoryDtoFactory">Builds category projections with their posters resolved.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
-/// <param name="timeProvider">Clock stamping the pin time.</param>
+/// <param name="categoryDtoService">Service assembling the category DTO.</param>
 public class AdminPinCategoryToFeedHandler(
+    IAdminPinCategoryToFeedService pinService,
     ICategoryRepository categoryRepository,
-    IContentTypeRepository contentTypeRepository,
-    IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
-    ICategoryDtoFactory categoryDtoFactory,
-    ContentI18n i18n,
-    TimeProvider timeProvider
+    ICategoryDtoService categoryDtoService
 ) : ICommandHandler<AdminPinCategoryToFeedCommand, AdminPinCategoryToFeedResult>
 {
     /// <inheritdoc />
@@ -40,63 +29,14 @@ public class AdminPinCategoryToFeedHandler(
     {
         Guid id = Guid.Parse(command.Id);
 
-        CategoryEntity category = await categoryRepository.GetByIdOrThrowAsync(
-            id: id,
-            cancellationToken: cancellationToken
-        );
-
-        ContentTypeEntity contentType = await contentTypeRepository.GetByIdOrThrowAsync(
-            id: category.ContentTypeId,
-            cancellationToken: cancellationToken
-        );
-
-        if (!category.IsActive)
-        {
-            throw i18n.Category.CannotPinInactiveToFeed();
-        }
-
-        // Only the video feed exists today, so only Video categories can be pinned.
-        // Article categories become eligible when the article feed lands.
-        if (contentType.Name != nameof(EnumCoreContentType.Video))
-        {
-            throw i18n.Category.ContentTypeNotFeedable();
-        }
-
-        // Eligibility gate: a category needs enough published videos to fill a credible section.
-        int publishedCount = await videoRepository.CountPublishedByCategoryAsync(
-            categoryId: category.Id,
-            cancellationToken: cancellationToken
-        );
-
-        if (publishedCount < EditorialFeedConstants.MinVideosToPinToFeed)
-        {
-            throw i18n.Category.NotEnoughVideosToPinToFeed(EditorialFeedConstants.MinVideosToPinToFeed);
-        }
-
-        IReadOnlyList<CategoryEntity> pinned = await categoryRepository.GetPinnedToFeedCategoriesAsync(
-            contentTypeId: category.ContentTypeId,
-            cancellationToken: cancellationToken
-        );
-
-        bool alreadyPinned = pinned.Any(c => c.Id == category.Id);
-
-        // FIFO eviction: only when pinning a NEW category that would exceed the cap.
-        if (!alreadyPinned && pinned.Count >= CatalogFeedConstants.MaxPinnedCategoriesPerContentType)
-        {
-            CategoryEntity oldest = pinned.OrderBy(c => c.PinnedToFeedAt).First();
-            oldest.UnpinFromFeed();
-        }
-
-        // Re-pinning an already-pinned category refreshes its timestamp (front of queue).
-        category.PinToFeed(now: timeProvider.GetUtcNow());
+        await pinService.PinAsync(categoryId: id, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         CategoryEntity updated = await categoryRepository.GetByIdOrThrowAsync(
             id: id,
             cancellationToken: cancellationToken
         );
-
-        var dto = await categoryDtoFactory.CreateAsync(updated, cancellationToken);
+        var dto = await categoryDtoService.CreateAsync(updated, cancellationToken);
         return new AdminPinCategoryToFeedResult(Category: dto);
     }
 }

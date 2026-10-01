@@ -16,16 +16,16 @@ namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Public.Commands.Sig
 /// </summary>
 public class PublicSignOutHandlerTests
 {
-    private readonly Mock<IPublicSignOutSessionFactory> _sessionFactoryMock;
+    private readonly Mock<IPublicSignOutSessionService> _sessionServiceMock;
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly PublicSignOutHandler _handler;
 
     public PublicSignOutHandlerTests()
     {
-        _sessionFactoryMock = new Mock<IPublicSignOutSessionFactory>();
+        _sessionServiceMock = new Mock<IPublicSignOutSessionService>();
         _authRepositoryMock = MockAuthRepository.Create();
 
-        _handler = new PublicSignOutHandler(_sessionFactoryMock.Object, _authRepositoryMock.Object);
+        _handler = new PublicSignOutHandler(_sessionServiceMock.Object, _authRepositoryMock.Object);
     }
 
     #region Success Cases
@@ -40,7 +40,7 @@ public class PublicSignOutHandlerTests
 
         _authRepositoryMock.SetupFindUserByIdOrThrow(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _sessionFactoryMock
+        _sessionServiceMock
             .Setup(x => x.SignOutAsync(refreshToken, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
@@ -48,7 +48,7 @@ public class PublicSignOutHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _sessionFactoryMock.Verify(x => x.SignOutAsync(refreshToken, It.IsAny<CancellationToken>()), Times.Once);
+        _sessionServiceMock.Verify(x => x.SignOutAsync(refreshToken, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public class PublicSignOutHandlerTests
 
         _authRepositoryMock.SetupFindUserByIdOrThrow(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _sessionFactoryMock
+        _sessionServiceMock
             .Setup(x => x.SignOutAsync(refreshToken, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
@@ -82,7 +82,7 @@ public class PublicSignOutHandlerTests
 
         _authRepositoryMock.SetupFindUserByIdOrThrow(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _sessionFactoryMock
+        _sessionServiceMock
             .Setup(x => x.SignOutAsync(refreshToken, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
@@ -127,7 +127,7 @@ public class PublicSignOutHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _sessionFactoryMock.Verify(x => x.SignOutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        _sessionServiceMock.Verify(x => x.SignOutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     #endregion
@@ -145,7 +145,7 @@ public class PublicSignOutHandlerTests
 
         _authRepositoryMock.SetupFindUserByIdOrThrow(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _sessionFactoryMock
+        _sessionServiceMock
             .Setup(x => x.SignOutAsync(refreshToken, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
@@ -167,7 +167,7 @@ public class PublicSignOutHandlerTests
 
         _authRepositoryMock.SetupFindUserByIdOrThrow(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _sessionFactoryMock
+        _sessionServiceMock
             .Setup(x => x.SignOutAsync(refreshToken, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
@@ -175,7 +175,7 @@ public class PublicSignOutHandlerTests
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _sessionFactoryMock.Verify(x => x.SignOutAsync(refreshToken, cts.Token), Times.Once);
+        _sessionServiceMock.Verify(x => x.SignOutAsync(refreshToken, cts.Token), Times.Once);
     }
 
     #endregion

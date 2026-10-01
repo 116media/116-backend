@@ -1,9 +1,8 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.BuildingBlocks.Application.Exceptions;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.Services;
-using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Errors.Facade;
-using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
@@ -18,16 +17,12 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ChangePassword;
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="passwordService">Service for password hashing and verification operations.</param>
-/// <param name="sessionRepository">Repository revoking the user's sessions.</param>
-/// <param name="tokenStateRepository">Repository rotating the user's security stamp.</param>
-/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="credentialInvalidationService">Service revoking the other sessions and rotating the stamp.</param>
 /// <param name="i18n">Single i18n entry point for the Identity module.</param>
 public class AdminChangePasswordHandler(
     IAuthRepository authRepository,
     IPasswordService passwordService,
-    ISessionRepository sessionRepository,
-    IUserTokenStateRepository tokenStateRepository,
-    IIdentityUnitOfWork unitOfWork,
+    ICredentialInvalidationService credentialInvalidationService,
     IdentityI18n i18n
 ) : ICommandHandler<AdminChangePasswordCommand, AdminChangePasswordResult>
 {
@@ -70,18 +65,11 @@ public class AdminChangePasswordHandler(
         string hashedNewPassword = passwordService.Hash(password: command.NewPassword);
         user.UpdatePassword(newPasswordHash: hashedNewPassword, origin: EnumPasswordChangeOrigin.Changed);
 
-        // The acting session survives its own password change; every other session of the
-        // account loses the credential in the same transaction as the new hash.
-        await sessionRepository.DeleteAllByUserIdAsync(
+        await credentialInvalidationService.CommitCredentialChangeAsync(
             userId: user.Id,
-            reason: EnumSessionRevokeReason.SecurityInvalidation,
             exemptSessionId: command.SessionId,
             cancellationToken: cancellationToken
         );
-
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        await tokenStateRepository.RotateSecurityStampAsync(userId: user.Id, cancellationToken: cancellationToken);
 
         return new AdminChangePasswordResult(IsSuccess: true);
     }

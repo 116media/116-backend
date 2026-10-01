@@ -1,30 +1,23 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.ResolveAlbumStreamingLinks.Contracts;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
-using _116.Content.Application.Shared.Services;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ResolveAlbumStreamingLinks;
 
 /// <summary>
-/// Handles the <see cref="AdminResolveAlbumStreamingLinksCommand" />: one provider call, then
-/// an upsert per resolved platform in a single commit. Resolution never deletes — a platform
-/// the provider had no link for leaves any hand-curated row untouched, so an outage cannot
-/// strip curation.
+/// Handles the <see cref="AdminResolveAlbumStreamingLinksCommand" /> to resolve and store an album's
+/// streaming links.
 /// </summary>
-/// <param name="albumRepository">Repository for album data access operations.</param>
-/// <param name="streamingLinkRepository">Repository for streaming link data access operations.</param>
-/// <param name="resolutionService">External provider resolving one URL into all platforms.</param>
+/// <param name="linkResolutionService">Service gating the album and resolving the links.</param>
+/// <param name="streamingLinkRepository">Repository storing the resolved links.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminResolveAlbumStreamingLinksHandler(
-    IAlbumRepository albumRepository,
+    IAdminAlbumLinkResolutionService linkResolutionService,
     IStreamingLinkRepository streamingLinkRepository,
-    IStreamingLinkResolutionService resolutionService,
-    IContentUnitOfWork unitOfWork,
-    ContentI18n i18n
+    IContentUnitOfWork unitOfWork
 ) : ICommandHandler<AdminResolveAlbumStreamingLinksCommand, AdminResolveAlbumStreamingLinksResult>
 {
     /// <inheritdoc />
@@ -33,19 +26,11 @@ public class AdminResolveAlbumStreamingLinksHandler(
         CancellationToken cancellationToken
     )
     {
-        await albumRepository.GetByIdOrThrowAsync(id: command.AlbumId, cancellationToken: cancellationToken);
-
-        // A provider failure surfaces as StreamingLinkResolutionException, mapped by the global
-        // pipeline; the resolution service stays i18n-free.
-        IReadOnlyDictionary<EnumStreamingPlatform, string> resolved = await resolutionService.ResolveAsync(
+        IReadOnlyDictionary<EnumStreamingPlatform, string> resolved = await linkResolutionService.ResolveAsync(
+            albumId: command.AlbumId,
             sourceUrl: command.SourceUrl,
             cancellationToken: cancellationToken
         );
-
-        if (resolved.Count == 0)
-        {
-            throw i18n.StreamingLink.NothingResolved();
-        }
 
         foreach ((EnumStreamingPlatform platform, string url) in resolved)
         {
@@ -67,7 +52,6 @@ public class AdminResolveAlbumStreamingLinksHandler(
                 platform: platform,
                 url: url
             );
-
             await streamingLinkRepository.AddAsync(streamingLink: streamingLink, cancellationToken: cancellationToken);
         }
 

@@ -1,11 +1,15 @@
-using _116.Content.Application.Catalog.Factories;
-using _116.Content.Application.Commerce.Factories;
+using _116.Content.Application.Catalog.Services;
+using _116.Content.Application.Commerce.Services;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.TestData.Mocks.Repositories;
+using _116.Identity.Contracts.Application.Services;
 using _116.Storage.Contracts.Application.Services;
 using Mapster;
 using MapsterMapper;
+using Moq;
 
 namespace _116.Content.TestData;
 
@@ -31,9 +35,9 @@ public abstract class BaseContentHandlerTest
     /// </summary>
     /// <param name="customers">The customers the projections should name.</param>
     /// <returns>The factory.</returns>
-    protected IContentOrderDtoFactory CreateOrderDtoFactory(params CustomerEntity[] customers)
+    protected IContentOrderDtoService CreateOrderDtoService(params CustomerEntity[] customers)
     {
-        return new ContentOrderDtoFactory(
+        return new ContentOrderDtoService(
             Mapper,
             MockCustomerRepository.Create().SetupGetByIds(customers).Object,
             MockCategoryRepository.Create().Object,
@@ -49,12 +53,12 @@ public abstract class BaseContentHandlerTest
     /// <param name="fileStorage">The storage contract resolving posters.</param>
     /// <param name="contentTypes">The content types the projections should name.</param>
     /// <returns>The factory.</returns>
-    protected ICategoryDtoFactory CreateCategoryDtoFactory(
+    protected ICategoryDtoService CreateCategoryDtoService(
         IFileStorageService fileStorage,
         params ContentTypeEntity[] contentTypes
     )
     {
-        return new CategoryDtoFactory(
+        return new CategoryDtoService(
             Mapper,
             fileStorage,
             MockContentTypeRepository.Create().SetupGetByIds(contentTypes).Object,
@@ -71,14 +75,14 @@ public abstract class BaseContentHandlerTest
     /// <param name="promotionLevels">The promotion levels the projections should name.</param>
     /// <param name="tags">The tags the projections should carry.</param>
     /// <returns>The resolver.</returns>
-    protected IContentLookupFactory CreateContentLookupFactory(
+    protected IContentLookupService CreateContentLookupService(
         CategoryEntity[]? categories = null,
         CustomerEntity[]? customers = null,
         PromotionLevelEntity[]? promotionLevels = null,
         TagEntity[]? tags = null
     )
     {
-        return new ContentLookupFactory(
+        return new ContentLookupService(
             MockCategoryRepository.Create().SetupGetByIds(categories ?? []).Object,
             MockCustomerRepository.Create().SetupGetByIds(customers ?? []).Object,
             MockPromotionLevelRepository.Create().SetupGetByIds(promotionLevels ?? []).Object,
@@ -92,8 +96,64 @@ public abstract class BaseContentHandlerTest
     /// </summary>
     /// <param name="categories">The slot categories the projections should name and price.</param>
     /// <returns>The factory.</returns>
-    protected IPackageDtoFactory CreatePackageDtoFactory(params CategoryEntity[] categories)
+    protected IPackageDtoService CreatePackageDtoService(params CategoryEntity[] categories)
     {
-        return new PackageDtoFactory(Mapper, MockCategoryRepository.Create().SetupGetByIds(categories).Object);
+        return new PackageDtoService(Mapper, MockCategoryRepository.Create().SetupGetByIds(categories).Object);
+    }
+
+    /// <summary>
+    /// Builds the lyrics DTO service over the given file storage and an author lookup that resolves nobody unless supplied.
+    /// </summary>
+    /// <param name="fileStorage">The storage contract the DTOs resolve URLs through.</param>
+    /// <param name="userLookup">The author lookup, or null for one that resolves nobody.</param>
+    protected ILyricsDtoService CreateLyricsDtoService(
+        IFileStorageService fileStorage,
+        IUserLookupService? userLookup = null
+    )
+    {
+        return new LyricsDtoService(
+            Mapper,
+            userLookup ?? new Mock<IUserLookupService>().Object,
+            fileStorage,
+            CreateContentLookupService()
+        );
+    }
+
+    /// <summary>
+    /// Builds the article DTO service over the given file storage and an author lookup that resolves nobody unless supplied.
+    /// </summary>
+    /// <param name="fileStorage">The storage contract the DTOs resolve URLs through.</param>
+    /// <param name="userLookup">The author lookup, or null for one that resolves nobody.</param>
+    protected IArticleDtoService CreateArticleDtoService(
+        IFileStorageService fileStorage,
+        IUserLookupService? userLookup = null
+    )
+    {
+        return new ArticleDtoService(
+            Mapper,
+            userLookup ?? new Mock<IUserLookupService>().Object,
+            fileStorage,
+            CreateContentLookupService()
+        );
+    }
+
+    /// <summary>
+    /// Builds the short video DTO service over the given file storage, author lookup and parent-video repository.
+    /// </summary>
+    /// <param name="fileStorage">The storage contract the DTOs resolve URLs through.</param>
+    /// <param name="userLookup">The author lookup, or null for one that resolves nobody.</param>
+    /// <param name="videoRepository">The parent-video repository, or null for one that resolves nothing.</param>
+    protected IShortVideoDtoService CreateShortVideoDtoService(
+        IFileStorageService fileStorage,
+        IUserLookupService? userLookup = null,
+        IVideoRepository? videoRepository = null
+    )
+    {
+        return new ShortVideoDtoService(
+            Mapper,
+            userLookup ?? new Mock<IUserLookupService>().Object,
+            fileStorage,
+            videoRepository ?? MockVideoRepository.Create().Object
+        );
     }
 }

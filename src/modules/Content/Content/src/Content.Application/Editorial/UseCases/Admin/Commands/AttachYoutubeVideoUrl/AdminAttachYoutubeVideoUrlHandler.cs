@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
@@ -26,12 +26,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutu
 /// <param name="mapper">
 /// Mapster mapper for entity-to-DTO transformations.
 /// </param>
-/// <param name="videoDtoFactory">Builds video projections with their thumbnails resolved.</param>
+/// <param name="videoDtoService">Builds video projections with their thumbnails resolved.</param>
 /// <param name="timeProvider">Clock the shooting-schedule guard compares against.</param>
 public class AdminAttachYoutubeVideoUrlHandler(
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
-    IVideoDtoFactory videoDtoFactory,
+    IVideoDtoService videoDtoService,
     TimeProvider timeProvider
 ) : ICommandHandler<AdminAttachYoutubeVideoUrlCommand, AdminAttachYoutubeVideoUrlResult>
 {
@@ -56,7 +56,7 @@ public class AdminAttachYoutubeVideoUrlHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await videoDtoFactory.CreateDetailAsync(updated, cancellationToken);
+        var dto = await videoDtoService.CreateDetailAsync(updated, cancellationToken);
         return new AdminAttachYoutubeVideoUrlResult(Video: dto);
     }
 }

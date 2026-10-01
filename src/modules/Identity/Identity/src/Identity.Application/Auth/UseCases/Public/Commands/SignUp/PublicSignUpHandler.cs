@@ -10,9 +10,9 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 /// Handles the <see cref="PublicSignUpCommand" /> to register new public users. No session or
 /// tokens are issued: the user verifies the emailed code first, then logs in.
 /// </summary>
-/// <param name="authFactory">Factory for handling user registration logic.</param>
+/// <param name="authService">Service for handling user registration logic.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class PublicSignUpHandler(IPublicSignUpAuthFactory authFactory, IMapper mapper)
+public class PublicSignUpHandler(IPublicSignUpAuthService authService, IMapper mapper)
     : ICommandHandler<PublicSignUpCommand, PublicSignUpResult>
 {
     /// <summary>
@@ -23,7 +23,7 @@ public class PublicSignUpHandler(IPublicSignUpAuthFactory authFactory, IMapper m
     /// <returns>A <see cref="PublicSignUpResult" /> containing the created user.</returns>
     public async Task<PublicSignUpResult> Handle(PublicSignUpCommand command, CancellationToken cancellationToken)
     {
-        PublicSignUpAuthData authData = await authFactory.RegisterAsync(
+        PublicSignUpAuthData authData = await authService.RegisterAsync(
             email: command.Email,
             userName: command.UserName,
             password: command.Password,

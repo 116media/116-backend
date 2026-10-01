@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Catalog.Factories;
+using _116.Content.Application.Catalog.Services;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -12,12 +12,12 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.DeactivateCat
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="categoryDtoFactory">Builds category projections with their posters resolved.</param>
+/// <param name="categoryDtoService">Builds category projections with their posters resolved.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminDeactivateCategoryHandler(
     ICategoryRepository categoryRepository,
     IContentUnitOfWork unitOfWork,
-    ICategoryDtoFactory categoryDtoFactory,
+    ICategoryDtoService categoryDtoService,
     ContentI18n i18n
 ) : ICommandHandler<AdminDeactivateCategoryCommand, AdminDeactivateCategoryResult>
 {
@@ -47,7 +47,7 @@ public class AdminDeactivateCategoryHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await categoryDtoFactory.CreateAsync(updated, cancellationToken);
+        var dto = await categoryDtoService.CreateAsync(updated, cancellationToken);
         return new AdminDeactivateCategoryResult(Category: dto);
     }
 }

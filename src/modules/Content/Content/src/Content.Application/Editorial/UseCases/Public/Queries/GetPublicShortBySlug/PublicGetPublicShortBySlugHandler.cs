@@ -1,31 +1,23 @@
 using _116.BuildingBlocks.Application.CQRS;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Facade;
-using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Identity.Contracts.Application.Services;
-using _116.Storage.Contracts.Application.Services;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicShortBySlug;
 
 /// <summary>
-/// Handles the <see cref="PublicGetPublicShortBySlugQuery" /> to retrieve a single active short video by its slug.
+/// Handles the <see cref="PublicGetPublicShortBySlugQuery" /> to serve an active short.
 /// </summary>
-/// <param name="shortVideoRepository">Repository for short video data access operations.</param>
-/// <param name="userLookup">Service for resolving the author profile.</param>
-/// <param name="fileStorage">Storage's file contract.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="shortVideoRepository">Repository resolving the short and the viewer's interaction state.</param>
+/// <param name="shortVideoDtoService">Service assembling the public short DTO.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetPublicShortBySlugHandler(
     IShortVideoRepository shortVideoRepository,
-    IUserLookupService userLookup,
-    IFileStorageService fileStorage,
-    IMapper mapper,
-    ContentI18n i18n,
-    IVideoRepository videoRepository
+    IShortVideoDtoService shortVideoDtoService,
+    ContentI18n i18n
 ) : IQueryHandler<PublicGetPublicShortBySlugQuery, PublicGetPublicShortBySlugResult>
 {
     /// <inheritdoc />
@@ -53,14 +45,11 @@ public class PublicGetPublicShortBySlugHandler(
             isBookmarked = await shortVideoRepository.HasBookmarkedAsync(userId, shortVideo.Id, cancellationToken);
         }
 
-        PublicShortVideoDto dto = await shortVideo.ToPublicShortVideoDtoAsync(
-            mapper,
-            userLookup,
-            fileStorage,
-            videoRepository,
-            cancellationToken,
-            isLiked: isLiked,
-            isBookmarked: isBookmarked
+        PublicShortVideoDto dto = await shortVideoDtoService.CreatePublicAsync(
+            shortVideo,
+            isLiked,
+            isBookmarked,
+            cancellationToken
         );
         return new PublicGetPublicShortBySlugResult(ShortVideo: dto);
     }

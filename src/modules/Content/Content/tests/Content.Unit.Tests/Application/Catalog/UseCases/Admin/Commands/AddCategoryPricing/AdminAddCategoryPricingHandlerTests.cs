@@ -34,11 +34,13 @@ public class AdminAddCategoryPricingHandlerTests : BaseContentHandlerTest
         _pricingTierRepositoryMock = MockPricingTierRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminAddCategoryPricingHandler(
-            _categoryRepositoryMock.Object,
-            _pricingTierRepositoryMock.Object,
+            new AdminAddCategoryPricingService(
+                _categoryRepositoryMock.Object,
+                _pricingTierRepositoryMock.Object,
+                TestErrorsFactory.CreateContentI18n()
+            ),
             _unitOfWorkMock.Object,
-            Mapper,
-            TestErrorsFactory.CreateContentI18n()
+            Mapper
         );
     }
 

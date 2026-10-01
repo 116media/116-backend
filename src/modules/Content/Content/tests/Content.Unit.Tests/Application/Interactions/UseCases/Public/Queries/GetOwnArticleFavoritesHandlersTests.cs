@@ -44,7 +44,7 @@ public class GetOwnArticleFavoritesHandlersTests : BaseContentHandlerTest
         var handler = new PublicGetOwnLikedArticlesHandler(
             _interactions.Object,
             _files.Object,
-            CreateContentLookupFactory()
+            CreateContentLookupService()
         );
 
         PublicGetOwnLikedArticlesResult result = await handler.Handle(
@@ -68,7 +68,7 @@ public class GetOwnArticleFavoritesHandlersTests : BaseContentHandlerTest
         var handler = new PublicGetOwnSharedArticlesHandler(
             _interactions.Object,
             _files.Object,
-            CreateContentLookupFactory()
+            CreateContentLookupService()
         );
 
         PublicGetOwnSharedArticlesResult result = await handler.Handle(
@@ -92,7 +92,7 @@ public class GetOwnArticleFavoritesHandlersTests : BaseContentHandlerTest
             _comments.Object,
             _interactions.Object,
             _files.Object,
-            CreateContentLookupFactory()
+            CreateContentLookupService()
         );
 
         PublicGetOwnCommentedArticlesResult result = await handler.Handle(

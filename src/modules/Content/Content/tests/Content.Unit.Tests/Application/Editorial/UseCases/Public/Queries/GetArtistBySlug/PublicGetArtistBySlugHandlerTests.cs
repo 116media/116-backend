@@ -1,6 +1,6 @@
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.BuildingBlocks.Application.Pagination;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistBySlug;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -36,18 +36,19 @@ public class PublicGetArtistBySlugHandlerTests : BaseContentHandlerTest
         Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
         _handler = new PublicGetArtistBySlugHandler(
             _artistRepositoryMock.Object,
-            _lyricsRepositoryMock.Object,
-            _videoRepositoryMock.Object,
-            new ArtistDtoFactory(fileStorageMock.Object),
-            new VideoDtoFactory(
-                Mapper,
-                fileStorageMock.Object,
+            new ArtistDtoService(fileStorageMock.Object),
+            new PublicArtistPageService(
+                _lyricsRepositoryMock.Object,
                 _videoRepositoryMock.Object,
-                CreateContentLookupFactory()
+                CreateLyricsDtoService(fileStorageMock.Object),
+                new VideoDtoService(
+                    Mapper,
+                    fileStorageMock.Object,
+                    _videoRepositoryMock.Object,
+                    CreateContentLookupService()
+                )
             ),
-            fileStorageMock.Object,
-            TestErrorsFactory.CreateContentI18n(),
-            CreateContentLookupFactory()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

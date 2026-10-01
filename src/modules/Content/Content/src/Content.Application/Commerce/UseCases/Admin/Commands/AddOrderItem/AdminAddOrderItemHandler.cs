@@ -11,11 +11,11 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem
 /// Handles the <see cref="AdminAddOrderItemCommand" /> to add a commissioned content item to a draft order.
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
-/// <param name="addOrderItemFactory">Factory for the order item creation flow.</param>
+/// <param name="addOrderItemService">Service for the order item creation flow.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminAddOrderItemHandler(
     IContentOrderRepository contentOrderRepository,
-    IAddOrderItemFactory addOrderItemFactory,
+    IAddOrderItemService addOrderItemService,
     ContentI18n i18n
 ) : ICommandHandler<AdminAddOrderItemCommand, AdminAddOrderItemResult>
 {
@@ -28,7 +28,7 @@ public class AdminAddOrderItemHandler(
         Guid orderId = Guid.Parse(command.OrderId);
         Guid categoryId = Guid.Parse(command.CategoryId);
 
-        // Items and tiers are loaded so the factory's total recalculation sees the whole order.
+        // Items and tiers are loaded so the service's total recalculation sees the whole order.
         ContentOrderEntity? order = await contentOrderRepository.GetByIdWithItemsAsync(
             id: orderId,
             ct: cancellationToken
@@ -40,7 +40,7 @@ public class AdminAddOrderItemHandler(
         }
 
         (ContentOrderItemEntity item, string categoryName, string? promotionLevelName) =
-            await addOrderItemFactory.CreateItemAsync(
+            await addOrderItemService.CreateItemAsync(
                 order: order,
                 categoryId: categoryId,
                 contentKind: command.ContentKind,

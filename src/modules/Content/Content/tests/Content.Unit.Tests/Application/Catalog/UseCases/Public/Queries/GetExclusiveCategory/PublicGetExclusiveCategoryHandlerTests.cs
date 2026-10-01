@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.BuildingBlocks.Application.Pagination;
 using _116.Content.Application.Catalog.UseCases.Public.Queries.GetExclusiveCategory;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -34,13 +34,15 @@ public class PublicGetExclusiveCategoryHandlerTests : BaseContentHandlerTest
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new PublicGetExclusiveCategoryHandler(
             _categoryRepositoryMock.Object,
-            _videoRepositoryMock.Object,
-            CreateCategoryDtoFactory(_fileStorageMock.Object),
-            new VideoDtoFactory(
-                Mapper,
-                _fileStorageMock.Object,
+            CreateCategoryDtoService(_fileStorageMock.Object),
+            new PublicExclusiveCategoryVideosService(
                 _videoRepositoryMock.Object,
-                CreateContentLookupFactory()
+                new VideoDtoService(
+                    Mapper,
+                    _fileStorageMock.Object,
+                    _videoRepositoryMock.Object,
+                    CreateContentLookupService()
+                )
             ),
             TestErrorsFactory.CreateContentI18n()
         );

@@ -29,7 +29,7 @@ public class AdminGetCategoryByIdHandlerTests : BaseContentHandlerTest
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminGetCategoryByIdHandler(
             _categoryRepositoryMock.Object,
-            CreateCategoryDtoFactory(_fileStorageMock.Object)
+            CreateCategoryDtoService(_fileStorageMock.Object)
         );
     }
 

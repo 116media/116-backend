@@ -1,0 +1,99 @@
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem.Contracts;
+using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+
+namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem;
+
+/// <summary>
+/// Service implementation for adding order items.
+/// Forces IsBonus = true when the order's package slot capacity is exceeded.
+/// </summary>
+/// <param name="categoryRepository">Repository for category data access operations.</param>
+/// <param name="promotionLevelRepository">Repository for promotion level data access operations.</param>
+/// <param name="packageRepository">Repository for package data access operations.</param>
+/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="categoryErrors">Category domain error service.</param>
+public class AdminAddOrderItemService(
+    ICategoryRepository categoryRepository,
+    IPromotionLevelRepository promotionLevelRepository,
+    IPackageRepository packageRepository,
+    IContentUnitOfWork unitOfWork,
+    CategoryErrors categoryErrors
+) : IAddOrderItemService
+{
+    /// <inheritdoc />
+    public async Task<(ContentOrderItemEntity Item, string CategoryName, string? PromotionLevelName)> CreateItemAsync(
+        ContentOrderEntity order,
+        EnumCoreContentType contentKind,
+        Guid categoryId,
+        Guid? promotionLevelId,
+        bool socialBoost,
+        bool isBonus,
+        CancellationToken cancellationToken
+    )
+    {
+        order.EnsureDraft();
+
+        CategoryEntity? category = await categoryRepository.GetByIdAsync(
+            id: categoryId,
+            cancellationToken: cancellationToken
+        );
+
+        if (category is not null)
+        {
+            category.EnsureCommissionable();
+
+            decimal? promoPriceSnapshot = null;
+            PromotionLevelEntity? promoLevel = null;
+
+            if (promotionLevelId.HasValue)
+            {
+                promoLevel = await promotionLevelRepository.GetByIdOrThrowAsync(
+                    id: promotionLevelId.Value,
+                    cancellationToken: cancellationToken
+                );
+
+                promoLevel.EnsureActive();
+                promoPriceSnapshot = promoLevel.PriceUsd;
+            }
+
+            bool forcedBonus = isBonus;
+
+            if (order.PackageId.HasValue)
+            {
+                PackageEntity? package = await packageRepository.GetByIdAsync(
+                    id: order.PackageId.Value,
+                    cancellationToken: cancellationToken
+                );
+
+                if (package is not null)
+                {
+                    int slotCapacity = package.Slots.Sum(s => s.Quantity);
+                    int currentItemCount = order.Items.Count;
+                    if (currentItemCount >= slotCapacity)
+                    {
+                        forcedBonus = true;
+                    }
+                }
+            }
+
+            ContentOrderItemEntity item = order.AddItem(
+                contentKind: contentKind,
+                categoryId: categoryId,
+                promotionLevelId: promotionLevelId,
+                promoPriceSnapshotUsd: promoPriceSnapshot,
+                socialBoost: socialBoost,
+                isBonus: forcedBonus
+            );
+
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+            return (item, category.Name, promoLevel?.Name);
+        }
+
+        throw categoryErrors.NotFound(id: categoryId);
+    }
+}

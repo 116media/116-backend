@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
@@ -15,11 +15,11 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoByS
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="artistRepository">Repository used to resolve the linked artist's slug.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
-/// <param name="videoDtoFactory">Builds video projections with their thumbnails resolved.</param>
+/// <param name="videoDtoService">Builds video projections with their thumbnails resolved.</param>
 public class PublicGetVideoBySlugHandler(
     IVideoRepository videoRepository,
     IArtistRepository artistRepository,
-    IVideoDtoFactory videoDtoFactory,
+    IVideoDtoService videoDtoService,
     ContentI18n i18n
 ) : IQueryHandler<PublicGetVideoBySlugQuery, PublicGetVideoBySlugResult>
 {
@@ -61,7 +61,7 @@ public class PublicGetVideoBySlugHandler(
             artistSlug = artist?.Slug.Value;
         }
 
-        PublicVideoDetailDto dto = await videoDtoFactory.CreatePublicDetailAsync(
+        PublicVideoDetailDto dto = await videoDtoService.CreatePublicDetailAsync(
             video,
             ratedStars: ratedStars,
             ct: cancellationToken

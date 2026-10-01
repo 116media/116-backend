@@ -1,7 +1,6 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.BuildingBlocks.Presentation.Constants;
-using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp.Contracts;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
@@ -13,9 +12,9 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp;
 /// <summary>
 /// Handles the <see cref="PublicResendOtpCommand" /> to resend OTP codes for public users.
 /// </summary>
-/// <param name="otpFactory">Factory for handling OTP resend logic.</param>
+/// <param name="otpService">Service for handling OTP resend logic.</param>
 /// <param name="authRepository">Repository for user data access operations.</param>
-public class PublicResendOtpHandler(IPublicResendOtpFactory otpFactory, IAuthRepository authRepository)
+public class PublicResendOtpHandler(IPublicResendOtpService otpService, IAuthRepository authRepository)
     : ICommandHandler<PublicResendOtpCommand, PublicResendOtpResult>
 {
     /// <summary>
@@ -41,7 +40,7 @@ public class PublicResendOtpHandler(IPublicResendOtpFactory otpFactory, IAuthRep
         );
         authRepository.IsUserAccountActive(user!);
 
-        await otpFactory.ResendOtpAsync(userId: user!.Id, purpose: purpose, cancellationToken: cancellationToken);
+        await otpService.ResendOtpAsync(userId: user!.Id, purpose: purpose, cancellationToken: cancellationToken);
 
         return new PublicResendOtpResult(IsSuccess: true);
     }

@@ -1,10 +1,8 @@
-using _116.Identity.Application.Adapters.SocialAuth;
 using _116.Identity.Application.Auth.Exceptions;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
-using _116.Identity.Application.Session.Factories.Contracts;
-using _116.Identity.Application.Shared.Exceptions;
-using _116.Identity.Application.User.Services;
+using _116.Identity.Application.Session.Services;
+using _116.Identity.Application.User.Ports;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.TestData.Factories;
@@ -12,7 +10,6 @@ using _116.Identity.TestData.Helpers;
 using _116.Identity.TestData.Mocks.Services;
 using _116.Tests.TestData;
 using _116.Tests.TestData.Constants;
-using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -20,28 +17,22 @@ using Xunit;
 namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Public.Commands.SocialLogin;
 
 /// <summary>
-/// Unit tests for <see cref="PublicSocialLoginHandler"/>. The handler verifies the provider token,
-/// maps verification failures to localized errors, then hands the verified payload to the factory.
+/// Unit tests for <see cref="PublicSocialLoginHandler"/>: the authentication call, the session
+/// and the response. Token verification is covered by <c>PublicSocialLoginAuthServiceTests</c>.
 /// </summary>
 public class PublicSocialLoginHandlerTests : BaseHandlerTest
 {
-    private readonly Mock<IPublicSocialLoginAuthFactory> _authFactoryMock = new();
-    private readonly Mock<ISessionFactory> _sessionFactoryMock = new();
+    private readonly Mock<IPublicSocialLoginAuthService> _authServiceMock = new();
+    private readonly Mock<ISessionService> _sessionServiceMock = new();
     private readonly Mock<IAvatarService> _avatarServiceMock = MockAvatarService.Create();
-    private readonly Mock<ISocialTokenVerifierFactory> _verifierFactoryMock = new();
-    private readonly Mock<ISocialTokenVerifier> _verifierMock = new();
     private readonly PublicSocialLoginHandler _handler;
 
     public PublicSocialLoginHandlerTests()
     {
-        _verifierFactoryMock.Setup(x => x.For(It.IsAny<EnumAuthProvider>())).Returns(_verifierMock.Object);
-
         _handler = new PublicSocialLoginHandler(
-            _authFactoryMock.Object,
-            _sessionFactoryMock.Object,
+            _authServiceMock.Object,
+            _sessionServiceMock.Object,
             _avatarServiceMock.Object,
-            _verifierFactoryMock.Object,
-            TestErrorsFactory.CreateIdentityI18n(),
             Mapper
         );
     }
@@ -49,43 +40,33 @@ public class PublicSocialLoginHandlerTests : BaseHandlerTest
     private static PublicSocialLoginCommand Command() =>
         new(Provider: TestConstants.Auth.ProviderGoogle, IdToken: TestConstants.Auth.SocialLoginIdToken);
 
-    private static SocialTokenPayload VerifiedPayload(bool emailVerified = true) =>
-        new(
-            ProviderSubjectId: TestConstants.Auth.SocialLoginProviderSubjectId,
-            Email: TestConstants.Auth.SocialLoginEmail,
-            EmailVerified: emailVerified,
-            Name: TestConstants.Auth.SocialLoginUserName,
-            PictureUrl: null
-        );
+    private UserEntity ArrangeAuthenticatedUser()
+    {
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        PublicSocialLoginAuthData authData = AuthTestHelpers.CreatePublicSocialLoginAuthData(user);
 
-    private void ArrangeVerify(SocialTokenPayload payload) =>
-        _verifierMock
-            .Setup(x => x.VerifyAsync(TestConstants.Auth.SocialLoginIdToken, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(payload);
+        _authServiceMock
+            .Setup(x =>
+                x.AuthenticateAsync(
+                    EnumAuthProvider.Google,
+                    TestConstants.Auth.SocialLoginIdToken,
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(authData);
+        _sessionServiceMock
+            .Setup(x => x.CreateSessionAsync(user, authData.UserPermissions, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(AuthTestHelpers.CreateDefaultSessionResult());
+        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
 
-    #region Success Cases
+        return user;
+    }
 
     [Fact]
     public async Task Handle_WithVerifiedToken_ShouldReturnAuthenticationDto()
     {
         // Arrange
-        UserEntity user = UserFactory.CreateVerifiedActive();
-        PublicSocialLoginAuthData authData = AuthTestHelpers.CreatePublicSocialLoginAuthData(user);
-
-        ArrangeVerify(VerifiedPayload());
-        _authFactoryMock
-            .Setup(x =>
-                x.AuthenticateOrCreateAsync(
-                    It.IsAny<SocialTokenPayload>(),
-                    EnumAuthProvider.Google,
-                    It.IsAny<CancellationToken>()
-                )
-            )
-            .ReturnsAsync(authData);
-        _sessionFactoryMock
-            .Setup(x => x.CreateSessionAsync(user, authData.UserPermissions, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(AuthTestHelpers.CreateDefaultSessionResult());
-        _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
+        UserEntity user = ArrangeAuthenticatedUser();
 
         // Act
         PublicSocialLoginResult result = await _handler.Handle(Command(), CancellationToken.None);
@@ -96,29 +77,30 @@ public class PublicSocialLoginHandlerTests : BaseHandlerTest
         result.Authentication.User.Id.Should().Be(user.Id);
     }
 
-    #endregion
-
-    #region Failure Cases
-
     [Fact]
-    public async Task Handle_WhenProviderEmailNotVerified_ShouldThrow()
+    public async Task Handle_ShouldOpenTheSessionForTheAuthenticatedUser()
     {
         // Arrange
-        ArrangeVerify(VerifiedPayload(emailVerified: false));
+        UserEntity user = ArrangeAuthenticatedUser();
 
         // Act
-        Func<Task> act = async () => await _handler.Handle(Command(), CancellationToken.None);
+        await _handler.Handle(Command(), CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<AccountNotVerifiedException>();
+        _sessionServiceMock.Verify(
+            x => x.CreateSessionAsync(user, It.IsAny<List<RolePermissionEntity>>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     [Fact]
-    public async Task Handle_WhenTokenDoesNotVerify_ShouldPropagateException()
+    public async Task Handle_WhenAuthenticationFails_ShouldPropagateWithoutOpeningASession()
     {
         // Arrange
-        _verifierMock
-            .Setup(x => x.VerifyAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        _authServiceMock
+            .Setup(x =>
+                x.AuthenticateAsync(It.IsAny<EnumAuthProvider>(), It.IsAny<string>(), It.IsAny<CancellationToken>())
+            )
             .ThrowsAsync(new SocialTokenVerificationException());
 
         // Act
@@ -126,22 +108,31 @@ public class PublicSocialLoginHandlerTests : BaseHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<SocialTokenVerificationException>();
+        _sessionServiceMock.Verify(
+            x =>
+                x.CreateSessionAsync(
+                    It.IsAny<UserEntity>(),
+                    It.IsAny<List<RolePermissionEntity>>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
     }
 
     [Fact]
-    public async Task Handle_WhenProviderUnsupported_ShouldPropagateException()
+    public async Task Handle_WithCancellationToken_ShouldPassToTheAuthService()
     {
         // Arrange
-        _verifierFactoryMock
-            .Setup(x => x.For(It.IsAny<EnumAuthProvider>()))
-            .Throws(new UnsupportedProviderException(EnumAuthProvider.Google));
+        ArrangeAuthenticatedUser();
+        using CancellationTokenSource cts = new();
 
         // Act
-        Func<Task> act = async () => await _handler.Handle(Command(), CancellationToken.None);
+        await _handler.Handle(Command(), cts.Token);
 
         // Assert
-        await act.Should().ThrowAsync<UnsupportedProviderException>();
+        _authServiceMock.Verify(
+            x => x.AuthenticateAsync(EnumAuthProvider.Google, TestConstants.Auth.SocialLoginIdToken, cts.Token),
+            Times.Once
+        );
     }
-
-    #endregion
 }

@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -12,11 +12,11 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="videoDtoFactory">Builds video projections with their thumbnails resolved.</param>
+/// <param name="videoDtoService">Builds video projections with their thumbnails resolved.</param>
 public class AdminUpdateVideoSeoHandler(
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
-    IVideoDtoFactory videoDtoFactory
+    IVideoDtoService videoDtoService
 ) : ICommandHandler<AdminUpdateVideoSeoCommand, AdminUpdateVideoSeoResult>
 {
     /// <inheritdoc />
@@ -37,7 +37,7 @@ public class AdminUpdateVideoSeoHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await videoDtoFactory.CreateDetailAsync(updated, cancellationToken);
+        var dto = await videoDtoService.CreateDetailAsync(updated, cancellationToken);
         return new AdminUpdateVideoSeoResult(Video: dto);
     }
 }

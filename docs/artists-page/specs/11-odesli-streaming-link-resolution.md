@@ -89,7 +89,7 @@ No migration: the enum is only ever a stored integer on existing tables.
 
 ## The port
 
-`Application/Shared/Services/IStreamingLinkResolutionService.cs` — same shape as
+`Application/Shared/Ports/IStreamingLinkResolutionService.cs` — same shape as
 `ITranslationService`: the application owns the port, infrastructure owns the provider.
 
 ```csharp
@@ -234,7 +234,7 @@ Cloudinary is — the one kind of mock allowed inside `tests/Integration/`.
 
 - [x] `EnumStreamingPlatform.Deezer` appended
 - [x] `StreamingLinkFactory` Deezer search-fallback arm; platform-count tests updated to 5
-- [x] `IStreamingLinkResolutionService` port in `Application/Shared/Services`
+- [x] `IStreamingLinkResolutionService` port in `Application/Shared/Ports`
 - [x] `StreamingLinkResolutionException` in `Application/Shared/Exceptions`
 - [x] `OdesliStreamingLinkResolutionService` via typed `HttpClient`, config-driven base URL and optional key, `userCountry=CD`, 10s timeout
 - [x] Response mapping: known keys → enum, unknown keys skipped, non-https skipped

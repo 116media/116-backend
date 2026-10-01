@@ -16,7 +16,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllLyrics
 public class AdminGetAllLyricsHandler(
     ILyricsRepository lyricsRepository,
     IFileStorageService fileStorage,
-    IContentLookupFactory contentLookupFactory
+    IContentLookupService contentLookupService
 ) : IQueryHandler<AdminGetAllLyricsQuery, AdminGetAllLyricsResult>
 {
     /// <inheritdoc />
@@ -37,7 +37,7 @@ public class AdminGetAllLyricsHandler(
         IReadOnlyList<LyricsSummaryDto> dtoList = await lyricsList
             .AsReadOnly()
             .ToLyricsSummaryDtosAsync(
-                await contentLookupFactory.ResolveForLyricsAsync(lyricsList.AsReadOnly(), cancellationToken),
+                await contentLookupService.ResolveForLyricsAsync(lyricsList.AsReadOnly(), cancellationToken),
                 fileStorage,
                 cancellationToken
             );

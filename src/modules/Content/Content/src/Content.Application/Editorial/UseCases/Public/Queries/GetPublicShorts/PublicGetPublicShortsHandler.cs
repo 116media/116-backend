@@ -1,28 +1,20 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.BuildingBlocks.Application.Pagination;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.DTOs;
-using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Identity.Contracts.Application.Services;
-using _116.Storage.Contracts.Application.Services;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicShorts;
 
 /// <summary>
-/// Handles the <see cref="PublicGetPublicShortsQuery" /> to retrieve a paginated list of active short videos.
+/// Handles the <see cref="PublicGetPublicShortsQuery" /> to page the active shorts.
 /// </summary>
-/// <param name="shortVideoRepository">Repository for short video data access operations.</param>
-/// <param name="userLookup">Service for resolving author profiles.</param>
-/// <param name="fileStorage">Storage's file contract.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="shortVideoRepository">Repository paging the shorts and resolving the viewer's interaction state.</param>
+/// <param name="shortVideoDtoService">Service assembling the public short DTOs.</param>
 public class PublicGetPublicShortsHandler(
     IShortVideoRepository shortVideoRepository,
-    IUserLookupService userLookup,
-    IFileStorageService fileStorage,
-    IMapper mapper,
-    IVideoRepository videoRepository
+    IShortVideoDtoService shortVideoDtoService
 ) : IQueryHandler<PublicGetPublicShortsQuery, PublicGetPublicShortsResult>
 {
     /// <inheritdoc />
@@ -42,20 +34,15 @@ public class PublicGetPublicShortsHandler(
             cancellationToken: cancellationToken
         );
 
-        List<Guid> shortVideoIds = shortVideos.Select(shortVideo => shortVideo.Id).ToList();
-
         (IReadOnlySet<Guid> liked, IReadOnlySet<Guid> bookmarked) =
             await shortVideoRepository.GetLikedAndBookmarkedIdsAsync(
                 currentUserId: query.CurrentUserId,
-                shortVideoIds: shortVideoIds,
+                shortVideoIds: shortVideos.Select(shortVideo => shortVideo.Id).ToList(),
                 cancellationToken: cancellationToken
             );
 
-        IReadOnlyList<PublicShortVideoDto> dtoList = await shortVideos.ToPublicShortVideoDtosAsync(
-            mapper,
-            userLookup,
-            fileStorage,
-            videoRepository,
+        IReadOnlyList<PublicShortVideoDto> dtoList = await shortVideoDtoService.CreatePublicManyAsync(
+            shortVideos,
             liked,
             bookmarked,
             cancellationToken
@@ -67,7 +54,6 @@ public class PublicGetPublicShortsHandler(
             count: totalCount,
             items: dtoList
         );
-
         return new PublicGetPublicShortsResult(ShortVideos: paginatedResult);
     }
 }

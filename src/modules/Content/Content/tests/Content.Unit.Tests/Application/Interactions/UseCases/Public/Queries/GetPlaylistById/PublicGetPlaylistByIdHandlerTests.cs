@@ -1,6 +1,6 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Content.Application.Interactions.Factories;
 using _116.Content.Application.Interactions.Persistence;
+using _116.Content.Application.Interactions.Services;
 using _116.Content.Application.Interactions.UseCases.Public.Queries.GetPlaylistById;
 using _116.Content.Domain.Entities;
 using _116.Content.TestData;
@@ -32,7 +32,7 @@ public class PublicGetPlaylistByIdHandlerTests : BaseContentHandlerTest
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new PublicGetPlaylistByIdHandler(
             _playlistRepositoryMock.Object,
-            new PlaylistDtoFactory(
+            new PlaylistDtoService(
                 Mapper,
                 _fileStorageMock.Object,
                 MockVideoRepository.Create().Object,

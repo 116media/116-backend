@@ -1,32 +1,18 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Catalog.Specifications;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder.Contracts;
 using _116.Content.Application.Shared.DTOs;
-using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
-using _116.Content.Application.Shared.Repositories;
-using _116.Content.Domain.Entities;
 
 namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder;
 
 /// <summary>
-/// Handles the <see cref="AdminCreateOrderCommand" /> to open a new content order.
-/// When a package is selected, delegates item/tier creation to the factory.
+/// Handles the <see cref="AdminCreateOrderCommand" /> to open an order for a customer, seeded
+/// from a package when one is named.
 /// </summary>
-/// <param name="customerRepository">Repository for customer data access operations.</param>
-/// <param name="packageRepository">Repository for package data access operations.</param>
-/// <param name="createOrderFactory">Factory for populating orders from package slots.</param>
-/// <param name="contentOrderRepository">Repository for content order data access operations.</param>
+/// <param name="createOrderService">Service resolving the customer and package and staging the order.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
-public class AdminCreateOrderHandler(
-    ICustomerRepository customerRepository,
-    IPackageRepository packageRepository,
-    ICreateOrderFactory createOrderFactory,
-    IContentOrderRepository contentOrderRepository,
-    IContentUnitOfWork unitOfWork,
-    ContentI18n i18n
-) : ICommandHandler<AdminCreateOrderCommand, AdminCreateOrderResult>
+public class AdminCreateOrderHandler(ICreateOrderService createOrderService, IContentUnitOfWork unitOfWork)
+    : ICommandHandler<AdminCreateOrderCommand, AdminCreateOrderResult>
 {
     /// <inheritdoc />
     public async Task<AdminCreateOrderResult> Handle(
@@ -34,62 +20,21 @@ public class AdminCreateOrderHandler(
         CancellationToken cancellationToken
     )
     {
-        Guid customerId = Guid.Parse(command.CustomerId);
-
-        CustomerEntity? customer = await customerRepository.GetByIdAsync(
-            id: customerId,
-            cancellationToken: cancellationToken
+        CreatedOrderData created = await createOrderService.CreateAsync(
+            customerId: Guid.Parse(command.CustomerId),
+            packageId: command.PackageId,
+            ct: cancellationToken
         );
 
-        if (customer is not null)
-        {
-            PackageEntity? package = null;
+        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-            if (command.PackageId.HasValue)
-            {
-                package = await packageRepository.GetByIdAsync(
-                    id: command.PackageId.Value,
-                    cancellationToken: cancellationToken
-                );
-
-                if (package is null || !new ActivePackageSpecification().IsSatisfiedBy(package))
-                {
-                    throw i18n.Package.NotFound(id: command.PackageId.Value);
-                }
-            }
-
-            var order = ContentOrderEntity.Create(
-                id: Guid.NewGuid(),
-                customerId: customerId,
-                packageId: command.PackageId
-            );
-
-            await contentOrderRepository.AddAsync(order: order, ct: cancellationToken);
-
-            int itemCount = 0;
-
-            if (package is not null)
-            {
-                itemCount = await createOrderFactory.PopulateFromPackageAsync(
-                    order: order,
-                    package: package,
-                    ct: cancellationToken
-                );
-            }
-
-            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-            var dto = new ContentOrderSummaryDto(
-                Id: order.Id,
-                Status: order.Status,
-                CustomerName: customer.FullName,
-                TotalAmountUsd: order.TotalAmountUsd,
-                ItemCount: itemCount
-            );
-
-            return new AdminCreateOrderResult(Order: dto);
-        }
-
-        throw i18n.Customer.NotFound(id: customerId);
+        var dto = new ContentOrderSummaryDto(
+            Id: created.Order.Id,
+            Status: created.Order.Status,
+            CustomerName: created.Customer.FullName,
+            TotalAmountUsd: created.Order.TotalAmountUsd,
+            ItemCount: created.ItemCount
+        );
+        return new AdminCreateOrderResult(Order: dto);
     }
 }

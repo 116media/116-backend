@@ -1,13 +1,10 @@
 using _116.BuildingBlocks.Application.Exceptions;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ChangePassword;
-using _116.Identity.Application.Session.Repositories;
-using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
-using _116.Identity.Domain.Enums;
 using _116.Identity.TestData.Factories;
-using _116.Identity.TestData.Mocks.Infrastructure;
 using _116.Identity.TestData.Mocks.Repositories;
 using _116.Identity.TestData.Mocks.Services;
 using _116.Storage.TestData.Mocks.Infrastructure;
@@ -25,25 +22,19 @@ public class PublicChangePasswordHandlerTests
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<IPasswordService> _passwordServiceMock;
-    private readonly Mock<ISessionRepository> _sessionRepositoryMock;
-    private readonly Mock<IUserTokenStateRepository> _tokenStateRepositoryMock;
-    private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<ICredentialInvalidationService> _credentialInvalidationServiceMock;
     private readonly PublicChangePasswordHandler _handler;
 
     public PublicChangePasswordHandlerTests()
     {
         _authRepositoryMock = MockAuthRepository.Create();
         _passwordServiceMock = MockPasswordService.Create();
-        _sessionRepositoryMock = MockSessionRepository.Create();
-        _tokenStateRepositoryMock = new Mock<IUserTokenStateRepository>();
-        _unitOfWorkMock = MockIdentityUnitOfWork.Create();
+        _credentialInvalidationServiceMock = new Mock<ICredentialInvalidationService>();
 
         _handler = new PublicChangePasswordHandler(
             _authRepositoryMock.Object,
             _passwordServiceMock.Object,
-            _sessionRepositoryMock.Object,
-            _tokenStateRepositoryMock.Object,
-            _unitOfWorkMock.Object,
+            _credentialInvalidationServiceMock.Object,
             TestErrorsFactory.CreateIdentityI18n()
         );
     }
@@ -109,7 +100,7 @@ public class PublicChangePasswordHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ShouldCommitUnitOfWork()
+    public async Task Handle_ShouldCommitTheCredentialChange()
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
@@ -130,7 +121,10 @@ public class PublicChangePasswordHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _unitOfWorkMock.VerifyCommitCalled();
+        _credentialInvalidationServiceMock.Verify(
+            x => x.CommitCredentialChangeAsync(user.Id, It.IsAny<Guid?>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -269,9 +263,8 @@ public class PublicChangePasswordHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
-        _unitOfWorkMock.VerifyCommitNotCalled();
-        _tokenStateRepositoryMock.Verify(
-            x => x.RotateSecurityStampAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+        _credentialInvalidationServiceMock.Verify(
+            x => x.CommitCredentialChangeAsync(It.IsAny<Guid>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
     }
@@ -307,7 +300,7 @@ public class PublicChangePasswordHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WithCancellationToken_ShouldPassToUnitOfWork()
+    public async Task Handle_WithCancellationToken_ShouldPassToTheCredentialInvalidationService()
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
@@ -329,7 +322,10 @@ public class PublicChangePasswordHandlerTests
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _unitOfWorkMock.Verify(x => x.CommitAsync(cts.Token), Times.Once);
+        _credentialInvalidationServiceMock.Verify(
+            x => x.CommitCredentialChangeAsync(It.IsAny<Guid>(), It.IsAny<Guid?>(), cts.Token),
+            Times.Once
+        );
     }
 
     #endregion
@@ -346,58 +342,6 @@ public class PublicChangePasswordHandlerTests
         _passwordServiceMock.SetupVerifySuccess(oldPassword, user.PasswordHash);
         _passwordServiceMock.SetupVerifyFailure(newPassword, user.PasswordHash);
         _passwordServiceMock.SetupHash(newPassword, "new-hashed-password");
-    }
-
-    #endregion
-
-    #region Token Invalidation
-
-    [Fact]
-    public async Task Handle_ShouldRevokeOtherSessionsBeforeCommitAndRotateStampAfterCommit()
-    {
-        // Arrange
-        UserEntity user = UserFactory.CreateVerifiedActive();
-        var sessionId = Guid.NewGuid();
-        string oldPassword = "OldPassword123!";
-        string newPassword = "NewPassword456!";
-
-        PublicChangePasswordCommand command = new(
-            UserId: user.Id,
-            SessionId: sessionId,
-            OldPassword: oldPassword,
-            NewPassword: newPassword
-        );
-
-        SetupSuccessfulChangePassword(user, sessionId, oldPassword, newPassword);
-
-        var callOrder = new List<string>();
-        _sessionRepositoryMock
-            .Setup(x =>
-                x.DeleteAllByUserIdAsync(
-                    user.Id,
-                    EnumSessionRevokeReason.SecurityInvalidation,
-                    sessionId,
-                    It.IsAny<CancellationToken>()
-                )
-            )
-            .Callback(() => callOrder.Add("revoke"))
-            .Returns(Task.CompletedTask);
-
-        _unitOfWorkMock
-            .Setup(x => x.CommitAsync(It.IsAny<CancellationToken>()))
-            .Callback(() => callOrder.Add("commit"))
-            .ReturnsAsync(1);
-
-        _tokenStateRepositoryMock
-            .Setup(x => x.RotateSecurityStampAsync(user.Id, It.IsAny<CancellationToken>()))
-            .Callback(() => callOrder.Add("rotate"))
-            .ReturnsAsync(Guid.NewGuid());
-
-        // Act
-        await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        callOrder.Should().Equal("revoke", "commit", "rotate");
     }
 
     #endregion

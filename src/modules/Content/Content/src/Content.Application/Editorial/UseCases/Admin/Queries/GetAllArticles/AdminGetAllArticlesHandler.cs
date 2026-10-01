@@ -19,7 +19,7 @@ public class AdminGetAllArticlesHandler(
     IArticleRepository articleRepository,
     IFileStorageService fileStorage,
     IMapper mapper,
-    IContentLookupFactory contentLookupFactory
+    IContentLookupService contentLookupService
 ) : IQueryHandler<AdminGetAllArticlesQuery, AdminGetAllArticlesResult>
 {
     /// <inheritdoc />
@@ -42,7 +42,7 @@ public class AdminGetAllArticlesHandler(
 
         IReadOnlyList<ArticleSummaryDto> dtoList = await articles.ToArticleSummaryDtosAsync(
             mapper,
-            await contentLookupFactory.ResolveForArticlesAsync(articles, cancellationToken),
+            await contentLookupService.ResolveForArticlesAsync(articles, cancellationToken),
             fileStorage,
             cancellationToken
         );

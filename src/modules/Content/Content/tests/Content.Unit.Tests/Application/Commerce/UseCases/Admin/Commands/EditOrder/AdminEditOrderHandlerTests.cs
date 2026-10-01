@@ -37,11 +37,13 @@ public class AdminEditOrderHandlerTests : BaseContentHandlerTest
         _customerRepositoryMock = MockCustomerRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminEditOrderHandler(
-            _orderRepositoryMock.Object,
-            _customerRepositoryMock.Object,
+            new AdminEditOrderService(
+                _orderRepositoryMock.Object,
+                _customerRepositoryMock.Object,
+                TestErrorsFactory.CreateContentI18n()
+            ),
             _unitOfWorkMock.Object,
-            CreateOrderDtoFactory(),
-            TestErrorsFactory.CreateContentI18n()
+            CreateOrderDtoService()
         );
     }
 

@@ -1,33 +1,17 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Shared.DTOs;
-using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Identity.Contracts.Application.DTOs;
-using _116.Identity.Contracts.Application.Services;
-using _116.Storage.Contracts.Application.DTOs;
-using _116.Storage.Contracts.Application.Services;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetArticleById;
 
 /// <summary>
-/// Handles the <see cref="AdminGetArticleByIdQuery" /> to retrieve a single article by its identifier.
-/// Enriches the response with the author's profile (user name, email, avatar URL, role) by:
-/// 1. Resolving the author's identity info via <see cref="IUserLookupService" />
-/// 2. Resolving the avatar file URL via <see cref="IFileRepository" /> if the author has an avatar
+/// Handles the <see cref="AdminGetArticleByIdQuery" /> to serve an article with its author profile.
 /// </summary>
-/// <param name="articleRepository">Repository for article data access operations.</param>
-/// <param name="userLookup">Cross-module service for resolving author profiles.</param>
-/// <param name="fileStorage">Storage's file contract.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminGetArticleByIdHandler(
-    IArticleRepository articleRepository,
-    IUserLookupService userLookup,
-    IFileStorageService fileStorage,
-    IMapper mapper,
-    IContentLookupFactory contentLookupFactory
-) : IQueryHandler<AdminGetArticleByIdQuery, AdminGetArticleByIdResult>
+/// <param name="articleRepository">Repository loading the article.</param>
+/// <param name="articleDtoService">Service assembling the article detail with its author.</param>
+public class AdminGetArticleByIdHandler(IArticleRepository articleRepository, IArticleDtoService articleDtoService)
+    : IQueryHandler<AdminGetArticleByIdQuery, AdminGetArticleByIdResult>
 {
     /// <inheritdoc />
     public async Task<AdminGetArticleByIdResult> Handle(
@@ -40,39 +24,7 @@ public class AdminGetArticleByIdHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await article.ToArticleDetailDtoAsync(
-            mapper,
-            await contentLookupFactory.ResolveForArticlesAsync([article], cancellationToken),
-            fileStorage,
-            cancellationToken
-        );
-
-        UserProfileDto? authorInfo = await userLookup.GetUserProfileByIdAsync(
-            userId: article.AuthorId,
-            ct: cancellationToken
-        );
-
-        AdminAuthorDto? author = null;
-        if (authorInfo is not null)
-        {
-            string? avatarUrl = null;
-            if (authorInfo.AvatarFileId.HasValue)
-            {
-                FileReferenceDto? avatarFile = await fileStorage.ResolveAsync(
-                    authorInfo.AvatarFileId.Value,
-                    cancellationToken
-                );
-                avatarUrl = avatarFile?.StorageUrl;
-            }
-
-            author = new AdminAuthorDto(
-                UserName: authorInfo.UserName,
-                Email: authorInfo.Email,
-                AvatarUrl: avatarUrl,
-                Role: authorInfo.Role
-            );
-        }
-
-        return new AdminGetArticleByIdResult(Article: dto with { Author = author });
+        var dto = await articleDtoService.CreateDetailWithAuthorAsync(article, cancellationToken);
+        return new AdminGetArticleByIdResult(Article: dto);
     }
 }

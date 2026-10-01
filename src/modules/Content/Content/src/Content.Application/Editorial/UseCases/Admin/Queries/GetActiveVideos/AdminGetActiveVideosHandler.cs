@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
@@ -19,8 +19,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetActiveVid
 /// <param name="mapper">
 /// Mapster mapper for entity-to-DTO transformations.
 /// </param>
-/// <param name="videoDtoFactory">Builds video projections with their thumbnails resolved.</param>
-public class AdminGetActiveVideosHandler(IVideoRepository videoRepository, IVideoDtoFactory videoDtoFactory)
+/// <param name="videoDtoService">Builds video projections with their thumbnails resolved.</param>
+public class AdminGetActiveVideosHandler(IVideoRepository videoRepository, IVideoDtoService videoDtoService)
     : IQueryHandler<AdminGetActiveVideosQuery, AdminGetActiveVideosResult>
 {
     /// <inheritdoc />
@@ -30,7 +30,7 @@ public class AdminGetActiveVideosHandler(IVideoRepository videoRepository, IVide
     )
     {
         List<VideoEntity> videos = await videoRepository.GetActiveAsync(cancellationToken);
-        IReadOnlyList<VideoSummaryDto> dtoList = await videoDtoFactory.CreateManyAsync(videos, cancellationToken);
+        IReadOnlyList<VideoSummaryDto> dtoList = await videoDtoService.CreateManyAsync(videos, cancellationToken);
 
         return new AdminGetActiveVideosResult(Videos: dtoList);
     }

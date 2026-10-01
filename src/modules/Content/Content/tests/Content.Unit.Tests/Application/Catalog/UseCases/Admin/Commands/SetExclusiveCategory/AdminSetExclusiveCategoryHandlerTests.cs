@@ -38,11 +38,14 @@ public class AdminSetExclusiveCategoryHandlerTests : BaseContentHandlerTest
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminSetExclusiveCategoryHandler(
+            new AdminSetExclusiveCategoryService(
+                _categoryRepositoryMock.Object,
+                _contentTypeRepositoryMock.Object,
+                TestErrorsFactory.CreateContentI18n()
+            ),
             _categoryRepositoryMock.Object,
-            _contentTypeRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            CreateCategoryDtoFactory(_fileStorageMock.Object),
-            TestErrorsFactory.CreateContentI18n()
+            CreateCategoryDtoService(_fileStorageMock.Object)
         );
     }
 

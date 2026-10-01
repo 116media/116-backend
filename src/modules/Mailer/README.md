@@ -7,7 +7,9 @@ Mailer owns two use-case areas, each a folder in `Mailer.Application`:
 | `Newsletter` | Subscriptions, the confirm and unsubscribe flows and their hosted pages, the subscriber list |
 | `Notifications` | In-app notifications, read state, unread counts |
 
-`Templates` is not a use-case area: it renders the email bodies the rest of the monolith sends. The
+`Templates` is not a use-case area: it holds the localized catalogs and the renderers for the
+email bodies (`Shared/Templates/Emails`) and the in-app notifications (`Shared/Templates/Notifications`). A
+renderer reads only its catalog, so it is a template, not a service. The
 send outbox (`OutboxEmailEntity`), the dispatcher job and the Resend / SMTP senders live in
 `Mailer.Infrastructure`, driven on a schedule rather than by a request.
 
@@ -52,6 +54,11 @@ is why that layer reaches the outermost shared project rather than stopping at
 `BuildingBlocks.Application`. The three layers grant each other `InternalsVisibleTo`: the module is
 the encapsulation unit, so splitting it into three assemblies must not turn `internal` into layer-
 private.
+
+Inside `Mailer.Application`, an interface under `<Area>/Ports/` is implemented in
+`Mailer.Infrastructure/Services/`; every other interface in the layer is implemented in the layer,
+beside its declaration. Both kinds end in `Service`, so the folder, not the name, says who
+implements it. See [`docs/application-services.md`](../../../docs/application-services.md).
 
 Other modules see `Mailer.Contracts` and nothing else: `IEmailDispatcher`, `IEmailService`,
 `INotificationService`, `OutboundEmail` and `EnumNotificationType` — how another module asks for an

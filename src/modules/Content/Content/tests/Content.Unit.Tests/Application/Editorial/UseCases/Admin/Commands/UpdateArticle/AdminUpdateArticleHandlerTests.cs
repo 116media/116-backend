@@ -47,13 +47,14 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
         FileReferenceDto coverFile = FileReferenceDtoFactory.CreateImage();
         _fileStorageMock.SetupResolve(coverFile);
         _handler = new AdminUpdateArticleHandler(
-            _categoryRepositoryMock.Object,
+            new AdminUpdateArticleService(
+                _categoryRepositoryMock.Object,
+                _articleRepositoryMock.Object,
+                TestErrorsFactory.CreateContentI18n()
+            ),
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _fileStorageMock.Object,
-            Mapper,
-            TestErrorsFactory.CreateContentI18n(),
-            CreateContentLookupFactory()
+            CreateArticleDtoService(_fileStorageMock.Object)
         );
     }
 

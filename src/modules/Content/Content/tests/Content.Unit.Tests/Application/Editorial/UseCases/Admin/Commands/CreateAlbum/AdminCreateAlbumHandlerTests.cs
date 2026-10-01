@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateAlbum;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -40,7 +40,7 @@ public class AdminCreateAlbumHandlerTests
             _albumRepositoryMock.Object,
             _artistRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            new AlbumDtoFactory(fileStorageMock.Object)
+            new AlbumDtoService(fileStorageMock.Object)
         );
     }
 

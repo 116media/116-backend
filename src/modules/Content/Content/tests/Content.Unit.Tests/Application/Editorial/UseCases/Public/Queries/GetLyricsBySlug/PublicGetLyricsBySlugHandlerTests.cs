@@ -43,15 +43,15 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
         _handler = new PublicGetLyricsBySlugHandler(
             _lyricsRepositoryMock.Object,
-            _videoRepositoryMock.Object,
-            _artistRepositoryMock.Object,
-            _albumRepositoryMock.Object,
-            _streamingLinkRepositoryMock.Object,
-            Mapper,
-            userLookupMock.Object,
-            fileStorageMock.Object,
-            TestErrorsFactory.CreateContentI18n(),
-            CreateContentLookupFactory()
+            new PublicLyricsPageService(
+                _videoRepositoryMock.Object,
+                _artistRepositoryMock.Object,
+                _albumRepositoryMock.Object,
+                _streamingLinkRepositoryMock.Object,
+                _lyricsRepositoryMock.Object
+            ),
+            CreateLyricsDtoService(fileStorageMock.Object, userLookupMock.Object),
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
