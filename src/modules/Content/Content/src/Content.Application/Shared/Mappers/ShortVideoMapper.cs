@@ -102,7 +102,7 @@ public static class ShortVideoMapper
             isBookmarked
         );
 
-        AuthorDto? authorInfo = await userLookup.GetAuthorInfoByIdAsync(userId: entity.AuthorId, ct: ct);
+        UserProfileDto? authorInfo = await userLookup.GetUserProfileByIdAsync(userId: entity.AuthorId, ct: ct);
 
         if (authorInfo is null)
         {
@@ -136,7 +136,7 @@ public static class ShortVideoMapper
         this ShortVideoEntity entity,
         IMapper mapper,
         IReadOnlyDictionary<Guid, FileReferenceDto> files,
-        IReadOnlyDictionary<Guid, AuthorDto> authors,
+        IReadOnlyDictionary<Guid, UserProfileDto> authors,
         IReadOnlyDictionary<Guid, VideoEntity> parentVideos,
         IReadOnlySet<Guid> likedShortVideoIds,
         IReadOnlySet<Guid> bookmarkedShortVideoIds
@@ -163,7 +163,7 @@ public static class ShortVideoMapper
         }
 
         AdminAuthorDto? author = null;
-        if (authors.TryGetValue(entity.AuthorId, out AuthorDto? authorInfo))
+        if (authors.TryGetValue(entity.AuthorId, out UserProfileDto? authorInfo))
         {
             string? avatarUrl =
                 authorInfo.AvatarFileId is { } avatarFileId
@@ -388,11 +388,11 @@ public static class ShortVideoMapper
             return [];
         }
 
-        IReadOnlyDictionary<Guid, AuthorDto> authors = EmptyAuthors;
+        IReadOnlyDictionary<Guid, UserProfileDto> authors = EmptyAuthors;
         if (userLookup is not null)
         {
             List<Guid> authorIds = entities.Select(entity => entity.AuthorId).Distinct().ToList();
-            authors = await userLookup.GetAuthorInfosByIdsAsync(authorIds, ct);
+            authors = await userLookup.GetUserProfilesByIdsAsync(authorIds, ct);
         }
 
         var fileIds = new HashSet<Guid>();
@@ -407,7 +407,7 @@ public static class ShortVideoMapper
                 fileIds.Add(thumbnailFileId);
             }
         }
-        foreach (AuthorDto authorInfo in authors.Values)
+        foreach (UserProfileDto authorInfo in authors.Values)
         {
             if (authorInfo.AvatarFileId is { } avatarFileId)
             {
@@ -438,7 +438,8 @@ public static class ShortVideoMapper
     }
 
     private static readonly IReadOnlySet<Guid> EmptyIds = new HashSet<Guid>();
-    private static readonly IReadOnlyDictionary<Guid, AuthorDto> EmptyAuthors = new Dictionary<Guid, AuthorDto>();
+    private static readonly IReadOnlyDictionary<Guid, UserProfileDto> EmptyAuthors =
+        new Dictionary<Guid, UserProfileDto>();
     private static readonly IReadOnlyDictionary<Guid, FileReferenceDto> EmptyFiles =
         new Dictionary<Guid, FileReferenceDto>();
 
