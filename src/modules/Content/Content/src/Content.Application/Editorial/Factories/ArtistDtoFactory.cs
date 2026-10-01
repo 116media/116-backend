@@ -9,7 +9,7 @@ namespace _116.Content.Application.Editorial.Factories;
 /// <summary>
 /// Factory implementation building artist projections from a pre-resolved avatar map.
 /// </summary>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 public class ArtistDtoFactory(IFileStorageService fileStorage) : IArtistDtoFactory
 {
     /// <inheritdoc />
