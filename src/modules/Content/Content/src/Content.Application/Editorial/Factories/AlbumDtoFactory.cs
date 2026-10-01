@@ -9,7 +9,7 @@ namespace _116.Content.Application.Editorial.Factories;
 /// <summary>
 /// Factory implementation building album projections from a pre-resolved cover map.
 /// </summary>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 public class AlbumDtoFactory(IFileStorageService fileStorage) : IAlbumDtoFactory
 {
     /// <inheritdoc />
