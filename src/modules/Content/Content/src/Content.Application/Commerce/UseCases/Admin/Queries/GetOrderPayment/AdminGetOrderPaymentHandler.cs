@@ -15,7 +15,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderPayme
 /// </summary>
 /// <param name="orderPaymentFactory">Shared factory for fetching and validating payment records.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="userLookup">Cross-module service for resolving admin user names.</param>
 public class AdminGetOrderPaymentHandler(
