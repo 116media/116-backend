@@ -15,7 +15,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetShortById
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
 /// <param name="userLookup">Cross-module service for resolving author profiles.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminGetShortByIdHandler(
     IShortVideoRepository shortVideoRepository,
