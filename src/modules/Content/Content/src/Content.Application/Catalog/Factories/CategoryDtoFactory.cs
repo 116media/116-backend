@@ -12,7 +12,7 @@ namespace _116.Content.Application.Catalog.Factories;
 /// Factory implementation building category projections from a pre-resolved poster map.
 /// </summary>
 /// <param name="mapper">Injected IMapper instance.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="contentTypeRepository">Repository resolving the classifying content types.</param>
 /// <param name="pricingTierRepository">Repository resolving the priced tiers.</param>
 public class CategoryDtoFactory(
