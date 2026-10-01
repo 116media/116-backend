@@ -11,7 +11,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadAlbum
 
 /// <summary>
 /// Handles the <see cref="AdminUploadAlbumCoverCommand" /> to upload or replace an album's
-/// cover art image. The cover file is tracked via <see cref="FileReferenceDto" /> in the Core module.
+/// cover art image. The cover file is tracked via <see cref="FileReferenceDto" /> in the Storage module.
 /// </summary>
 /// <param name="albumRepository">Repository for album data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
