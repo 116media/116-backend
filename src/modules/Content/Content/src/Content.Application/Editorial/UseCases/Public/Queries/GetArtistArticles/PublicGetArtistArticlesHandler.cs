@@ -15,7 +15,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistAr
 /// </summary>
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
 /// <param name="articleRepository">Repository for article data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetArtistArticlesHandler(
     IArtistRepository artistRepository,
