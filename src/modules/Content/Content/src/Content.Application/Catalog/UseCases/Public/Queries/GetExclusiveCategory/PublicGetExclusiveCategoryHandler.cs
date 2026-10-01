@@ -18,7 +18,7 @@ namespace _116.Content.Application.Catalog.UseCases.Public.Queries.GetExclusiveC
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="categoryDtoFactory">Builds category projections with their posters resolved.</param>
-/// <param name="fileStorage">Core's storage contract, for the video thumbnails listed alongside.</param>
+/// <param name="fileStorage">Storage's file contract, for the video thumbnails listed alongside.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 /// <param name="videoDtoFactory">Builds video projections with their thumbnails resolved.</param>
 public class PublicGetExclusiveCategoryHandler(
