@@ -39,7 +39,7 @@ public class TranslationRevisionDecidedNotificationsHandler(
     /// <inheritdoc />
     public async Task Handle(TranslationRevisionDecidedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        AuthorDto? proposer = await userLookupService.GetAuthorInfoByIdAsync(
+        UserProfileDto? proposer = await userLookupService.GetUserProfileByIdAsync(
             userId: domainEvent.ProposedByUserId,
             ct: cancellationToken
         );
