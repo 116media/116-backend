@@ -11,7 +11,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadShort
 
 /// <summary>
 /// Handles the <see cref="AdminUploadShortVideoFileCommand" /> to upload or replace a short video's file.
-/// The video file is tracked via <see cref="FileReferenceDto" /> in the Core module. Uploading a file to a
+/// The video file is tracked via <see cref="FileReferenceDto" /> in the Storage module. Uploading a file to a
 /// draft makes it eligible for activation.
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
