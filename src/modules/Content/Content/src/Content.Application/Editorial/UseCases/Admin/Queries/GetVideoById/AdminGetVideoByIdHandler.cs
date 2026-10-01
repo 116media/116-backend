@@ -19,7 +19,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetVideoById
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="userLookup">Cross-module service for resolving author profiles.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="videoDtoFactory">Builds video projections with their thumbnails resolved.</param>
 public class AdminGetVideoByIdHandler(
     IVideoRepository videoRepository,
@@ -38,7 +38,10 @@ public class AdminGetVideoByIdHandler(
 
         var dto = await videoDtoFactory.CreateDetailAsync(video, cancellationToken);
 
-        AuthorDto? authorInfo = await userLookup.GetAuthorInfoByIdAsync(userId: video.AuthorId, ct: cancellationToken);
+        UserProfileDto? authorInfo = await userLookup.GetUserProfileByIdAsync(
+            userId: video.AuthorId,
+            ct: cancellationToken
+        );
 
         AdminAuthorDto? author = null;
         if (authorInfo is not null)
