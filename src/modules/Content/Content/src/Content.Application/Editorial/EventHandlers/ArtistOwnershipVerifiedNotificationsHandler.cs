@@ -36,7 +36,7 @@ public class ArtistOwnershipVerifiedNotificationsHandler(
     /// <inheritdoc />
     public async Task Handle(ArtistOwnershipVerifiedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        AuthorDto? owner = await userLookupService.GetAuthorInfoByIdAsync(
+        UserProfileDto? owner = await userLookupService.GetUserProfileByIdAsync(
             userId: domainEvent.UserId,
             ct: cancellationToken
         );
