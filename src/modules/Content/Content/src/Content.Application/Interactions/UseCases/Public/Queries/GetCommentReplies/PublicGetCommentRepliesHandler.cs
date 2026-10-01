@@ -17,7 +17,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetComme
 /// </summary>
 /// <param name="articleCommentRepository">Repository for article comment data access operations.</param>
 /// <param name="userLookup">Cross-module service for resolving commenter profiles.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 public class PublicGetCommentRepliesHandler(
     IArticleCommentRepository articleCommentRepository,
     IUserLookupService userLookup,
@@ -82,7 +82,7 @@ public class PublicGetCommentRepliesHandler(
             return new Dictionary<Guid, PublicAuthorDto>();
         }
 
-        IReadOnlyDictionary<Guid, AuthorDto> authorInfos = await userLookup.GetAuthorInfosByIdsAsync(
+        IReadOnlyDictionary<Guid, UserProfileDto> authorInfos = await userLookup.GetUserProfilesByIdsAsync(
             userIds: userIds,
             ct: cancellationToken
         );
@@ -102,7 +102,7 @@ public class PublicGetCommentRepliesHandler(
             pair => pair.Key,
             pair =>
             {
-                AuthorDto info = pair.Value;
+                UserProfileDto info = pair.Value;
                 string? avatarUrl = info.AvatarFileId.HasValue
                     ? avatarUrls.GetValueOrDefault(info.AvatarFileId.Value)
                     : null;
