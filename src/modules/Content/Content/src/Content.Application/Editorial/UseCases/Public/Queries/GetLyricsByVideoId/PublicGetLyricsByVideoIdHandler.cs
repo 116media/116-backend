@@ -18,7 +18,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBy
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
 /// <param name="mapper">The Mapster mapper used for tags.</param>
 /// <param name="userLookup">Service for resolving author profiles from the Identity module.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetLyricsByVideoIdHandler(
     ILyricsRepository lyricsRepository,
