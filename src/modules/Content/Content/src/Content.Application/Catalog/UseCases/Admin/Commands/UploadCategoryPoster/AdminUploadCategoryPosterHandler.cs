@@ -13,7 +13,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UploadCategor
 /// Handles the <see cref="AdminUploadCategoryPosterCommand" /> to upload or replace a category poster image.
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="categoryDtoFactory">Builds category projections with their posters resolved.</param>
 public class AdminUploadCategoryPosterHandler(
