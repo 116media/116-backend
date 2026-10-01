@@ -14,7 +14,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishe
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 public class PublicGetPublishedArticlesHandler(
     IArticleRepository articleRepository,
     IArticleInteractionRepository articleInteractionRepository,
