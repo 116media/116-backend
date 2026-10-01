@@ -124,7 +124,7 @@ public static class LyricsMapper
     /// for an anonymous request or an admin context that does not need per-user state.
     /// </summary>
     /// <param name="entity">The lyrics page to map.</param>
-    /// <param name="fileStorage">Core's storage contract.</param>
+    /// <param name="fileStorage">Storage's file contract.</param>
     /// <param name="likedLyricsIds">Ids the current user has liked.</param>
     /// <param name="ct">Token to observe for cancellation requests.</param>
     /// <returns>The mapped summary with the interaction flag applied.</returns>
@@ -146,7 +146,7 @@ public static class LyricsMapper
     /// anonymous request or an admin context that does not need per-user state.
     /// </summary>
     /// <param name="entities">The lyrics pages to map.</param>
-    /// <param name="fileStorage">Core's storage contract.</param>
+    /// <param name="fileStorage">Storage's file contract.</param>
     /// <param name="likedLyricsIds">Ids the current user has liked.</param>
     /// <param name="ct">Token to observe for cancellation requests.</param>
     /// <returns>The mapped summaries with the interaction flag applied.</returns>
@@ -171,7 +171,7 @@ public static class LyricsMapper
     /// <param name="entity">The lyrics page to map.</param>
     /// <param name="mapper">The Mapster mapper used for tags.</param>
     /// <param name="userLookup">Service for resolving author profiles from the Identity module.</param>
-    /// <param name="fileStorage">Core's storage contract.</param>
+    /// <param name="fileStorage">Storage's file contract.</param>
     /// <param name="ct">Token to observe for cancellation requests.</param>
     /// <param name="isLiked">
     /// Whether the current user has liked this lyrics page. False when anonymous.
@@ -227,7 +227,7 @@ public static class LyricsMapper
             IsLiked = isLiked,
         };
 
-        AuthorDto? authorInfo = await userLookup.GetAuthorInfoByIdAsync(userId: entity.AuthorId, ct: ct);
+        UserProfileDto? authorInfo = await userLookup.GetUserProfileByIdAsync(userId: entity.AuthorId, ct: ct);
 
         if (authorInfo is null)
         {
@@ -374,7 +374,7 @@ public static class LyricsMapper
             IsLiked = isLiked,
         };
 
-        AuthorDto? authorInfo = await userLookup.GetAuthorInfoByIdAsync(userId: entity.AuthorId, ct: ct);
+        UserProfileDto? authorInfo = await userLookup.GetUserProfileByIdAsync(userId: entity.AuthorId, ct: ct);
 
         if (authorInfo is null)
         {
