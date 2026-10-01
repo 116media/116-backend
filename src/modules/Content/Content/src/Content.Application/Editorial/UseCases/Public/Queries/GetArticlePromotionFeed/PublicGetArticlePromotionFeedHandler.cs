@@ -16,7 +16,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticleP
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicGetArticlePromotionFeedHandler(
     IArticleRepository articleRepository,
@@ -153,7 +153,7 @@ public class PublicGetArticlePromotionFeedHandler(
     /// <param name="usedIds">Tracks all article IDs already placed in the feed to prevent duplicates.</param>
     /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
     /// <param name="lookups">The categories the cards name, resolved for the whole feed.</param>
-    /// <param name="fileStorage">Core's storage contract.</param>
+    /// <param name="fileStorage">Storage's file contract.</param>
     /// <param name="likedArticleIds">Ids the current user has liked.</param>
     /// <param name="bookmarkedArticleIds">Ids the current user has bookmarked.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
@@ -213,7 +213,7 @@ public class PublicGetArticlePromotionFeedHandler(
     /// <param name="usedIds">Tracks all article IDs already placed in the feed to prevent duplicates.</param>
     /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
     /// <param name="lookups">The categories the cards name, resolved for the whole feed.</param>
-    /// <param name="fileStorage">Core's storage contract.</param>
+    /// <param name="fileStorage">Storage's file contract.</param>
     /// <param name="likedArticleIds">Ids the current user has liked.</param>
     /// <param name="bookmarkedArticleIds">Ids the current user has bookmarked.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
@@ -294,7 +294,7 @@ public class PublicGetArticlePromotionFeedHandler(
     /// <param name="stripSize">Maximum number of articles to include in the strip.</param>
     /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
     /// <param name="lookups">The categories the cards name, resolved for the whole feed.</param>
-    /// <param name="fileStorage">Core's storage contract.</param>
+    /// <param name="fileStorage">Storage's file contract.</param>
     /// <param name="likedArticleIds">Ids the current user has liked.</param>
     /// <param name="bookmarkedArticleIds">Ids the current user has bookmarked.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
