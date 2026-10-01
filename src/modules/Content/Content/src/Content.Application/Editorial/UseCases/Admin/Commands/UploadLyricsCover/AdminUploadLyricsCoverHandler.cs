@@ -12,7 +12,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadLyric
 /// <summary>
 /// Handles the <see cref="AdminUploadLyricsCoverCommand" /> to upload or replace a lyrics
 /// page's cover/album art image. The cover file is tracked via <see cref="FileReferenceDto" /> in
-/// the Core module.
+/// the Storage module.
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
