@@ -13,7 +13,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetSimilarL
 /// three-way waterfall (spec 06).
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 public class PublicGetSimilarLyricsHandler(
     ILyricsRepository lyricsRepository,
     IFileStorageService fileStorage,
