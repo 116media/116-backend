@@ -12,7 +12,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtists;
 /// statement; this handler only resolves avatar URLs and shapes the page.
 /// </summary>
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 public class PublicGetArtistsHandler(IArtistRepository artistRepository, IFileStorageService fileStorage)
     : IQueryHandler<PublicGetArtistsQuery, PublicGetArtistsResult>
 {
