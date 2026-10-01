@@ -47,13 +47,13 @@ EnvSchema.ValidateAtBoot();
 
 builder.Services.AddCloudinaryConfiguration();
 
-Assembly coreAssembly = typeof(StorageI18n).Assembly;
+Assembly storageAssembly = typeof(StorageI18n).Assembly;
 Assembly identityAssembly = typeof(IdentityI18n).Assembly;
 Assembly contentAssembly = typeof(ContentI18n).Assembly;
 Assembly mailerAssembly = typeof(MailerValidation).Assembly;
 
-builder.Services.AddCarterWithAssemblies(identityAssembly, coreAssembly, contentAssembly, mailerAssembly);
-builder.Services.AddCqrsWithAssemblies(identityAssembly, coreAssembly, contentAssembly, mailerAssembly);
+builder.Services.AddCarterWithAssemblies(identityAssembly, storageAssembly, contentAssembly, mailerAssembly);
+builder.Services.AddCqrsWithAssemblies(identityAssembly, storageAssembly, contentAssembly, mailerAssembly);
 
 builder
     .Services.AddApiVersioning(options =>
@@ -174,7 +174,7 @@ builder.Services.AddHostedService<DataSeedingHostedService>();
 
 builder
     .Services.AddIdentityModule(builder.Environment)
-    .AddCoreModule(builder.Environment)
+    .AddStorageModule(builder.Environment)
     .AddContentModule(builder.Environment)
     .AddMailerModule(builder.Environment)
     .AddEndpointsApiExplorer()
