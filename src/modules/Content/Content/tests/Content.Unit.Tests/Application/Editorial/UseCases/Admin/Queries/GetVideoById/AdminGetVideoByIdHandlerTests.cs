@@ -79,7 +79,7 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
         var query = new AdminGetVideoByIdQuery(Id: video.Id);
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
-        var authorInfo = new AuthorDto(
+        var authorInfo = new UserProfileDto(
             TestConstants.User.ValidUserName,
             TestConstants.User.ValidEmail,
             null,
@@ -87,7 +87,7 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
             LocaleConstants.DefaultLocale
         );
         _userLookupMock
-            .Setup(x => x.GetAuthorInfoByIdAsync(video.AuthorId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetUserProfileByIdAsync(video.AuthorId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authorInfo);
 
         // Act
@@ -111,7 +111,7 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
         Guid avatarFileId = Guid.NewGuid();
-        var authorInfo = new AuthorDto(
+        var authorInfo = new UserProfileDto(
             TestConstants.User.ValidUserName,
             TestConstants.User.ValidEmail,
             avatarFileId,
@@ -119,7 +119,7 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
             LocaleConstants.DefaultLocale
         );
         _userLookupMock
-            .Setup(x => x.GetAuthorInfoByIdAsync(video.AuthorId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetUserProfileByIdAsync(video.AuthorId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authorInfo);
 
         FileReferenceDto avatarFile = FileReferenceDtoFactory.CreateWithId(avatarFileId);
@@ -143,8 +143,8 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
         _userLookupMock
-            .Setup(x => x.GetAuthorInfoByIdAsync(video.AuthorId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((AuthorDto?)null);
+            .Setup(x => x.GetUserProfileByIdAsync(video.AuthorId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((UserProfileDto?)null);
 
         // Act
         AdminGetVideoByIdResult result = await _handler.Handle(query, CancellationToken.None);
@@ -163,7 +163,7 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
         var query = new AdminGetVideoByIdQuery(Id: video.Id);
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
-        var authorInfo = new AuthorDto(
+        var authorInfo = new UserProfileDto(
             TestConstants.User.ValidUserName,
             TestConstants.User.ValidEmail,
             null,
@@ -171,7 +171,7 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
             LocaleConstants.DefaultLocale
         );
         _userLookupMock
-            .Setup(x => x.GetAuthorInfoByIdAsync(video.AuthorId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetUserProfileByIdAsync(video.AuthorId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authorInfo);
 
         // Act
