@@ -1,12 +1,9 @@
-using System.ComponentModel.DataAnnotations;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Events;
 using _116.Identity.Domain.Exceptions;
 using _116.Identity.Domain.StateMachines;
 using _116.Identity.Domain.ValueObjects;
-using _116.Shared.Domain;
-using _116.Shared.Domain.Constants;
 
 namespace _116.Identity.Domain.Entities;
 
