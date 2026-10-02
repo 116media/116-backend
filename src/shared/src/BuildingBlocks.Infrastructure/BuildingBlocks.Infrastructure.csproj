@@ -19,7 +19,6 @@
     <ItemGroup>
         <InternalsVisibleTo Include="Shared.Unit.Tests" />
         <InternalsVisibleTo Include="Shared.Integration.Tests" />
-        <InternalsVisibleTo Include="Fixtures" />
     </ItemGroup>
 
     <ItemGroup>
