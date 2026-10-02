@@ -9,7 +9,6 @@
         <InternalsVisibleTo Include="Content.Unit.Tests" />
         <InternalsVisibleTo Include="Content.Integration.Tests" />
         <InternalsVisibleTo Include="Content.TestData" />
-        <InternalsVisibleTo Include="Fixtures" />
     </ItemGroup>
 
     <ItemGroup>
