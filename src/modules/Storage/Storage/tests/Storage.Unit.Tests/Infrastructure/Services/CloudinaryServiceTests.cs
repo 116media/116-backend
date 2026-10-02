@@ -29,7 +29,7 @@ public class CloudinaryServiceTests
     private const long BytesPerMegabyte = 1024 * 1024;
 
     private readonly Mock<ILogger<CloudinaryService>> _loggerMock = new();
-    private readonly StorageI18n _i18n = TestErrorsFactory.CreateCoreI18n();
+    private readonly StorageI18n _i18n = TestErrorsFactory.CreateStorageI18n();
     private readonly Mock<ICloudStorageClient> _clientMock = new();
 
     public CloudinaryServiceTests()
