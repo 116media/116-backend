@@ -72,7 +72,7 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
         var query = new AdminGetArticleByIdQuery(Id: article.Id);
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
 
-        var authorInfo = new AuthorDto(
+        var authorInfo = new UserProfileDto(
             TestConstants.User.ValidUserName,
             TestConstants.User.ValidEmail,
             null,
@@ -80,7 +80,7 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
             LocaleConstants.DefaultLocale
         );
         _userLookupMock
-            .Setup(x => x.GetAuthorInfoByIdAsync(article.AuthorId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetUserProfileByIdAsync(article.AuthorId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authorInfo);
 
         // Act
@@ -103,7 +103,7 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
 
         Guid avatarFileId = Guid.NewGuid();
-        var authorInfo = new AuthorDto(
+        var authorInfo = new UserProfileDto(
             TestConstants.User.ValidUserName,
             TestConstants.User.ValidEmail,
             avatarFileId,
@@ -111,7 +111,7 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
             LocaleConstants.DefaultLocale
         );
         _userLookupMock
-            .Setup(x => x.GetAuthorInfoByIdAsync(article.AuthorId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetUserProfileByIdAsync(article.AuthorId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authorInfo);
 
         FileReferenceDto avatarFile = FileReferenceDtoFactory.CreateWithId(avatarFileId);
@@ -135,8 +135,8 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
 
         _userLookupMock
-            .Setup(x => x.GetAuthorInfoByIdAsync(article.AuthorId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((AuthorDto?)null);
+            .Setup(x => x.GetUserProfileByIdAsync(article.AuthorId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((UserProfileDto?)null);
 
         // Act
         AdminGetArticleByIdResult result = await _handler.Handle(query, CancellationToken.None);
@@ -154,7 +154,7 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
         var query = new AdminGetArticleByIdQuery(Id: article.Id);
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
 
-        var authorInfo = new AuthorDto(
+        var authorInfo = new UserProfileDto(
             TestConstants.User.ValidUserName,
             TestConstants.User.ValidEmail,
             null,
@@ -162,7 +162,7 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
             LocaleConstants.DefaultLocale
         );
         _userLookupMock
-            .Setup(x => x.GetAuthorInfoByIdAsync(article.AuthorId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetUserProfileByIdAsync(article.AuthorId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authorInfo);
 
         // Act
