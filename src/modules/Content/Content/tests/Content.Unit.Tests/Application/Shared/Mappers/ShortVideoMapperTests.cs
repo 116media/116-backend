@@ -256,9 +256,9 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         ShortVideoEntity entity = ShortVideoFactory.Create();
         var userLookup = new Mock<IUserLookupService>();
         userLookup
-            .Setup(x => x.GetAuthorInfoByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetUserProfileByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(
-                new AuthorDto("kinix_editor", "editor@example.com", null, "Admin", LocaleConstants.DefaultLocale)
+                new UserProfileDto("kinix_editor", "editor@example.com", null, "Admin", LocaleConstants.DefaultLocale)
             );
 
         // Act
@@ -287,12 +287,12 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         ShortVideoEntity other = ShortVideoFactory.Create();
         IReadOnlyList<ShortVideoEntity> entities = [liked, other];
 
-        var authors = new Dictionary<Guid, AuthorDto>
+        var authors = new Dictionary<Guid, UserProfileDto>
         {
-            [liked.AuthorId] = new AuthorDto("kinix_editor", null, null, "Admin", LocaleConstants.DefaultLocale),
-            [other.AuthorId] = new AuthorDto("kinix_editor", null, null, "Admin", LocaleConstants.DefaultLocale),
+            [liked.AuthorId] = new UserProfileDto("kinix_editor", null, null, "Admin", LocaleConstants.DefaultLocale),
+            [other.AuthorId] = new UserProfileDto("kinix_editor", null, null, "Admin", LocaleConstants.DefaultLocale),
         };
-        Mock<IUserLookupService> userLookup = MockUserLookupService.Create().SetupGetAuthorInfosByIds(authors);
+        Mock<IUserLookupService> userLookup = MockUserLookupService.Create().SetupGetUserProfilesByIds(authors);
         _fileStorageMock.SetupResolveMany(new Dictionary<Guid, FileReferenceDto>());
 
         // Act
@@ -332,7 +332,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         );
 
         // Assert — one batch call each, not one per item (no N+1)
-        userLookup.VerifyGetAuthorInfosByIdsCalledOnce();
+        userLookup.VerifyGetUserProfilesByIdsCalledOnce();
         _fileStorageMock.VerifyResolveManyCalledOnce();
         _fileStorageMock.Verify(x => x.ResolveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
     }
@@ -348,9 +348,9 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
                 "https://cdn.example.com/short.mp4"
             ),
         };
-        var authors = new Dictionary<Guid, AuthorDto>
+        var authors = new Dictionary<Guid, UserProfileDto>
         {
-            [entity.AuthorId] = new AuthorDto("editor", null, null, "Admin", LocaleConstants.DefaultLocale),
+            [entity.AuthorId] = new UserProfileDto("editor", null, null, "Admin", LocaleConstants.DefaultLocale),
         };
 
         // Act
@@ -388,9 +388,9 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
             ),
             [avatarFileId] = FileReferenceDtoFactory.CreateWithStorageUrl("https://cdn.example.com/avatar.png"),
         };
-        var authors = new Dictionary<Guid, AuthorDto>
+        var authors = new Dictionary<Guid, UserProfileDto>
         {
-            [entity.AuthorId] = new AuthorDto(
+            [entity.AuthorId] = new UserProfileDto(
                 "editor",
                 "editor@116.com",
                 avatarFileId,
