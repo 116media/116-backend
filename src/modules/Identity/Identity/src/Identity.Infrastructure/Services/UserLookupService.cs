@@ -21,7 +21,7 @@ public class UserLookupService(IdentityDbContext context) : IUserLookupService
     }
 
     /// <inheritdoc />
-    public async Task<AuthorDto?> GetAuthorInfoByIdAsync(Guid userId, CancellationToken ct = default)
+    public async Task<UserProfileDto?> GetUserProfileByIdAsync(Guid userId, CancellationToken ct = default)
     {
         var user = await context
             .Users.Include(u => u.UserRoles)
@@ -33,7 +33,7 @@ public class UserLookupService(IdentityDbContext context) : IUserLookupService
             return null;
         }
 
-        return new AuthorDto(
+        return new UserProfileDto(
             user.UserName,
             user.Email?.Value,
             user.AvatarFileId,
@@ -43,14 +43,14 @@ public class UserLookupService(IdentityDbContext context) : IUserLookupService
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyDictionary<Guid, AuthorDto>> GetAuthorInfosByIdsAsync(
+    public async Task<IReadOnlyDictionary<Guid, UserProfileDto>> GetUserProfilesByIdsAsync(
         IReadOnlyCollection<Guid> userIds,
         CancellationToken ct = default
     )
     {
         if (userIds.Count == 0)
         {
-            return new Dictionary<Guid, AuthorDto>();
+            return new Dictionary<Guid, UserProfileDto>();
         }
 
         Guid[] distinctIds = userIds.Distinct().ToArray();
@@ -63,7 +63,7 @@ public class UserLookupService(IdentityDbContext context) : IUserLookupService
 
         return users.ToDictionary(
             user => user.Id,
-            user => new AuthorDto(
+            user => new UserProfileDto(
                 user.UserName,
                 user.Email?.Value,
                 user.AvatarFileId,
