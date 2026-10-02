@@ -34,7 +34,7 @@ public class FileServiceTests
             .Setup(x => x.EnsureSafeAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        StorageI18n coreI18n = TestErrorsFactory.CreateCoreI18n();
+        StorageI18n coreI18n = TestErrorsFactory.CreateStorageI18n();
 
         _service = new FileService(
             httpClient,
