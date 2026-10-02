@@ -96,10 +96,10 @@ public class UserLookupServiceTests : IDisposable
 
     #endregion
 
-    #region GetAuthorInfoByIdAsync Tests
+    #region GetUserProfileByIdAsync Tests
 
     [Fact]
-    public async Task GetAuthorInfoByIdAsync_WhenUserExists_ShouldReturnAuthorInfo()
+    public async Task GetUserProfileByIdAsync_WhenUserExists_ShouldReturnUserProfile()
     {
         // Arrange
         UserEntity user = UserFactory.Create(TestConstants.User.ValidEmail, TestConstants.User.ValidUserName);
@@ -107,7 +107,7 @@ public class UserLookupServiceTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        AuthorDto? result = await _sut.GetAuthorInfoByIdAsync(user.Id);
+        UserProfileDto? result = await _sut.GetUserProfileByIdAsync(user.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -116,20 +116,20 @@ public class UserLookupServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetAuthorInfoByIdAsync_WhenUserDoesNotExist_ShouldReturnNull()
+    public async Task GetUserProfileByIdAsync_WhenUserDoesNotExist_ShouldReturnNull()
     {
         // Arrange
         Guid nonExistentId = Guid.NewGuid();
 
         // Act
-        AuthorDto? result = await _sut.GetAuthorInfoByIdAsync(nonExistentId);
+        UserProfileDto? result = await _sut.GetUserProfileByIdAsync(nonExistentId);
 
         // Assert
         result.Should().BeNull();
     }
 
     [Fact]
-    public async Task GetAuthorInfoByIdAsync_WhenUserHasNoAvatar_ShouldReturnNullAvatarFileId()
+    public async Task GetUserProfileByIdAsync_WhenUserHasNoAvatar_ShouldReturnNullAvatarFileId()
     {
         // Arrange
         UserEntity user = UserFactory.Create(TestConstants.User.ValidEmail, TestConstants.User.ValidUserName);
@@ -137,7 +137,7 @@ public class UserLookupServiceTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        AuthorDto? result = await _sut.GetAuthorInfoByIdAsync(user.Id);
+        UserProfileDto? result = await _sut.GetUserProfileByIdAsync(user.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -145,7 +145,7 @@ public class UserLookupServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetAuthorInfoByIdAsync_WhenUserHasRole_ShouldReturnRoleName()
+    public async Task GetUserProfileByIdAsync_WhenUserHasRole_ShouldReturnRoleName()
     {
         // Arrange
         UserEntity user = UserFactory.CreateSuperAdmin();
@@ -153,7 +153,7 @@ public class UserLookupServiceTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        AuthorDto? result = await _sut.GetAuthorInfoByIdAsync(user.Id);
+        UserProfileDto? result = await _sut.GetUserProfileByIdAsync(user.Id);
 
         // Assert
         result.Should().NotBeNull();
