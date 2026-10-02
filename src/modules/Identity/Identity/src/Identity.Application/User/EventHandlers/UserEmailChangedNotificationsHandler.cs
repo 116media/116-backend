@@ -31,7 +31,7 @@ public class UserEmailChangedNotificationsHandler(
     /// <inheritdoc />
     public async Task Handle(UserEmailChangedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        AuthorDto? user = await userLookupService.GetAuthorInfoByIdAsync(
+        UserProfileDto? user = await userLookupService.GetUserProfileByIdAsync(
             userId: domainEvent.UserId,
             ct: cancellationToken
         );
