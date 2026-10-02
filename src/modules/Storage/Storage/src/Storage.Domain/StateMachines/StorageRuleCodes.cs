@@ -1,8 +1,8 @@
 namespace _116.Storage.Domain.StateMachines;
 
 /// <summary>
-/// Stable identifiers for the core domain rules reported through
-/// <see cref="Exceptions.StorageRuleException" />, scoped <c>core.&lt;entity&gt;.&lt;rule&gt;</c>.
+/// Stable identifiers for the storage domain rules reported through
+/// <see cref="Exceptions.StorageRuleException" />, scoped <c>storage.&lt;entity&gt;.&lt;rule&gt;</c>.
 /// </summary>
 public static class StorageRuleCodes
 {
