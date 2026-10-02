@@ -48,12 +48,12 @@ public class PublicGetCommentRepliesHandlerTests : BaseContentHandlerTest
     private void SetupAuthor() =>
         _userLookupMock
             .Setup(x =>
-                x.GetAuthorInfosByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
+                x.GetUserProfilesByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
             )
             .ReturnsAsync(
-                new Dictionary<Guid, AuthorDto>
+                new Dictionary<Guid, UserProfileDto>
                 {
-                    [UserId] = new AuthorDto("jane", null, null, "Visitor", LocaleConstants.DefaultLocale),
+                    [UserId] = new UserProfileDto("jane", null, null, "Visitor", LocaleConstants.DefaultLocale),
                 }
             );
 
