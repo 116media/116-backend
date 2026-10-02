@@ -172,8 +172,8 @@ public class UserEmailChangedNotificationsHandlerTests
         // Arrange
         var userId = Guid.NewGuid();
         _userLookupServiceMock
-            .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((AuthorDto?)null);
+            .Setup(x => x.GetUserProfileByIdAsync(userId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((UserProfileDto?)null);
 
         // Act
         await _handler.Handle(
@@ -189,7 +189,9 @@ public class UserEmailChangedNotificationsHandlerTests
     private void SetupUserName(Guid userId)
     {
         _userLookupServiceMock
-            .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorDto("Fally", "fresh@example.com", null, "Visitor", LocaleConstants.DefaultLocale));
+            .Setup(x => x.GetUserProfileByIdAsync(userId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(
+                new UserProfileDto("Fally", "fresh@example.com", null, "Visitor", LocaleConstants.DefaultLocale)
+            );
     }
 }
