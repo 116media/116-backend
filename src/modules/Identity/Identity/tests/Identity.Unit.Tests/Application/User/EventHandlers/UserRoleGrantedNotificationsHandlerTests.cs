@@ -112,7 +112,7 @@ public class UserRoleGrantedNotificationsHandlerTests
     private void SetupUser(Guid userId, string? email)
     {
         _userLookupServiceMock
-            .Setup(x => x.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorDto("Fally", email, null, "Visitor", LocaleConstants.DefaultLocale));
+            .Setup(x => x.GetUserProfileByIdAsync(userId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UserProfileDto("Fally", email, null, "Visitor", LocaleConstants.DefaultLocale));
     }
 }
