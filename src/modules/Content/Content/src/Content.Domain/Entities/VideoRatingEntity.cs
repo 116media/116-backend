@@ -9,7 +9,7 @@ namespace _116.Content.Domain.Entities;
 /// Uses Aggregate&lt;Guid&gt; because it can be updated (stars can change).
 /// At most one rating per user per video — enforced by a unique index.
 /// </summary>
-public class VideoRatingEntity : Aggregate<Guid>
+public partial class VideoRatingEntity : Aggregate<Guid>
 {
     /// <summary>
     /// The identity user UUID of the rater. No FK to identity schema by design.
@@ -49,16 +49,5 @@ public class VideoRatingEntity : Aggregate<Guid>
         rating.AddDomainEvent(new VideoEngagedEvent(VideoId: videoId, Kind: EnumEngagementKind.Rating, Delta: 1));
 
         return rating;
-    }
-
-    /// <summary>
-    /// Updates the star rating value.
-    /// </summary>
-    /// <param name="stars">The new star rating (1–5).</param>
-    public void UpdateStars(short stars)
-    {
-        Stars = stars;
-
-        AddDomainEvent(new VideoEngagedEvent(VideoId: VideoId, Kind: EnumEngagementKind.Rating, Delta: 0));
     }
 }
