@@ -8,7 +8,7 @@ namespace _116.Content.Domain.Entities;
 /// Records that a user has liked a short video.
 /// Created when a user likes; removed when a user unlikes. Never updated.
 /// </summary>
-public class ShortVideoLikeEntity : Aggregate<Guid>
+public partial class ShortVideoLikeEntity : Aggregate<Guid>
 {
     /// <summary>
     /// The identity user UUID of the user who liked the short video. No FK to identity schema by design.
@@ -43,17 +43,5 @@ public class ShortVideoLikeEntity : Aggregate<Guid>
         );
 
         return like;
-    }
-
-    /// <summary>
-    /// Declares this like's removal so the post-commit engagement consumer
-    /// can decrement the short video's cached like count.
-    /// Called by the removal path immediately before the row is removed.
-    /// </summary>
-    public void MarkRemoved()
-    {
-        AddDomainEvent(
-            new ShortVideoEngagedEvent(ShortVideoId: ShortVideoId, Kind: EnumEngagementKind.Like, Delta: -1)
-        );
     }
 }
