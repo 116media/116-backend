@@ -8,8 +8,8 @@ namespace _116.Storage.Domain.Constants;
 public static class StorageConstants
 {
     /// <summary>
-    /// Database schema name for core-related tables.
-    /// Used in Entity Framework configurations to organize core tables under the "storage" schema.
+    /// Database schema name for storage-related tables.
+    /// Used in Entity Framework configurations to organize storage tables under the "storage" schema.
     /// </summary>
     public const string SchemaName = "storage";
 
