@@ -47,12 +47,12 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
     {
         _userLookupMock
             .Setup(x =>
-                x.GetAuthorInfosByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
+                x.GetUserProfilesByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
             )
             .ReturnsAsync(
-                new Dictionary<Guid, AuthorDto>
+                new Dictionary<Guid, UserProfileDto>
                 {
-                    [userId] = new AuthorDto(userName, email, avatarFileId, role, LocaleConstants.DefaultLocale),
+                    [userId] = new UserProfileDto(userName, email, avatarFileId, role, LocaleConstants.DefaultLocale),
                 }
             );
     }
@@ -101,7 +101,7 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
         await _handler.Handle(Query(), CancellationToken.None);
 
         _userLookupMock.Verify(
-            x => x.GetAuthorInfosByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()),
+            x => x.GetUserProfilesByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()),
             Times.Once
         );
     }
@@ -113,9 +113,9 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
         _articleCommentRepositoryMock.SetupGetCommentsAsync(new List<ArticleCommentEntity> { comment }, totalCount: 1);
         _userLookupMock
             .Setup(x =>
-                x.GetAuthorInfosByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
+                x.GetUserProfilesByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
             )
-            .ReturnsAsync(new Dictionary<Guid, AuthorDto>());
+            .ReturnsAsync(new Dictionary<Guid, UserProfileDto>());
 
         PublicGetArticleCommentsResult result = await _handler.Handle(Query(), CancellationToken.None);
 
@@ -135,7 +135,7 @@ public class PublicGetArticleCommentsHandlerTests : BaseContentHandlerTest
         dto.Body.Should().BeNull();
         dto.Author.Should().BeNull();
         _userLookupMock.Verify(
-            x => x.GetAuthorInfosByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()),
+            x => x.GetUserProfilesByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
     }
