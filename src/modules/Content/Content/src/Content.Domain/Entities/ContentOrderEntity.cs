@@ -1,7 +1,4 @@
 using _116.Content.Domain.Enums;
-using _116.Content.Domain.Events;
-using _116.Content.Domain.Exceptions;
-using _116.Content.Domain.StateMachines;
 using _116.Content.Domain.ValueObjects;
 using _116.Shared.Domain;
 
