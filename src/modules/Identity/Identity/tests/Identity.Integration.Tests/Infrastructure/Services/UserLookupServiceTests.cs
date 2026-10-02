@@ -7,7 +7,7 @@ namespace _116.Identity.Integration.Tests.Infrastructure.Services;
 
 /// <summary>
 /// Integration tests for <see cref="IUserLookupService" /> verifying user name
-/// and author info lookups against a real PostgreSQL database.
+/// and profile lookups against a real PostgreSQL database.
 /// </summary>
 [Collection("Database")]
 public class UserLookupServiceTests(PostgresFixture postgres) : BaseRepositoryTest(postgres)
@@ -76,6 +76,23 @@ public class UserLookupServiceTests(PostgresFixture postgres) : BaseRepositoryTe
         result.Should().NotBeNull();
         result!.UserName.Should().Be(user.UserName);
         result.Role.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetUserProfileByIdAsync_UserWithoutEmail_ReturnsNullEmail()
+    {
+        await using var context = CreateDbContext<IdentityDbContext>();
+        var user = UserFactory.CreateExternalWithoutEmail(EnumAuthProvider.Google);
+        context.Users.Add(user);
+        await context.SaveChangesAsync();
+
+        var service = Resolve<IUserLookupService>();
+
+        var result = await service.GetUserProfileByIdAsync(user.Id);
+
+        result.Should().NotBeNull();
+        result!.UserName.Should().Be(user.UserName);
+        result.Email.Should().BeNull();
     }
 
     [Fact]
