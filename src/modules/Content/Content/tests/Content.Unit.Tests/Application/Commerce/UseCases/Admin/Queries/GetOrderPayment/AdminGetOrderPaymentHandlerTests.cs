@@ -102,8 +102,8 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
         Guid verifierId = payment.VerifiedById!.Value;
 
         _orderPaymentFactoryMock.SetupGetByOrderId(orderId, payment);
-        _userLookupMock.SetupGetAuthorInfosByIds(
-            new Dictionary<Guid, AuthorDto>
+        _userLookupMock.SetupGetUserProfilesByIds(
+            new Dictionary<Guid, UserProfileDto>
             {
                 [verifierId] = new(
                     TestConstants.User.ValidUserName,
@@ -122,7 +122,7 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.Payment.VerifiedByUserName.Should().Be(TestConstants.User.ValidUserName);
-        _userLookupMock.VerifyGetAuthorInfosByIdsCalledOnce();
+        _userLookupMock.VerifyGetUserProfilesByIdsCalledOnce();
     }
 
     [Fact]
