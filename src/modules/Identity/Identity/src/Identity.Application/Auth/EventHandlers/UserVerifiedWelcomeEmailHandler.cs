@@ -25,7 +25,7 @@ public class UserVerifiedWelcomeEmailHandler(
     /// <inheritdoc />
     public async Task Handle(UserVerifiedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        AuthorDto? user = await userLookupService.GetAuthorInfoByIdAsync(
+        UserProfileDto? user = await userLookupService.GetUserProfileByIdAsync(
             userId: domainEvent.UserId,
             ct: cancellationToken
         );
