@@ -4,7 +4,6 @@ using _116.Shared.Domain;
 using _116.Storage.Contracts.Domain.Enums;
 using _116.Storage.Domain.Constants;
 using _116.Storage.Domain.Enums;
-using _116.Storage.Domain.Events;
 using _116.Storage.Domain.Exceptions;
 using _116.Storage.Domain.StateMachines;
 
@@ -18,7 +17,7 @@ namespace _116.Storage.Domain.Entities;
 /// This entity serves as an aggregate root for file management, storing both the original
 /// file information and the system-generated metadata for storage and retrieval.
 /// </remarks>
-public class FileEntity : Aggregate<Guid>
+public partial class FileEntity : Aggregate<Guid>
 {
     /// <summary>
     /// System-generated unique filename used for storage.
@@ -167,51 +166,5 @@ public class FileEntity : Aggregate<Guid>
             DominantColorHex = dominantColorHex,
             ForegroundColorHex = foregroundColorHex,
         };
-    }
-
-    /// <summary>
-    /// Marks the file as deleted (soft delete) and raises
-    /// <see cref="FileSoftDeletedEvent" /> with the storage key captured at
-    /// raise time so the remote asset can be cleaned post-commit.
-    /// </summary>
-    /// <returns>True if the file was successfully marked as deleted, false if already deleted.</returns>
-    /// <remarks>
-    /// This performs a soft delete, marking the file as deleted without physically removing it.
-    /// </remarks>
-    public bool Delete(DateTime now)
-    {
-        if (IsDeleted)
-        {
-            return false;
-        }
-
-        State = EnumFileState.Deleted;
-        DeletedAt = now;
-
-        AddDomainEvent(new FileSoftDeletedEvent(FileId: Id, StorageKey: StorageKey, Kind: Kind));
-
-        return true;
-    }
-
-    /// <summary>
-    /// Marks the file as superseded by a newer upload: applies the same
-    /// soft-delete state as <see cref="Delete" /> but raises
-    /// <see cref="FileReplacedEvent" /> instead, so replacement flows and
-    /// plain deletions stay distinguishable to post-commit consumers.
-    /// </summary>
-    /// <returns>True if the file was marked as replaced, false if already deleted.</returns>
-    public bool MarkReplaced(DateTime now)
-    {
-        if (IsDeleted)
-        {
-            return false;
-        }
-
-        State = EnumFileState.Replaced;
-        DeletedAt = now;
-
-        AddDomainEvent(new FileReplacedEvent(FileId: Id, OldStorageKey: StorageKey, Kind: Kind));
-
-        return true;
     }
 }
