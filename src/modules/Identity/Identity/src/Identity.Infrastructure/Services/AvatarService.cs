@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Http;
 namespace _116.Identity.Infrastructure.Services;
 
 /// <summary>
-/// Implements Identity's avatar workflow over Core's storage contract.
+/// Implements Identity's avatar workflow over Storage's file contract.
 /// </summary>
-/// <param name="fileStorage">Core's storage contract.</param>
+/// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="mapper">Injected IMapper instance</param>
 public class AvatarService(IFileStorageService fileStorage, IMapper mapper) : IAvatarService
 {
