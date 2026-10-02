@@ -29,7 +29,7 @@ public class UserRoleRevokedNotificationsHandler(
     /// <inheritdoc />
     public async Task Handle(UserRoleRevokedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        AuthorDto? user = await userLookupService.GetAuthorInfoByIdAsync(
+        UserProfileDto? user = await userLookupService.GetUserProfileByIdAsync(
             userId: domainEvent.UserId,
             ct: cancellationToken
         );
