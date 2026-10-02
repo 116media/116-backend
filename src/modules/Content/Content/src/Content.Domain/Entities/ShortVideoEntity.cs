@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using _116.Content.Domain.Constants;
-using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Content.Domain.ValueObjects;
@@ -18,7 +17,7 @@ namespace _116.Content.Domain.Entities;
 /// as a teaser (e.g., a 30-second preview of a 116 Le Focus episode).
 /// </para>
 /// </summary>
-public class ShortVideoEntity : Aggregate<Guid>
+public partial class ShortVideoEntity : Aggregate<Guid>
 {
     /// <summary>
     /// Display the title of the short video.
@@ -34,7 +33,7 @@ public class ShortVideoEntity : Aggregate<Guid>
     public Slug Slug { get; private set; } = null!;
 
     /// <summary>
-    /// ID of the uploaded video file tracked in the Core module, or null while the short video
+    /// ID of the uploaded video file tracked in the Storage module, or null while the short video
     /// is still a draft. A short video is created as a draft (no file) and the video file is
     /// attached afterwards via the dedicated upload endpoint. The video URL and storage key are
     /// resolved from the associated FileEntity.
@@ -42,7 +41,7 @@ public class ShortVideoEntity : Aggregate<Guid>
     public Guid? VideoFileId { get; private set; }
 
     /// <summary>
-    /// ID of the uploaded thumbnail file tracked in the Core module.
+    /// ID of the uploaded thumbnail file tracked in the Storage module.
     /// Null until a thumbnail is manually uploaded.
     /// </summary>
     public Guid? ThumbnailFileId { get; private set; }
@@ -165,102 +164,5 @@ public class ShortVideoEntity : Aggregate<Guid>
             IsActive = false,
             FeedRank = NewFeedRank(),
         };
-    }
-
-    /// <summary>
-    /// Updates the editable metadata fields of this short video.
-    /// Slug is immutable after creation to preserve public URLs.
-    /// </summary>
-    /// <param name="title">The new display title.</param>
-    /// <param name="videoId">Optional parent full video ID. <c>null</c> to make standalone.</param>
-    public void Update(string title, Guid? videoId)
-    {
-        if (string.IsNullOrWhiteSpace(value: title))
-        {
-            throw new ContentRuleException(ContentRuleCodes.ShortVideoTitleRequired);
-        }
-
-        Title = title;
-        VideoId = videoId;
-        HasFullVideo = videoId.HasValue;
-        AddDomainEvent(new ShortVideoChangedEvent(ShortVideoId: Id));
-    }
-
-    /// <summary>
-    /// Replaces the video file reference after a successful re-upload.
-    /// </summary>
-    /// <param name="videoFileId">
-    /// The new FileEntity ID for the re-uploaded video file.
-    /// </param>
-    public void ReplaceVideoFile(Guid videoFileId)
-    {
-        VideoFileId = videoFileId;
-        AddDomainEvent(new ShortVideoChangedEvent(ShortVideoId: Id));
-    }
-
-    /// <summary>
-    /// Sets or replaces the thumbnail file reference for this short video.
-    /// </summary>
-    /// <param name="thumbnailFileId">
-    /// The FileEntity ID for the uploaded thumbnail, or null to clear it.
-    /// </param>
-    public void SetThumbnailFileId(Guid? thumbnailFileId)
-    {
-        ThumbnailFileId = thumbnailFileId;
-        AddDomainEvent(new ShortVideoChangedEvent(ShortVideoId: Id));
-    }
-
-    /// <summary>
-    /// Makes the short video visible on the public feed. A short video cannot be activated
-    /// until its video file has been uploaded.
-    /// </summary>
-    /// <returns><c>true</c> if activated; <c>false</c> if already active.</returns>
-    public bool Activate()
-    {
-        if (VideoFileId is null)
-        {
-            throw new ContentRuleException(ContentRuleCodes.ShortVideoFileRequired);
-        }
-
-        if (IsActive)
-        {
-            return false;
-        }
-
-        IsActive = true;
-        AddDomainEvent(new ShortVideoChangedEvent(ShortVideoId: Id));
-
-        return true;
-    }
-
-    /// <summary>
-    /// Hides the short video from the public feed. Deactivation is reversible
-    /// and does not delete any media assets.
-    /// </summary>
-    /// <returns><c>true</c> if deactivated; <c>false</c> if already inactive.</returns>
-    public bool Deactivate()
-    {
-        if (!IsActive)
-        {
-            return false;
-        }
-
-        IsActive = false;
-        AddDomainEvent(new ShortVideoChangedEvent(ShortVideoId: Id));
-
-        return true;
-    }
-
-    /// <summary>
-    /// Declares the short video's removal, capturing the video and thumbnail
-    /// file ids before the row disappears so post-commit consumers can clean
-    /// the remote assets without re-querying deleted rows. Called by the
-    /// delete flow immediately before the repository removal.
-    /// </summary>
-    public void MarkDeleted()
-    {
-        AddDomainEvent(
-            new ShortVideoDeletedEvent(ShortVideoId: Id, VideoFileId: VideoFileId, ThumbnailFileId: ThumbnailFileId)
-        );
     }
 }
