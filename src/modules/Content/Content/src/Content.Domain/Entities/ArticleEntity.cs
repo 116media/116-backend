@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Enums;
-using _116.Content.Domain.Events;
 using _116.Content.Domain.Exceptions;
 using _116.Content.Domain.StateMachines;
 using _116.Content.Domain.ValueObjects;
@@ -75,8 +74,8 @@ public partial class ArticleEntity : Aggregate<Guid>
     public string Body { get; private set; } = string.Empty;
 
     /// <summary>
-    /// ID of the uploaded cover image file tracked in the Core module.
-    /// References a FileEntity in the Core module.
+    /// ID of the uploaded cover image file tracked in the Storage module.
+    /// References a FileEntity in the Storage module.
     /// </summary>
     public Guid? CoverImageFileId { get; private set; }
 
