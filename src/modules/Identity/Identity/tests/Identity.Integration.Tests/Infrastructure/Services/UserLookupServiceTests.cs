@@ -38,7 +38,7 @@ public class UserLookupServiceTests(PostgresFixture postgres) : BaseRepositoryTe
     }
 
     [Fact]
-    public async Task GetAuthorInfoByIdAsync_ExistingUserWithRole_ReturnsAuthorInfoWithRole()
+    public async Task GetUserProfileByIdAsync_ExistingUserWithRole_ReturnsUserProfileWithRole()
     {
         await using var context = CreateDbContext<IdentityDbContext>();
         var user = UserFactory.Create();
@@ -53,7 +53,7 @@ public class UserLookupServiceTests(PostgresFixture postgres) : BaseRepositoryTe
 
         var service = Resolve<IUserLookupService>();
 
-        var result = await service.GetAuthorInfoByIdAsync(user.Id);
+        var result = await service.GetUserProfileByIdAsync(user.Id);
 
         result.Should().NotBeNull();
         result!.UserName.Should().Be(user.UserName);
@@ -62,7 +62,7 @@ public class UserLookupServiceTests(PostgresFixture postgres) : BaseRepositoryTe
     }
 
     [Fact]
-    public async Task GetAuthorInfoByIdAsync_ExistingUserWithoutRole_ReturnsAuthorInfoWithNullRole()
+    public async Task GetUserProfileByIdAsync_ExistingUserWithoutRole_ReturnsUserProfileWithNullRole()
     {
         await using var context = CreateDbContext<IdentityDbContext>();
         var user = UserFactory.Create();
@@ -71,7 +71,7 @@ public class UserLookupServiceTests(PostgresFixture postgres) : BaseRepositoryTe
 
         var service = Resolve<IUserLookupService>();
 
-        var result = await service.GetAuthorInfoByIdAsync(user.Id);
+        var result = await service.GetUserProfileByIdAsync(user.Id);
 
         result.Should().NotBeNull();
         result!.UserName.Should().Be(user.UserName);
@@ -79,17 +79,17 @@ public class UserLookupServiceTests(PostgresFixture postgres) : BaseRepositoryTe
     }
 
     [Fact]
-    public async Task GetAuthorInfoByIdAsync_NonExistentUser_ReturnsNull()
+    public async Task GetUserProfileByIdAsync_NonExistentUser_ReturnsNull()
     {
         var service = Resolve<IUserLookupService>();
 
-        var result = await service.GetAuthorInfoByIdAsync(Guid.NewGuid());
+        var result = await service.GetUserProfileByIdAsync(Guid.NewGuid());
 
         result.Should().BeNull();
     }
 
     [Fact]
-    public async Task GetAuthorInfoByIdAsync_UserWithMultipleRoles_ReturnsFirstRole()
+    public async Task GetUserProfileByIdAsync_UserWithMultipleRoles_ReturnsFirstRole()
     {
         await using var context = CreateDbContext<IdentityDbContext>();
         var user = UserFactory.Create();
@@ -105,14 +105,14 @@ public class UserLookupServiceTests(PostgresFixture postgres) : BaseRepositoryTe
 
         var service = Resolve<IUserLookupService>();
 
-        var result = await service.GetAuthorInfoByIdAsync(user.Id);
+        var result = await service.GetUserProfileByIdAsync(user.Id);
 
         result.Should().NotBeNull();
         result!.Role.Should().NotBeNullOrEmpty();
     }
 
     [Fact]
-    public async Task GetAuthorInfoByIdAsync_UserWithAvatarFileId_ReturnsAvatarFileId()
+    public async Task GetUserProfileByIdAsync_UserWithAvatarFileId_ReturnsAvatarFileId()
     {
         await using var context = CreateDbContext<IdentityDbContext>();
         var user = UserFactory.Create();
@@ -123,7 +123,7 @@ public class UserLookupServiceTests(PostgresFixture postgres) : BaseRepositoryTe
 
         var service = Resolve<IUserLookupService>();
 
-        var result = await service.GetAuthorInfoByIdAsync(user.Id);
+        var result = await service.GetUserProfileByIdAsync(user.Id);
 
         result.Should().NotBeNull();
         result!.AvatarFileId.Should().Be(avatarId);
