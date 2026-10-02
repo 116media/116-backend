@@ -223,8 +223,8 @@ public class CommentReplyAddedNotificationsHandlerTests
     private void SetupParentAuthor(string? email)
     {
         _userLookupServiceMock
-            .Setup(x => x.GetAuthorInfoByIdAsync(_parentAuthorId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorDto("Fally", email, null, "Visitor", LocaleConstants.DefaultLocale));
+            .Setup(x => x.GetUserProfileByIdAsync(_parentAuthorId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UserProfileDto("Fally", email, null, "Visitor", LocaleConstants.DefaultLocale));
     }
 
     private void SetupReplierName(string name)
