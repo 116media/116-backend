@@ -88,8 +88,8 @@ public class AdminGetOrderByIdHandlerTests : BaseContentHandlerTest
 
         _orderRepositoryMock.SetupGetByIdWithItems(order);
         _fileStorageMock.SetupResolve(proofFile);
-        _userLookupMock.SetupGetAuthorInfosByIds(
-            new Dictionary<Guid, AuthorDto>
+        _userLookupMock.SetupGetUserProfilesByIds(
+            new Dictionary<Guid, UserProfileDto>
             {
                 [verifierId] = new(
                     TestConstants.User.ValidUserName,
@@ -109,7 +109,7 @@ public class AdminGetOrderByIdHandlerTests : BaseContentHandlerTest
         // Assert
         result.Order.Payment.Should().NotBeNull();
         result.Order.Payment!.VerifiedByUserName.Should().Be(TestConstants.User.ValidUserName);
-        _userLookupMock.VerifyGetAuthorInfosByIdsCalledOnce();
+        _userLookupMock.VerifyGetUserProfilesByIdsCalledOnce();
     }
 
     [Fact]
