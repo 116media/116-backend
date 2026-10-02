@@ -1,13 +1,12 @@
 namespace _116.Identity.Contracts.Application.DTOs;
 
 /// <summary>
-/// Lightweight author profile resolved from the Identity module.
-/// Used by Content module to embed author details in article/video DTOs
-/// without a direct dependency on the Identity domain.
+/// The display identity of one user account, resolved from the Identity module. Consumers name it
+/// for the role it plays in their own use case, be that an author, a submitter or an owner.
 /// </summary>
-/// <param name="UserName">The author's display name.</param>
-/// <param name="Email">The author's email address.</param>
-/// <param name="AvatarFileId">The file ID of the author's avatar, or null. Resolved to a URL by the consuming module.</param>
-/// <param name="Role">The author's primary role name (e.g., "SuperAdmin", "Admin").</param>
-/// <param name="PreferredLocale">The locale this author's mail and notifications render in.</param>
-public record AuthorDto(string UserName, string? Email, Guid? AvatarFileId, string? Role, string PreferredLocale);
+/// <param name="UserName">The display name.</param>
+/// <param name="Email">The email address, or null when the account has none.</param>
+/// <param name="AvatarFileId">The avatar's file ID, or null. Resolved to a URL by the consuming module.</param>
+/// <param name="Role">The primary role name, for example "SuperAdmin" or "Admin".</param>
+/// <param name="PreferredLocale">The locale this account's mail and notifications render in.</param>
+public record UserProfileDto(string UserName, string? Email, Guid? AvatarFileId, string? Role, string PreferredLocale);
