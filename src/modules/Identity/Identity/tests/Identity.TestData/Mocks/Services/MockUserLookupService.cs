@@ -53,31 +53,31 @@ public static class MockUserLookupService
     }
 
     /// <summary>
-    /// Sets up GetAuthorInfosByIdsAsync to return the specified author map for any id set.
+    /// Sets up GetUserProfilesByIdsAsync to return the specified profile map for any id set.
     /// </summary>
     /// <param name="mock">The mock instance.</param>
-    /// <param name="authors">The author map keyed by user id to return.</param>
+    /// <param name="profiles">The profile map keyed by user id to return.</param>
     /// <returns>The mock instance for chaining.</returns>
-    public static Mock<IUserLookupService> SetupGetAuthorInfosByIds(
+    public static Mock<IUserLookupService> SetupGetUserProfilesByIds(
         this Mock<IUserLookupService> mock,
-        IReadOnlyDictionary<Guid, AuthorDto> authors
+        IReadOnlyDictionary<Guid, UserProfileDto> profiles
     )
     {
         mock.Setup(x =>
-                x.GetAuthorInfosByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
+                x.GetUserProfilesByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
             )
-            .ReturnsAsync(authors);
+            .ReturnsAsync(profiles);
         return mock;
     }
 
     /// <summary>
-    /// Verifies GetAuthorInfosByIdsAsync was invoked exactly once (asserts batching, not per-item N+1).
+    /// Verifies GetUserProfilesByIdsAsync was invoked exactly once (asserts batching, not per-item N+1).
     /// </summary>
     /// <param name="mock">The mock instance.</param>
-    public static void VerifyGetAuthorInfosByIdsCalledOnce(this Mock<IUserLookupService> mock)
+    public static void VerifyGetUserProfilesByIdsCalledOnce(this Mock<IUserLookupService> mock)
     {
         mock.Verify(
-            x => x.GetAuthorInfosByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()),
+            x => x.GetUserProfilesByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()),
             Times.Once
         );
     }
@@ -110,8 +110,8 @@ public static class MockUserLookupService
     private static void SetupDefaults(Mock<IUserLookupService> mock)
     {
         mock.Setup(x =>
-                x.GetAuthorInfosByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
+                x.GetUserProfilesByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
             )
-            .ReturnsAsync(new Dictionary<Guid, AuthorDto>());
+            .ReturnsAsync(new Dictionary<Guid, UserProfileDto>());
     }
 }
