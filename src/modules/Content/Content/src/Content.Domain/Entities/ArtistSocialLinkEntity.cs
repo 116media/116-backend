@@ -14,7 +14,7 @@ namespace _116.Content.Domain.Entities;
 /// display-and-navigate only; it is never parsed for a handle.
 /// </para>
 /// </summary>
-public class ArtistSocialLinkEntity : Entity<Guid>
+public partial class ArtistSocialLinkEntity : Entity<Guid>
 {
     /// <summary>
     /// The artist profile this link belongs to.
@@ -56,10 +56,4 @@ public class ArtistSocialLinkEntity : Entity<Guid>
             Url = url,
         };
     }
-
-    /// <summary>
-    /// Replaces the URL for this platform slot.
-    /// </summary>
-    /// <param name="url">The new outbound profile URL.</param>
-    internal void UpdateUrl(string url) => Url = url;
 }
