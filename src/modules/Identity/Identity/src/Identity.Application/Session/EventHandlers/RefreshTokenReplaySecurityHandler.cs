@@ -40,7 +40,7 @@ public class RefreshTokenReplaySecurityHandler(
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        AuthorDto? user = await userLookupService.GetAuthorInfoByIdAsync(
+        UserProfileDto? user = await userLookupService.GetUserProfileByIdAsync(
             userId: domainEvent.UserId,
             ct: cancellationToken
         );
