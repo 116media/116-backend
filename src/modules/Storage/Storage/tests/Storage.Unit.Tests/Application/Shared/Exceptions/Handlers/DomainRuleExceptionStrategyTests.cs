@@ -38,7 +38,7 @@ public class DomainRuleExceptionStrategyTests
     }
 
     [Fact]
-    public void ExceptionType_ShouldReturnCoreRuleExceptionType()
+    public void ExceptionType_ShouldReturnStorageRuleExceptionType()
     {
         // Act & Assert
         _strategy.ExceptionType.Should().Be(typeof(StorageRuleException));
