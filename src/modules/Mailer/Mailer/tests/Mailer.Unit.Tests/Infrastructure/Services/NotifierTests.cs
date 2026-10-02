@@ -28,8 +28,8 @@ public class NotifierTests
     {
         var userId = Guid.NewGuid();
         _userLookup
-            .Setup(l => l.GetAuthorInfoByIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AuthorDto("Aline", "aline@example.com", null, null, PreferredLocale: "fr"));
+            .Setup(l => l.GetUserProfileByIdAsync(userId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UserProfileDto("Aline", "aline@example.com", null, null, PreferredLocale: "fr"));
 
         _renderer
             .Setup(r =>
