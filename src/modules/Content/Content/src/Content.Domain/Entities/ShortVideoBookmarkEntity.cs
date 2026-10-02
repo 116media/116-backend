@@ -8,7 +8,7 @@ namespace _116.Content.Domain.Entities;
 /// Records that a user has bookmarked a short video.
 /// Created when a user bookmarks; removed when a user un-bookmarks. Never updated.
 /// </summary>
-public class ShortVideoBookmarkEntity : Aggregate<Guid>
+public partial class ShortVideoBookmarkEntity : Aggregate<Guid>
 {
     /// <summary>
     /// The identity user UUID of the user who bookmarked the short video. No FK to identity schema by design.
@@ -43,17 +43,5 @@ public class ShortVideoBookmarkEntity : Aggregate<Guid>
         );
 
         return bookmark;
-    }
-
-    /// <summary>
-    /// Declares this bookmark's removal so the post-commit engagement consumer
-    /// can decrement the short video's cached bookmark count.
-    /// Called by the removal path immediately before the row is removed.
-    /// </summary>
-    public void MarkRemoved()
-    {
-        AddDomainEvent(
-            new ShortVideoEngagedEvent(ShortVideoId: ShortVideoId, Kind: EnumEngagementKind.Bookmark, Delta: -1)
-        );
     }
 }
