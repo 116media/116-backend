@@ -48,10 +48,10 @@ public static class StorageModule
     /// <returns>The updated <see cref="IServiceCollection"/> for chaining.</returns>
     /// <example>
     /// <code>
-    /// builder.Services.AddCoreModule(builder.Environment);
+    /// builder.Services.AddStorageModule(builder.Environment);
     /// </code>
     /// </example>
-    public static IServiceCollection AddCoreModule(this IServiceCollection services, IHostEnvironment environment)
+    public static IServiceCollection AddStorageModule(this IServiceCollection services, IHostEnvironment environment)
     {
         // Register the database with base module infrastructure
         services.AddHttpCurrentActor();
@@ -77,13 +77,13 @@ public static class StorageModule
 
         // Sweeps uploads no referencing write ever claimed; the two cannot share a transaction.
 
-        // Register core repositories
+        // Register storage repositories
         // Contribute Storage mappings to the shared cross-module Mapster config
         services.AddModuleMappings(new MappingRegistration());
 
         services.AddScoped<IFileRepository, FileRepository>();
 
-        // Register core management services
+        // Register storage management services
         services.AddScoped<IUrlSafetyGuard, UrlSafetyGuard>();
         services
             .AddHttpClient<IFileService, FileService>(client => client.Timeout = TimeSpan.FromSeconds(10))
