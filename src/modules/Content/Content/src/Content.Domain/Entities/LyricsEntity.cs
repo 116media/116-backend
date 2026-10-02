@@ -1,9 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Enums;
-using _116.Content.Domain.Events;
-using _116.Content.Domain.Exceptions;
-using _116.Content.Domain.StateMachines;
 using _116.Content.Domain.ValueObjects;
 using _116.Shared.Domain;
 
@@ -125,7 +122,7 @@ public partial class LyricsEntity : Aggregate<Guid>
     public string? StructuredData { get; private set; }
 
     /// <summary>
-    /// ID of the uploaded cover/album art file tracked in the Core module. Null until an
+    /// ID of the uploaded cover/album art file tracked in the Storage module. Null until an
     /// admin uploads one. The cover image URL is resolved from the associated FileEntity.
     /// </summary>
     public Guid? CoverImageFileId { get; private set; }
