@@ -8,7 +8,7 @@ namespace _116.Content.Domain.Entities;
 /// Records that a user has liked an article.
 /// Created when a user likes; removed when a user unlikes. Never updated.
 /// </summary>
-public class ArticleLikeEntity : Aggregate<Guid>
+public partial class ArticleLikeEntity : Aggregate<Guid>
 {
     /// <summary>
     /// The identity user UUID of the user who liked the article. No FK to identity schema by design.
@@ -41,15 +41,5 @@ public class ArticleLikeEntity : Aggregate<Guid>
         like.AddDomainEvent(new ArticleEngagedEvent(ArticleId: articleId, Kind: EnumEngagementKind.Like, Delta: 1));
 
         return like;
-    }
-
-    /// <summary>
-    /// Declares this like's removal so the post-commit engagement consumer
-    /// can decrement the article's cached like count.
-    /// Called by the removal path immediately before the row is removed.
-    /// </summary>
-    public void MarkRemoved()
-    {
-        AddDomainEvent(new ArticleEngagedEvent(ArticleId: ArticleId, Kind: EnumEngagementKind.Like, Delta: -1));
     }
 }
