@@ -1,4 +1,4 @@
-namespace _116.Identity.Application.Auth.Services;
+namespace _116.Identity.Application.Auth.Ports;
 
 /// <summary>
 /// Service for refresh token generation and hashing operations.
