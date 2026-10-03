@@ -8,9 +8,9 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword.C
 public record AdminResetPasswordAuthData(UserEntity User);
 
 /// <summary>
-/// Factory for handling admin user password reset logic.
+/// Service for handling admin user password reset logic.
 /// </summary>
-public interface IAdminResetPasswordAuthFactory
+public interface IAdminResetPasswordAuthService
 {
     /// <summary>
     /// Gets and validates admin user by email for password reset.
