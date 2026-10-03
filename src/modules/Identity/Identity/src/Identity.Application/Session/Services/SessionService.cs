@@ -2,10 +2,9 @@ using _116.BuildingBlocks.Application.Configurations;
 using _116.BuildingBlocks.Application.Configurations.Schemas;
 using _116.BuildingBlocks.Presentation.Constants;
 using _116.Identity.Application.Adapters.Wangkanai.Detection;
-using _116.Identity.Application.Auth.Services;
-using _116.Identity.Application.Session.Factories.Contracts;
+using _116.Identity.Application.Auth.Ports;
+using _116.Identity.Application.Session.Ports;
 using _116.Identity.Application.Session.Repositories;
-using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Shared.Cache;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Errors;
@@ -14,10 +13,10 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 
-namespace _116.Identity.Application.Session.Factories;
+namespace _116.Identity.Application.Session.Services;
 
 /// <summary>
-/// Factory implementation for creating authentication sessions with tokens and metadata.
+/// Service implementation for creating authentication sessions with tokens and metadata.
 /// </summary>
 /// <param name="jwtService">Service for generating JWT tokens with user claims.</param>
 /// <param name="refreshTokenService">Service for generating and hashing refresh tokens.</param>
@@ -25,8 +24,8 @@ namespace _116.Identity.Application.Session.Factories;
 /// <param name="sessionMetadataService">Service for extracting session metadata from HTTP context.</param>
 /// <param name="tokenStateRepository">Repository providing the user's token-invalidation markers.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="sessionErrors">Session domain error factory for generating domain exceptions.</param>
-public class SessionFactory(
+/// <param name="sessionErrors">Session domain error service for generating domain exceptions.</param>
+public class SessionService(
     IJwtService jwtService,
     IRefreshTokenService refreshTokenService,
     ISessionRepository sessionRepository,
@@ -34,7 +33,7 @@ public class SessionFactory(
     IUserTokenStateRepository tokenStateRepository,
     IIdentityUnitOfWork unitOfWork,
     SessionErrors sessionErrors
-) : ISessionFactory
+) : ISessionService
 {
     /// <summary>
     /// Creates a new authentication session for a user or reuses an existing active session.
