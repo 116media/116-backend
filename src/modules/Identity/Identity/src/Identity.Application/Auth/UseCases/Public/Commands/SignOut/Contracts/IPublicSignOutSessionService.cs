@@ -1,9 +1,9 @@
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignOut.Contracts;
 
 /// <summary>
-/// Factory for handling user sign-out session management.
+/// Service for handling user sign-out session management.
 /// </summary>
-public interface IPublicSignOutSessionFactory
+public interface IPublicSignOutSessionService
 {
     /// <summary>
     /// Signs out a user by invalidating their session associated with the refresh token.
