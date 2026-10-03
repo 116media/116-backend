@@ -7,16 +7,16 @@ using _116.Identity.Domain.Entities;
 namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile;
 
 /// <summary>
-/// Factory implementation for handling admin user profile update logic.
+/// Service implementation for handling admin user profile update logic.
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
-public class AdminUpdateProfileAuthFactory(
+/// <param name="userErrors">User domain error service for generating domain exceptions.</param>
+public class AdminUpdateProfileAuthService(
     IAuthRepository authRepository,
     IIdentityUnitOfWork unitOfWork,
     UserErrors userErrors
-) : IAdminUpdateProfileAuthFactory
+) : IAdminUpdateProfileAuthService
 {
     /// <summary>
     /// Updates an admin user's profile with new information.
