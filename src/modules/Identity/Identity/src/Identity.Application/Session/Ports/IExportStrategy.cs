@@ -1,6 +1,6 @@
 using _116.Identity.Application.Shared.DTOs;
 
-namespace _116.Identity.Application.Session.Services;
+namespace _116.Identity.Application.Session.Ports;
 
 /// <summary>
 /// Strategy interface for exporting session data to different formats.
