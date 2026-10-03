@@ -1,7 +1,6 @@
 using _116.BuildingBlocks.Application.Configurations;
 using _116.BuildingBlocks.Application.Configurations.Schemas;
-using _116.Identity.Application.Auth.Services;
-using _116.Identity.Application.Session.Factories.Contracts;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Cache;
 using _116.Identity.Application.Shared.Errors;
@@ -11,28 +10,28 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using Microsoft.Extensions.Logging;
 
-namespace _116.Identity.Application.Session.Factories;
+namespace _116.Identity.Application.Session.Services;
 
 /// <summary>
-/// Factory implementation for handling refresh token validation and rotation logic.
+/// Service implementation for handling refresh token validation and rotation logic.
 /// Shared across public and admin refresh token use cases.
 /// </summary>
 /// <param name="sessionRepository">Repository for session data access operations.</param>
 /// <param name="refreshTokenService">Service for refresh token generation and hashing.</param>
 /// <param name="tokenStateRepository">Repository providing the user's token-invalidation markers.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="sessionErrors">Session domain error factory for generating domain exceptions.</param>
+/// <param name="sessionErrors">Session domain error service for generating domain exceptions.</param>
 /// <param name="timeProvider">Clock supplying the instant expiry and revocation are judged at.</param>
 /// <param name="logger">Logger recording replay detections that could not be completed.</param>
-public class RefreshTokenFactory(
+public class RefreshTokenRotationService(
     ISessionRepository sessionRepository,
     IRefreshTokenService refreshTokenService,
     IUserTokenStateRepository tokenStateRepository,
     IIdentityUnitOfWork unitOfWork,
     SessionErrors sessionErrors,
     TimeProvider timeProvider,
-    ILogger<RefreshTokenFactory> logger
-) : IRefreshTokenFactory
+    ILogger<RefreshTokenRotationService> logger
+) : IRefreshTokenRotationService
 {
     /// <inheritdoc />
     public async Task<RefreshTokenData> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken)
