@@ -1,5 +1,5 @@
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.Repositories;
-using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.Contracts;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
@@ -10,7 +10,7 @@ using _116.Identity.Domain.ValueObjects;
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 
 /// <summary>
-/// Factory implementation for handling user registration logic in the signup flow.
+/// Service implementation for handling user registration logic in the signup flow.
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
@@ -18,14 +18,14 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 /// <param name="otpService">Service for generating OTP codes.</param>
 /// <param name="tokenStateRepository">Repository creating the user's token-invalidation record.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class PublicSignUpAuthFactory(
+public class PublicSignUpAuthService(
     IAuthRepository authRepository,
     IOtpRepository otpRepository,
     IPasswordService passwordService,
     IOtpService otpService,
     IUserTokenStateRepository tokenStateRepository,
     IIdentityUnitOfWork unitOfWork
-) : IPublicSignUpAuthFactory
+) : IPublicSignUpAuthService
 {
     /// <summary>
     /// Registers a new user with email, username, and password.
