@@ -2,7 +2,7 @@ using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 
-namespace _116.Identity.Application.Auth.Services;
+namespace _116.Identity.Application.Auth.Ports;
 
 /// <summary>
 /// Service interface for JWT token generation and management.
