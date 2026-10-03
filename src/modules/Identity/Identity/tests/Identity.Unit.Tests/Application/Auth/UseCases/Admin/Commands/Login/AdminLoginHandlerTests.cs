@@ -1,8 +1,8 @@
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login.Contracts;
-using _116.Identity.Application.Session.Factories.Contracts;
-using _116.Identity.Application.User.Services;
+using _116.Identity.Application.Session.Services;
+using _116.Identity.Application.User.Ports;
 using _116.Identity.Domain.Entities;
 using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Helpers;
@@ -20,20 +20,20 @@ namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Admin.Commands.Logi
 /// </summary>
 public class AdminLoginHandlerTests : BaseHandlerTest
 {
-    private readonly Mock<IAdminLoginAuthFactory> _authFactoryMock;
-    private readonly Mock<ISessionFactory> _sessionFactoryMock;
+    private readonly Mock<IAdminLoginAuthService> _authServiceMock;
+    private readonly Mock<ISessionService> _sessionServiceMock;
     private readonly Mock<IAvatarService> _avatarServiceMock;
     private readonly AdminLoginHandler _handler;
 
     public AdminLoginHandlerTests()
     {
-        _authFactoryMock = new Mock<IAdminLoginAuthFactory>();
-        _sessionFactoryMock = new Mock<ISessionFactory>();
+        _authServiceMock = new Mock<IAdminLoginAuthService>();
+        _sessionServiceMock = new Mock<ISessionService>();
         _avatarServiceMock = MockAvatarService.Create();
 
         _handler = new AdminLoginHandler(
-            _authFactoryMock.Object,
-            _sessionFactoryMock.Object,
+            _authServiceMock.Object,
+            _sessionServiceMock.Object,
             _avatarServiceMock.Object,
             Mapper
         );
@@ -58,10 +58,10 @@ public class AdminLoginHandlerTests : BaseHandlerTest
         );
 
         AdminLoginCommand command = new(Email: email, Password: password);
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.AuthenticateAsync(email, password, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _sessionFactoryMock
+        _sessionServiceMock
             .Setup(x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()))
             .ReturnsAsync(sessionResult);
         _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
@@ -86,10 +86,10 @@ public class AdminLoginHandlerTests : BaseHandlerTest
         SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         AdminLoginCommand command = new(Email: email, Password: password);
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.AuthenticateAsync(email, password, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _sessionFactoryMock
+        _sessionServiceMock
             .Setup(x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()))
             .ReturnsAsync(sessionResult);
         _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
@@ -98,7 +98,7 @@ public class AdminLoginHandlerTests : BaseHandlerTest
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _authFactoryMock.Verify(x => x.AuthenticateAsync(email, password, It.IsAny<CancellationToken>()), Times.Once);
+        _authServiceMock.Verify(x => x.AuthenticateAsync(email, password, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -113,10 +113,10 @@ public class AdminLoginHandlerTests : BaseHandlerTest
         SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         AdminLoginCommand command = new(Email: email, Password: password);
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.AuthenticateAsync(email, password, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _sessionFactoryMock
+        _sessionServiceMock
             .Setup(x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()))
             .ReturnsAsync(sessionResult);
         _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
@@ -125,7 +125,7 @@ public class AdminLoginHandlerTests : BaseHandlerTest
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _sessionFactoryMock.Verify(
+        _sessionServiceMock.Verify(
             x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()),
             Times.Once
         );
@@ -143,10 +143,10 @@ public class AdminLoginHandlerTests : BaseHandlerTest
         SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         AdminLoginCommand command = new(Email: email, Password: password);
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.AuthenticateAsync(email, password, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _sessionFactoryMock
+        _sessionServiceMock
             .Setup(x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()))
             .ReturnsAsync(sessionResult);
         _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
@@ -177,10 +177,10 @@ public class AdminLoginHandlerTests : BaseHandlerTest
         );
 
         AdminLoginCommand command = new(Email: email, Password: password);
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.AuthenticateAsync(email, password, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _sessionFactoryMock
+        _sessionServiceMock
             .Setup(x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()))
             .ReturnsAsync(sessionResult);
         _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
@@ -205,7 +205,7 @@ public class AdminLoginHandlerTests : BaseHandlerTest
         string password = TestConstants.Auth.AdminLoginInvalidPassword;
         AdminLoginCommand command = new(Email: email, Password: password);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.AuthenticateAsync(email, password, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new BadRequestException("Invalid credentials."));
 
@@ -224,7 +224,7 @@ public class AdminLoginHandlerTests : BaseHandlerTest
         string password = TestConstants.Auth.AdminLoginPassword;
         AdminLoginCommand command = new(Email: email, Password: password);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.AuthenticateAsync(email, password, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new NotFoundException("User not found."));
 
@@ -243,7 +243,7 @@ public class AdminLoginHandlerTests : BaseHandlerTest
         string password = TestConstants.Auth.AdminLoginInvalidPassword;
         AdminLoginCommand command = new(Email: email, Password: password);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.AuthenticateAsync(email, password, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new BadRequestException("Invalid credentials."));
 
@@ -252,7 +252,7 @@ public class AdminLoginHandlerTests : BaseHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
-        _sessionFactoryMock.Verify(
+        _sessionServiceMock.Verify(
             x =>
                 x.CreateSessionAsync(
                     It.IsAny<UserEntity>(),
@@ -280,10 +280,10 @@ public class AdminLoginHandlerTests : BaseHandlerTest
         using CancellationTokenSource cts = new();
 
         AdminLoginCommand command = new(Email: email, Password: password);
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.AuthenticateAsync(email, password, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _sessionFactoryMock
+        _sessionServiceMock
             .Setup(x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()))
             .ReturnsAsync(sessionResult);
         _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
@@ -292,7 +292,7 @@ public class AdminLoginHandlerTests : BaseHandlerTest
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _authFactoryMock.Verify(x => x.AuthenticateAsync(email, password, cts.Token), Times.Once);
+        _authServiceMock.Verify(x => x.AuthenticateAsync(email, password, cts.Token), Times.Once);
     }
 
     [Fact]
@@ -308,10 +308,10 @@ public class AdminLoginHandlerTests : BaseHandlerTest
         using CancellationTokenSource cts = new();
 
         AdminLoginCommand command = new(Email: email, Password: password);
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.AuthenticateAsync(email, password, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _sessionFactoryMock
+        _sessionServiceMock
             .Setup(x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()))
             .ReturnsAsync(sessionResult);
         _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
@@ -320,7 +320,7 @@ public class AdminLoginHandlerTests : BaseHandlerTest
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _sessionFactoryMock.Verify(x => x.CreateSessionAsync(user, permissions, cts.Token), Times.Once);
+        _sessionServiceMock.Verify(x => x.CreateSessionAsync(user, permissions, cts.Token), Times.Once);
     }
 
     [Fact]
@@ -336,10 +336,10 @@ public class AdminLoginHandlerTests : BaseHandlerTest
         using CancellationTokenSource cts = new();
 
         AdminLoginCommand command = new(Email: email, Password: password);
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.AuthenticateAsync(email, password, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
-        _sessionFactoryMock
+        _sessionServiceMock
             .Setup(x => x.CreateSessionAsync(user, permissions, It.IsAny<CancellationToken>()))
             .ReturnsAsync(sessionResult);
         _avatarServiceMock.SetupGetAvatarReturnsNull(user.AvatarFileId);
