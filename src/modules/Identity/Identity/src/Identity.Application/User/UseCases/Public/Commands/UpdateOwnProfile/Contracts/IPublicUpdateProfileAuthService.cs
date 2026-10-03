@@ -8,9 +8,9 @@ namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfi
 public record PublicUpdateProfileAuthData(UserEntity User);
 
 /// <summary>
-/// Factory for handling user profile update logic.
+/// Service for handling user profile update logic.
 /// </summary>
-public interface IPublicUpdateProfileAuthFactory
+public interface IPublicUpdateProfileAuthService
 {
     /// <summary>
     /// Updates a user's profile with new information.
