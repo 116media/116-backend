@@ -7,12 +7,12 @@ using _116.Identity.Domain.Enums;
 namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
 
 /// <summary>
-/// Factory implementation for handling admin user avatar update logic.
+/// Service implementation for handling admin user avatar update logic.
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminUpdateAvatarAuthFactory(IAuthRepository authRepository, IIdentityUnitOfWork unitOfWork)
-    : IAdminUpdateAvatarAuthFactory
+public class AdminUpdateAvatarAuthService(IAuthRepository authRepository, IIdentityUnitOfWork unitOfWork)
+    : IAdminUpdateAvatarAuthService
 {
     /// <summary>
     /// Gets and validates admin user for avatar update.
