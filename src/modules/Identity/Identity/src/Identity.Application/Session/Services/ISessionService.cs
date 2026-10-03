@@ -1,6 +1,6 @@
 using _116.Identity.Domain.Entities;
 
-namespace _116.Identity.Application.Session.Factories.Contracts;
+namespace _116.Identity.Application.Session.Services;
 
 /// <summary>
 /// Result of session creation containing tokens and expiration times.
@@ -13,10 +13,10 @@ public record SessionResult(
 );
 
 /// <summary>
-/// Factory for creating authentication sessions with tokens and metadata.
+/// Service for creating authentication sessions with tokens and metadata.
 /// Centralizes the common logic for session creation across login, signup, and social login flows.
 /// </summary>
-public interface ISessionFactory
+public interface ISessionService
 {
     /// <summary>
     /// Creates a new authentication session for a user or reuses an existing active session.
