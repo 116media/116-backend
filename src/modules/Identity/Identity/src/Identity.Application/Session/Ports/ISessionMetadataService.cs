@@ -1,7 +1,7 @@
 using _116.Identity.Application.Adapters.Wangkanai.Detection;
 using _116.Identity.Domain.Enums;
 
-namespace _116.Identity.Application.Session.Services;
+namespace _116.Identity.Application.Session.Ports;
 
 /// <summary>
 /// Service for extracting session metadata from HTTP context.
