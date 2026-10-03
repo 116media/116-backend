@@ -1,7 +1,7 @@
 using _116.Identity.Application.Shared.Cache;
 using _116.Identity.Domain.Entities;
 
-namespace _116.Identity.Application.Session.Factories.Contracts;
+namespace _116.Identity.Application.Session.Services;
 
 /// <summary>
 /// Contains refreshed session data with user, new refresh token and the user's current
@@ -15,10 +15,10 @@ public record RefreshTokenData(
 );
 
 /// <summary>
-/// Factory for handling refresh token validation and rotation logic.
+/// Service for handling refresh token validation and rotation logic.
 /// Shared across public and admin refresh token use cases.
 /// </summary>
-public interface IRefreshTokenFactory
+public interface IRefreshTokenRotationService
 {
     /// <summary>
     /// Validates and rotates a refresh token, returning updated session data.
