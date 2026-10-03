@@ -1,7 +1,7 @@
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Enums;
 
-namespace _116.Identity.Application.Session.Services;
+namespace _116.Identity.Application.Session.Ports;
 
 /// <summary>
 /// Service for exporting session data to various formats (CSV, XLSX).
