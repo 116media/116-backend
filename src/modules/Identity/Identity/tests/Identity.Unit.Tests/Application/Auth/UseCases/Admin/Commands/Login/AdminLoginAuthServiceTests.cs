@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login.Contracts;
 using _116.Identity.Application.Shared.Errors;
@@ -17,9 +17,9 @@ using Xunit;
 namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Admin.Commands.Login;
 
 /// <summary>
-/// Unit tests for <see cref="AdminLoginAuthFactory"/>.
+/// Unit tests for <see cref="AdminLoginAuthService"/>.
 /// </summary>
-public class AdminLoginAuthFactoryTests
+public class AdminLoginAuthServiceTests
 {
     /// <summary>
     /// A stored hash written at the superseded work factor, which login replaces in place.
@@ -35,9 +35,9 @@ public class AdminLoginAuthFactoryTests
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<IPasswordService> _passwordServiceMock;
     private readonly Mock<IAccountLockoutRepository> _lockoutRepositoryMock;
-    private readonly AdminLoginAuthFactory _factory;
+    private readonly AdminLoginAuthService _service;
 
-    public AdminLoginAuthFactoryTests()
+    public AdminLoginAuthServiceTests()
     {
         _authRepositoryMock = MockAuthRepository.Create();
         _passwordServiceMock = MockPasswordService.Create();
@@ -54,7 +54,7 @@ public class AdminLoginAuthFactoryTests
                 )
             );
 
-        _factory = new AdminLoginAuthFactory(
+        _service = new AdminLoginAuthService(
             _authRepositoryMock.Object,
             _passwordServiceMock.Object,
             _lockoutRepositoryMock.Object,
@@ -77,7 +77,7 @@ public class AdminLoginAuthFactoryTests
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
 
         // Act
-        AdminLoginAuthData result = await _factory.AuthenticateAsync(email, password, CancellationToken.None);
+        AdminLoginAuthData result = await _service.AuthenticateAsync(email, password, CancellationToken.None);
 
         // Assert
         result.User.Should().BeSameAs(user);
@@ -97,7 +97,7 @@ public class AdminLoginAuthFactoryTests
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
 
         // Act
-        await _factory.AuthenticateAsync(email, password, CancellationToken.None);
+        await _service.AuthenticateAsync(email, password, CancellationToken.None);
 
         // Assert
         _authRepositoryMock.Verify(
@@ -123,7 +123,7 @@ public class AdminLoginAuthFactoryTests
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
 
         // Act
-        await _factory.AuthenticateAsync(email, password, CancellationToken.None);
+        await _service.AuthenticateAsync(email, password, CancellationToken.None);
 
         // Assert
         _passwordServiceMock.Verify(x => x.VerifyOrDummy(password, user.PasswordHash), Times.Once);
@@ -142,7 +142,7 @@ public class AdminLoginAuthFactoryTests
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
 
         // Act
-        await _factory.AuthenticateAsync(email, password, CancellationToken.None);
+        await _service.AuthenticateAsync(email, password, CancellationToken.None);
 
         // Assert
         _authRepositoryMock.Verify(x => x.IsUserAdmin(It.IsAny<UserEntity>()), Times.Once);
@@ -161,7 +161,7 @@ public class AdminLoginAuthFactoryTests
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
 
         // Act
-        await _factory.AuthenticateAsync(email, password, CancellationToken.None);
+        await _service.AuthenticateAsync(email, password, CancellationToken.None);
 
         // Assert
         _lockoutRepositoryMock.Verify(
@@ -186,7 +186,7 @@ public class AdminLoginAuthFactoryTests
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
 
         // Act
-        await _factory.AuthenticateAsync(email, password, CancellationToken.None);
+        await _service.AuthenticateAsync(email, password, CancellationToken.None);
 
         // Assert
         user.PasswordHash.Should().Be(CurrentPasswordHash);
@@ -208,7 +208,7 @@ public class AdminLoginAuthFactoryTests
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
 
         // Act
-        await _factory.AuthenticateAsync(email, password, CancellationToken.None);
+        await _service.AuthenticateAsync(email, password, CancellationToken.None);
 
         // Assert
         user.PasswordHash.Should().Be(CurrentPasswordHash);
@@ -229,7 +229,7 @@ public class AdminLoginAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByEmailAsyncReturnsNull(new Email(email));
 
         // Act
-        Func<Task> act = async () => await _factory.AuthenticateAsync(email, password, CancellationToken.None);
+        Func<Task> act = async () => await _service.AuthenticateAsync(email, password, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<AuthenticationException>().WithMessage(_userErrors.InvalidCredentials().Message);
@@ -245,7 +245,7 @@ public class AdminLoginAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByEmailAsyncReturnsNull(new Email(email));
 
         // Act
-        Func<Task> act = async () => await _factory.AuthenticateAsync(email, password, CancellationToken.None);
+        Func<Task> act = async () => await _service.AuthenticateAsync(email, password, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<AuthenticationException>();
@@ -262,7 +262,7 @@ public class AdminLoginAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByEmailAsyncReturnsNull(new Email(email));
 
         // Act
-        Func<Task> act = async () => await _factory.AuthenticateAsync(email, password, CancellationToken.None);
+        Func<Task> act = async () => await _service.AuthenticateAsync(email, password, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<AuthenticationException>();
@@ -283,7 +283,7 @@ public class AdminLoginAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByEmailAsync(user);
 
         // Act
-        Func<Task> act = async () => await _factory.AuthenticateAsync(email, password, CancellationToken.None);
+        Func<Task> act = async () => await _service.AuthenticateAsync(email, password, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<AuthenticationException>().WithMessage(_userErrors.InvalidCredentials().Message);
@@ -300,7 +300,7 @@ public class AdminLoginAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByEmailAsync(user);
 
         // Act
-        Func<Task> act = async () => await _factory.AuthenticateAsync(email, password, CancellationToken.None);
+        Func<Task> act = async () => await _service.AuthenticateAsync(email, password, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<AuthenticationException>();
@@ -321,7 +321,7 @@ public class AdminLoginAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByEmailAsync(user);
 
         // Act
-        Func<Task> act = async () => await _factory.AuthenticateAsync(email, password, CancellationToken.None);
+        Func<Task> act = async () => await _service.AuthenticateAsync(email, password, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<AuthenticationException>();
@@ -341,7 +341,7 @@ public class AdminLoginAuthFactoryTests
         _authRepositoryMock.SetupIsUserAdminThrowsAuthorizationException();
 
         // Act
-        Func<Task> act = async () => await _factory.AuthenticateAsync(email, password, CancellationToken.None);
+        Func<Task> act = async () => await _service.AuthenticateAsync(email, password, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<AuthorizationException>();
@@ -369,7 +369,7 @@ public class AdminLoginAuthFactoryTests
             );
 
         // Act
-        Func<Task> act = async () => await _factory.AuthenticateAsync(email, password, CancellationToken.None);
+        Func<Task> act = async () => await _service.AuthenticateAsync(email, password, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<AuthenticationException>().WithMessage(_userErrors.InvalidCredentials().Message);
@@ -394,7 +394,7 @@ public class AdminLoginAuthFactoryTests
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
 
         // Act
-        await _factory.AuthenticateAsync(email, password, cts.Token);
+        await _service.AuthenticateAsync(email, password, cts.Token);
 
         // Assert
         _authRepositoryMock.Verify(
