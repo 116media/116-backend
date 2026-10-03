@@ -1,5 +1,5 @@
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.Repositories;
-using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
@@ -16,22 +16,22 @@ using Xunit;
 namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Admin.Commands.ForgotPassword;
 
 /// <summary>
-/// Unit tests for <see cref="AdminForgotPasswordOtpFactory"/>.
+/// Unit tests for <see cref="AdminForgotPasswordOtpService"/>.
 /// </summary>
-public class AdminForgotPasswordOtpFactoryTests
+public class AdminForgotPasswordOtpServiceTests
 {
     private readonly Mock<IOtpRepository> _otpRepositoryMock;
     private readonly Mock<IOtpService> _otpServiceMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
-    private readonly AdminForgotPasswordOtpFactory _factory;
+    private readonly AdminForgotPasswordOtpService _service;
 
-    public AdminForgotPasswordOtpFactoryTests()
+    public AdminForgotPasswordOtpServiceTests()
     {
         _otpRepositoryMock = MockOtpRepository.Create();
         _otpServiceMock = MockOtpService.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
 
-        _factory = new AdminForgotPasswordOtpFactory(
+        _service = new AdminForgotPasswordOtpService(
             _otpRepositoryMock.Object,
             _otpServiceMock.Object,
             _unitOfWorkMock.Object
@@ -50,7 +50,7 @@ public class AdminForgotPasswordOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp, TestConstants.Otp.DefaultCode);
 
         // Act
-        OtpCreationResult result = await _factory.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
+        OtpCreationResult result = await _service.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
 
         // Assert
         result.PlainCode.Should().Be(TestConstants.Otp.DefaultCode);
@@ -75,7 +75,7 @@ public class AdminForgotPasswordOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        OtpCreationResult result = await _factory.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
+        OtpCreationResult result = await _service.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
 
         // Assert
         result.Otp.UserId.Should().Be(userId);
@@ -92,7 +92,7 @@ public class AdminForgotPasswordOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        await _factory.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
+        await _service.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
 
         // Assert
         _otpServiceMock.Verify(x => x.CreateOtp(userId, EnumOtpPurpose.PasswordReset), Times.Once);
@@ -108,7 +108,7 @@ public class AdminForgotPasswordOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        await _factory.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
+        await _service.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
 
         // Assert
         _otpRepositoryMock.Verify(x => x.AddAsync(otp, It.IsAny<CancellationToken>()), Times.Once);
@@ -124,7 +124,7 @@ public class AdminForgotPasswordOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        await _factory.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
+        await _service.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
 
         // Assert
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -145,7 +145,7 @@ public class AdminForgotPasswordOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        await _factory.CreatePasswordResetOtpAsync(userId, cts.Token);
+        await _service.CreatePasswordResetOtpAsync(userId, cts.Token);
 
         // Assert
         _otpRepositoryMock.Verify(x => x.AddAsync(otp, cts.Token), Times.Once);
