@@ -1,4 +1,4 @@
-using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Persistence;
@@ -14,21 +14,21 @@ using Xunit;
 namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Admin.Commands.SignOut;
 
 /// <summary>
-/// Unit tests for <see cref="AdminSignOutSessionFactory"/>.
+/// Unit tests for <see cref="AdminSignOutSessionService"/>.
 /// </summary>
-public class AdminSignOutSessionFactoryTests
+public class AdminSignOutSessionServiceTests
 {
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly Mock<IRefreshTokenService> _refreshTokenServiceMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
-    private readonly AdminSignOutSessionFactory _factory;
+    private readonly AdminSignOutSessionService _service;
 
-    public AdminSignOutSessionFactoryTests()
+    public AdminSignOutSessionServiceTests()
     {
         _sessionRepositoryMock = MockSessionRepository.Create();
         _refreshTokenServiceMock = MockRefreshTokenService.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
-        _factory = new AdminSignOutSessionFactory(
+        _service = new AdminSignOutSessionService(
             _sessionRepositoryMock.Object,
             _refreshTokenServiceMock.Object,
             _unitOfWorkMock.Object
@@ -56,7 +56,7 @@ public class AdminSignOutSessionFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.SignOutAsync(refreshToken, CancellationToken.None);
+        await _service.SignOutAsync(refreshToken, CancellationToken.None);
 
         // Assert
         _sessionRepositoryMock.Verify(
@@ -84,7 +84,7 @@ public class AdminSignOutSessionFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.SignOutAsync(refreshToken, CancellationToken.None);
+        await _service.SignOutAsync(refreshToken, CancellationToken.None);
 
         // Assert
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -102,7 +102,7 @@ public class AdminSignOutSessionFactoryTests
         _sessionRepositoryMock.SetupGetByRefreshTokenHashReturnsNull(refreshTokenHash);
 
         // Act
-        await _factory.SignOutAsync(refreshToken, CancellationToken.None);
+        await _service.SignOutAsync(refreshToken, CancellationToken.None);
 
         // Assert
         _sessionRepositoryMock.Verify(
@@ -123,7 +123,7 @@ public class AdminSignOutSessionFactoryTests
         _sessionRepositoryMock.SetupGetByRefreshTokenHashReturnsNull(refreshTokenHash);
 
         // Act
-        await _factory.SignOutAsync(refreshToken, CancellationToken.None);
+        await _service.SignOutAsync(refreshToken, CancellationToken.None);
 
         // Assert
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
@@ -141,7 +141,7 @@ public class AdminSignOutSessionFactoryTests
         _sessionRepositoryMock.SetupGetByRefreshTokenHashReturnsNull(refreshTokenHash);
 
         // Act
-        await _factory.SignOutAsync(refreshToken, CancellationToken.None);
+        await _service.SignOutAsync(refreshToken, CancellationToken.None);
 
         // Assert
         _refreshTokenServiceMock.Verify(x => x.HashRefreshToken(refreshToken), Times.Once);
@@ -159,7 +159,7 @@ public class AdminSignOutSessionFactoryTests
         _sessionRepositoryMock.SetupGetByRefreshTokenHashReturnsNull(refreshTokenHash);
 
         // Act
-        await _factory.SignOutAsync(refreshToken, CancellationToken.None);
+        await _service.SignOutAsync(refreshToken, CancellationToken.None);
 
         // Assert
         _sessionRepositoryMock.Verify(
@@ -190,7 +190,7 @@ public class AdminSignOutSessionFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(cancellationToken)).ReturnsAsync(1);
 
         // Act
-        await _factory.SignOutAsync(refreshToken, cancellationToken);
+        await _service.SignOutAsync(refreshToken, cancellationToken);
 
         // Assert
         _sessionRepositoryMock.Verify(
