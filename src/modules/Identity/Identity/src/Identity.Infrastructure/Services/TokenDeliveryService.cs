@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using _116.Identity.Application.Auth.Constants;
-using _116.Identity.Application.Auth.Services;
-using _116.Identity.Application.Session.Services;
+using _116.Identity.Application.Auth.Ports;
+using _116.Identity.Application.Session.Ports;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Enums;
