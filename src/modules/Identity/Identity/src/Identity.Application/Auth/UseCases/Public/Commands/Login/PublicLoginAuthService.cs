@@ -1,4 +1,4 @@
-using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.Contracts;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Repositories;
@@ -7,20 +7,20 @@ using _116.Identity.Domain.Entities;
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
 
 /// <summary>
-/// Factory implementation for handling user authentication logic in the login flow.
+/// Service implementation for handling user authentication logic in the login flow.
 /// An unknown account and a wrong password produce the same error after the same work, so login
 /// cannot be used to discover which addresses exist.
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="passwordService">Service for verifying hashed passwords.</param>
 /// <param name="lockoutRepository">Repository holding the account's failed-login counters.</param>
-/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
-public class PublicLoginAuthFactory(
+/// <param name="userErrors">User domain error service for generating domain exceptions.</param>
+public class PublicLoginAuthService(
     IAuthRepository authRepository,
     IPasswordService passwordService,
     IAccountLockoutRepository lockoutRepository,
     UserErrors userErrors
-) : IPublicLoginAuthFactory
+) : IPublicLoginAuthService
 {
     /// <summary>
     /// Authenticates a user with their credentials and password.
