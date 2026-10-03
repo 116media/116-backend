@@ -1,7 +1,7 @@
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 
-namespace _116.Identity.Application.Auth.Services;
+namespace _116.Identity.Application.Auth.Ports;
 
 /// <summary>
 /// The outcome of creating an OTP: the entity that is safe to persist, paired with the
