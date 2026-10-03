@@ -1,9 +1,9 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Identity.Application.Auth.Services;
-using _116.Identity.Application.Session.Factories.Contracts;
+using _116.Identity.Application.Auth.Ports;
+using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Mappers;
-using _116.Identity.Application.User.Services;
+using _116.Identity.Application.User.Ports;
 using _116.Storage.Contracts.Application.DTOs;
 using MapsterMapper;
 
@@ -12,12 +12,12 @@ namespace _116.Identity.Application.Session.UseCases.Admin.Commands.RefreshToken
 /// <summary>
 /// Handles the <see cref="AdminRefreshTokenCommand" /> to refresh admin access tokens.
 /// </summary>
-/// <param name="refreshTokenFactory">Factory for handling refresh token validation and rotation logic.</param>
+/// <param name="refreshTokenRotationService">Service for handling refresh token validation and rotation logic.</param>
 /// <param name="jwtService">Service for generating JWT access tokens.</param>
 /// <param name="avatarService">Resolves and stores the user's avatar.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminRefreshTokenHandler(
-    IRefreshTokenFactory refreshTokenFactory,
+    IRefreshTokenRotationService refreshTokenRotationService,
     IJwtService jwtService,
     IAvatarService avatarService,
     IMapper mapper
@@ -34,7 +34,7 @@ public class AdminRefreshTokenHandler(
         CancellationToken cancellationToken
     )
     {
-        RefreshTokenData authData = await refreshTokenFactory.RefreshTokenAsync(
+        RefreshTokenData authData = await refreshTokenRotationService.RefreshTokenAsync(
             refreshToken: command.RefreshToken,
             cancellationToken: cancellationToken
         );
