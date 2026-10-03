@@ -8,9 +8,9 @@ namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar.C
 public record PublicUpdateAvatarAuthData(UserEntity User);
 
 /// <summary>
-/// Factory for handling user avatar update logic.
+/// Service for handling user avatar update logic.
 /// </summary>
-public interface IPublicUpdateAvatarAuthFactory
+public interface IPublicUpdateAvatarAuthService
 {
     /// <summary>
     /// Gets and validates user for avatar update.
