@@ -1,4 +1,4 @@
-using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login.Contracts;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Repositories;
@@ -8,20 +8,20 @@ using _116.Identity.Domain.ValueObjects;
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
 
 /// <summary>
-/// Factory implementation for handling admin user authentication logic in the login flow.
+/// Service implementation for handling admin user authentication logic in the login flow.
 /// An unknown account and a wrong password produce the same error after the same work, so login
 /// cannot be used to discover which addresses exist.
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="passwordService">Service for verifying hashed passwords.</param>
 /// <param name="lockoutRepository">Repository holding the account's failed-login counters.</param>
-/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
-public class AdminLoginAuthFactory(
+/// <param name="userErrors">User domain error service for generating domain exceptions.</param>
+public class AdminLoginAuthService(
     IAuthRepository authRepository,
     IPasswordService passwordService,
     IAccountLockoutRepository lockoutRepository,
     UserErrors userErrors
-) : IAdminLoginAuthFactory
+) : IAdminLoginAuthService
 {
     /// <summary>
     /// Authenticates an admin user with their email and password.
