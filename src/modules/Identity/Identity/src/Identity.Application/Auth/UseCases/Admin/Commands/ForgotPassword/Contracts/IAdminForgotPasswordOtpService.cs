@@ -1,11 +1,11 @@
-using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Auth.Ports;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword.Contracts;
 
 /// <summary>
-/// Factory for handling admin forgot password OTP creation and persistence.
+/// Service for handling admin forgot password OTP creation and persistence.
 /// </summary>
-public interface IAdminForgotPasswordOtpFactory
+public interface IAdminForgotPasswordOtpService
 {
     /// <summary>
     /// Creates and persists an OTP for admin password reset.
