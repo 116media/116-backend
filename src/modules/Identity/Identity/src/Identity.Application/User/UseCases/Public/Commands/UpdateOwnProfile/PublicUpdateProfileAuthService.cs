@@ -10,21 +10,21 @@ using _116.Identity.Domain.ValueObjects;
 namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
 
 /// <summary>
-/// Factory implementation for handling user profile update logic. An email change revokes the
+/// Service implementation for handling user profile update logic. An email change revokes the
 /// account's other sessions — keeping the acting session alive — and rotates the security stamp.
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="sessionRepository">Repository revoking the user's sessions.</param>
 /// <param name="tokenStateRepository">Repository rotating the user's security stamp.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
-public class PublicUpdateProfileAuthFactory(
+/// <param name="userErrors">User domain error service for generating domain exceptions.</param>
+public class PublicUpdateProfileAuthService(
     IAuthRepository authRepository,
     ISessionRepository sessionRepository,
     IUserTokenStateRepository tokenStateRepository,
     IIdentityUnitOfWork unitOfWork,
     UserErrors userErrors
-) : IPublicUpdateProfileAuthFactory
+) : IPublicUpdateProfileAuthService
 {
     /// <summary>
     /// Updates a user's profile with new information.
