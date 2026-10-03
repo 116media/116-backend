@@ -1,4 +1,4 @@
-using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword.Contracts;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Errors;
@@ -11,7 +11,7 @@ using _116.Identity.Domain.ValueObjects;
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword;
 
 /// <summary>
-/// Factory implementation for handling user password reset logic. The security email, in-app
+/// Service implementation for handling user password reset logic. The security email, in-app
 /// notification react to the domain event the aggregate raises when the password changes. The
 /// reset itself carries no acting session, so the new hash and the revocation of every session of
 /// the account commit together: a stolen refresh token cannot survive its owner's reset.
@@ -21,15 +21,15 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword;
 /// <param name="sessionRepository">Repository revoking the user's sessions.</param>
 /// <param name="tokenStateRepository">Repository rotating the user's security stamp.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
-public class PublicResetPasswordAuthFactory(
+/// <param name="userErrors">User domain error service for generating domain exceptions.</param>
+public class PublicResetPasswordAuthService(
     IAuthRepository authRepository,
     IPasswordService passwordService,
     ISessionRepository sessionRepository,
     IUserTokenStateRepository tokenStateRepository,
     IIdentityUnitOfWork unitOfWork,
     UserErrors userErrors
-) : IPublicResetPasswordAuthFactory
+) : IPublicResetPasswordAuthService
 {
     /// <summary>
     /// Gets and validates user by email for password reset.
