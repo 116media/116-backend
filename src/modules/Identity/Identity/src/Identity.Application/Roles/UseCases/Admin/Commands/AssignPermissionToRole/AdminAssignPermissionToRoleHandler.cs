@@ -1,38 +1,29 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Identity.Application.Shared.Errors.Facade;
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.AssignPermissionToRole.Contracts;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
-using _116.Identity.Domain.Entities;
 using MapsterMapper;
 
 namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.AssignPermissionToRole;
 
 /// <summary>
 /// Handles the <see cref="AdminAssignPermissionToRoleCommand" /> to grant a permission through
-/// the role aggregate, bumping every role member's token version.
+/// the role aggregate, bumping the token version of every user holding the role.
 /// </summary>
-/// <param name="roleRepository">Repository for role data access operations.</param>
-/// <param name="permissionRepository">Repository for permission data access operations.</param>
-/// <param name="tokenStateRepository">Repository bumping the role members' token versions.</param>
+/// <param name="assignPermissionService">Service resolving and applying the grant.</param>
+/// <param name="tokenStateRepository">Repository bumping the role holders' token versions.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="i18n">Single i18n entry point for the Identity module.</param>
 public class AdminAssignPermissionToRoleHandler(
-    IRoleRepository roleRepository,
-    IPermissionRepository permissionRepository,
+    IAdminAssignPermissionToRoleService assignPermissionService,
     IUserTokenStateRepository tokenStateRepository,
     IIdentityUnitOfWork unitOfWork,
-    IMapper mapper,
-    IdentityI18n i18n
+    IMapper mapper
 ) : ICommandHandler<AdminAssignPermissionToRoleCommand, AdminAssignPermissionToRoleResult>
 {
-    /// <summary>
-    /// Handles the assign permission to role command.
-    /// </summary>
-    /// <param name="command">The command containing the role ID and permission ID.</param>
-    /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>A <see cref="AdminAssignPermissionToRoleResult" /> containing the updated role.</returns>
+    /// <inheritdoc />
     public async Task<AdminAssignPermissionToRoleResult> Handle(
         AdminAssignPermissionToRoleCommand command,
         CancellationToken cancellationToken
@@ -40,56 +31,19 @@ public class AdminAssignPermissionToRoleHandler(
     {
         Guid roleId = Guid.Parse(input: command.RoleId);
 
-        RoleEntity? role = await roleRepository.GetRoleByIdWithPermissionsOrThrowAsync(
+        PermissionGrantData grant = await assignPermissionService.GrantAsync(
             roleId: roleId,
-            cancellationToken: cancellationToken
-        );
-
-        if (role!.IsDeleted)
-        {
-            throw i18n.User.RoleIsDeleted();
-        }
-
-        if (!role.IsActive)
-        {
-            throw i18n.User.RoleIsInactive();
-        }
-
-        // Validate permission exists
-        PermissionEntity? permission = await permissionRepository.GetPermissionByIdOrThrowAsync(
             permissionId: command.PermissionId,
             cancellationToken: cancellationToken
         );
 
-        if (permission!.IsDeleted)
-        {
-            throw i18n.User.PermissionIsDeleted();
-        }
-
-        if (!permission.IsActive)
-        {
-            throw i18n.User.PermissionIsInactive();
-        }
-
-        if (!role.GrantPermission(permissionId: command.PermissionId))
-        {
-            throw i18n.User.PermissionAlreadyAssignedToRole();
-        }
-
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
         await tokenStateRepository.BumpTokenVersionForRoleUsersAsync(
             roleId: roleId,
             cancellationToken: cancellationToken
         );
 
-        // Reload the role with permissions to return updated data
-        role = await roleRepository.GetRoleByIdWithPermissionsOrThrowAsync(
-            roleId: roleId,
-            cancellationToken: cancellationToken
-        );
-
-        var roleDto = role!.ToRoleWithPermissionsDto(mapper);
+        RoleWithPermissionsDto roleDto = grant.Role.ToRoleWithPermissionsDto(mapper, granted: grant.Permission);
         return new AdminAssignPermissionToRoleResult(Role: roleDto);
     }
 }
