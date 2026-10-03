@@ -8,9 +8,9 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.Contrac
 public record PublicSignUpAuthData(UserEntity User, List<RolePermissionEntity> UserPermissions);
 
 /// <summary>
-/// Factory for handling user registration logic in the signup flow.
+/// Service for handling user registration logic in the signup flow.
 /// </summary>
-public interface IPublicSignUpAuthFactory
+public interface IPublicSignUpAuthService
 {
     /// <summary>
     /// Registers a new user with email, username, and password.
