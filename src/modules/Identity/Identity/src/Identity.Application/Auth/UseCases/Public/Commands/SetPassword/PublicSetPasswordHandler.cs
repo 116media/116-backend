@@ -1,11 +1,9 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.BuildingBlocks.Application.Exceptions;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.Services;
-using _116.Identity.Application.Session.Repositories;
-using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
-using _116.Identity.Domain.Enums;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SetPassword;
 
@@ -17,15 +15,11 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SetPassword;
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="passwordService">Service for password hashing operations.</param>
-/// <param name="sessionRepository">Repository revoking the user's sessions.</param>
-/// <param name="tokenStateRepository">Repository rotating the user's security stamp.</param>
-/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="credentialInvalidationService">Service revoking the other sessions and rotating the stamp.</param>
 public class PublicSetPasswordHandler(
     IAuthRepository authRepository,
     IPasswordService passwordService,
-    ISessionRepository sessionRepository,
-    IUserTokenStateRepository tokenStateRepository,
-    IIdentityUnitOfWork unitOfWork
+    ICredentialInvalidationService credentialInvalidationService
 ) : ICommandHandler<PublicSetPasswordCommand, PublicSetPasswordResult>
 {
     /// <summary>
@@ -53,18 +47,11 @@ public class PublicSetPasswordHandler(
         string hashedPassword = passwordService.Hash(password: command.Password);
         authRepository.SetPasswordForExternalUser(user!, hashedPassword: hashedPassword);
 
-        // The acting session survives the change it performed; the account's other sessions are
-        // revoked in the same transaction as the new credential.
-        await sessionRepository.DeleteAllByUserIdAsync(
+        await credentialInvalidationService.CommitCredentialChangeAsync(
             userId: user!.Id,
-            reason: EnumSessionRevokeReason.SecurityInvalidation,
             exemptSessionId: command.SessionId,
             cancellationToken: cancellationToken
         );
-
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        await tokenStateRepository.RotateSecurityStampAsync(userId: user.Id, cancellationToken: cancellationToken);
 
         return new PublicSetPasswordResult(IsSuccess: true);
     }
