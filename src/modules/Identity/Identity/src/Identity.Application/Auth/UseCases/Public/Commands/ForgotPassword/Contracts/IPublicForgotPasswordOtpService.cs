@@ -1,11 +1,11 @@
-using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Auth.Ports;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword.Contracts;
 
 /// <summary>
-/// Factory for handling forgot password OTP creation and persistence.
+/// Service for handling forgot password OTP creation and persistence.
 /// </summary>
-public interface IPublicForgotPasswordOtpFactory
+public interface IPublicForgotPasswordOtpService
 {
     /// <summary>
     /// Creates and persists an OTP for password reset.
