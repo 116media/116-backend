@@ -1,4 +1,4 @@
-using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp.Contracts;
 using _116.Identity.Application.Shared.Repositories;
@@ -19,16 +19,16 @@ namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Admin.Commands.Rese
 /// </summary>
 public class AdminResendOtpHandlerTests
 {
-    private readonly Mock<IAdminResendOtpFactory> _otpFactoryMock;
+    private readonly Mock<IAdminResendOtpService> _otpServiceMock;
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly AdminResendOtpHandler _handler;
 
     public AdminResendOtpHandlerTests()
     {
-        _otpFactoryMock = new Mock<IAdminResendOtpFactory>();
+        _otpServiceMock = new Mock<IAdminResendOtpService>();
         _authRepositoryMock = MockAuthRepository.Create();
 
-        _handler = new AdminResendOtpHandler(_otpFactoryMock.Object, _authRepositoryMock.Object);
+        _handler = new AdminResendOtpHandler(_otpServiceMock.Object, _authRepositoryMock.Object);
     }
 
     #region Success Cases
@@ -48,7 +48,7 @@ public class AdminResendOtpHandlerTests
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _otpFactoryMock
+        _otpServiceMock
             .Setup(x => x.ResendOtpAsync(user.Id, It.IsAny<OtpPurpose>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new OtpCreationResult(otp, TestConstants.Otp.DefaultCode));
 
@@ -74,7 +74,7 @@ public class AdminResendOtpHandlerTests
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _otpFactoryMock
+        _otpServiceMock
             .Setup(x => x.ResendOtpAsync(user.Id, It.IsAny<OtpPurpose>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new OtpCreationResult(otp, TestConstants.Otp.DefaultCode));
 
@@ -82,7 +82,7 @@ public class AdminResendOtpHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _otpFactoryMock.Verify(
+        _otpServiceMock.Verify(
             x => x.ResendOtpAsync(user.Id, It.IsAny<OtpPurpose>(), It.IsAny<CancellationToken>()),
             Times.Once
         );
@@ -102,7 +102,7 @@ public class AdminResendOtpHandlerTests
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _otpFactoryMock
+        _otpServiceMock
             .Setup(x => x.ResendOtpAsync(user.Id, It.IsAny<OtpPurpose>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((OtpCreationResult?)null);
 
@@ -127,7 +127,7 @@ public class AdminResendOtpHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _otpFactoryMock.Verify(
+        _otpServiceMock.Verify(
             x => x.ResendOtpAsync(It.IsAny<Guid>(), It.IsAny<OtpPurpose>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
@@ -168,7 +168,7 @@ public class AdminResendOtpHandlerTests
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _otpFactoryMock
+        _otpServiceMock
             .Setup(x => x.ResendOtpAsync(user.Id, It.IsAny<OtpPurpose>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new OtpCreationResult(otp, TestConstants.Otp.DefaultCode));
 
@@ -194,7 +194,7 @@ public class AdminResendOtpHandlerTests
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _otpFactoryMock
+        _otpServiceMock
             .Setup(x => x.ResendOtpAsync(user.Id, It.IsAny<OtpPurpose>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new OtpCreationResult(otp, TestConstants.Otp.DefaultCode));
 
@@ -243,7 +243,7 @@ public class AdminResendOtpHandlerTests
         _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
-        _otpFactoryMock
+        _otpServiceMock
             .Setup(x => x.ResendOtpAsync(user.Id, It.IsAny<OtpPurpose>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new OtpCreationResult(otp, TestConstants.Otp.DefaultCode));
 
@@ -251,7 +251,7 @@ public class AdminResendOtpHandlerTests
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _otpFactoryMock.Verify(x => x.ResendOtpAsync(user.Id, It.IsAny<OtpPurpose>(), cts.Token), Times.Once);
+        _otpServiceMock.Verify(x => x.ResendOtpAsync(user.Id, It.IsAny<OtpPurpose>(), cts.Token), Times.Once);
     }
 
     #endregion
