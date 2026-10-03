@@ -8,9 +8,9 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar.Co
 public record AdminUpdateAvatarAuthData(UserEntity User);
 
 /// <summary>
-/// Factory for handling admin user avatar update logic.
+/// Service for handling admin user avatar update logic.
 /// </summary>
-public interface IAdminUpdateAvatarAuthFactory
+public interface IAdminUpdateAvatarAuthService
 {
     /// <summary>
     /// Gets and validates admin user for avatar update.
