@@ -8,9 +8,9 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.Login.Contract
 public record PublicLoginAuthData(UserEntity User, List<RolePermissionEntity> UserPermissions);
 
 /// <summary>
-/// Factory for handling user authentication logic in the login flow.
+/// Service for handling user authentication logic in the login flow.
 /// </summary>
-public interface IPublicLoginAuthFactory
+public interface IPublicLoginAuthService
 {
     /// <summary>
     /// Authenticates a user with their credentials and password.
