@@ -1,6 +1,6 @@
 using _116.Identity.Application.Shared.DTOs;
 
-namespace _116.Identity.Application.Auth.Services;
+namespace _116.Identity.Application.Auth.Ports;
 
 /// <summary>
 /// Service for managing token delivery based on client type.
