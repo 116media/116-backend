@@ -1,4 +1,4 @@
-namespace _116.Identity.Application.Auth.Services;
+namespace _116.Identity.Application.Auth.Ports;
 
 /// <summary>
 /// Service for password hashing and verification operations.
