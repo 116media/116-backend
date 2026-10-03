@@ -5,7 +5,7 @@ using System.Text.Json;
 using _116.BuildingBlocks.Application.Configurations;
 using _116.BuildingBlocks.Application.Configurations.Schemas;
 using _116.BuildingBlocks.Presentation.Constants;
-using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Entities;
