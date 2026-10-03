@@ -8,9 +8,9 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login.Contracts
 public record AdminLoginAuthData(UserEntity User, List<RolePermissionEntity> UserPermissions);
 
 /// <summary>
-/// Factory for handling admin user authentication logic in the login flow.
+/// Service for handling admin user authentication logic in the login flow.
 /// </summary>
-public interface IAdminLoginAuthFactory
+public interface IAdminLoginAuthService
 {
     /// <summary>
     /// Authenticates an admin user with their email and password.
