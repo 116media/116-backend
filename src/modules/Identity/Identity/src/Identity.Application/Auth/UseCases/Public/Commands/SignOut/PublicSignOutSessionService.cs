@@ -1,4 +1,4 @@
-using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignOut.Contracts;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Persistence;
@@ -8,16 +8,16 @@ using _116.Identity.Domain.Enums;
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignOut;
 
 /// <summary>
-/// Factory implementation for handling user sign-out session management.
+/// Service implementation for handling user sign-out session management.
 /// </summary>
 /// <param name="sessionRepository">Repository for session data access operations.</param>
 /// <param name="refreshTokenService">Service for refresh token hashing.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class PublicSignOutSessionFactory(
+public class PublicSignOutSessionService(
     ISessionRepository sessionRepository,
     IRefreshTokenService refreshTokenService,
     IIdentityUnitOfWork unitOfWork
-) : IPublicSignOutSessionFactory
+) : IPublicSignOutSessionService
 {
     /// <summary>
     /// Signs out a user by invalidating their session associated with the refresh token.
