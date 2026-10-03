@@ -1,6 +1,5 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.BuildingBlocks.Presentation.Constants;
-using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp.Contracts;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
@@ -12,9 +11,9 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp;
 /// <summary>
 /// Handles the <see cref="AdminResendOtpCommand" /> to resend OTP codes for admin users.
 /// </summary>
-/// <param name="otpFactory">Factory for handling admin OTP resend logic.</param>
+/// <param name="otpService">Service for handling admin OTP resend logic.</param>
 /// <param name="authRepository">Repository for user data access operations.</param>
-public class AdminResendOtpHandler(IAdminResendOtpFactory otpFactory, IAuthRepository authRepository)
+public class AdminResendOtpHandler(IAdminResendOtpService otpService, IAuthRepository authRepository)
     : ICommandHandler<AdminResendOtpCommand, AdminResendOtpResult>
 {
     /// <summary>
@@ -42,7 +41,7 @@ public class AdminResendOtpHandler(IAdminResendOtpFactory otpFactory, IAuthRepos
         authRepository.IsUserAdmin(user!);
         authRepository.IsUserAccountActive(user!);
 
-        await otpFactory.ResendOtpAsync(userId: user!.Id, purpose: purpose, cancellationToken: cancellationToken);
+        await otpService.ResendOtpAsync(userId: user!.Id, purpose: purpose, cancellationToken: cancellationToken);
 
         return new AdminResendOtpResult(IsSuccess: true);
     }
