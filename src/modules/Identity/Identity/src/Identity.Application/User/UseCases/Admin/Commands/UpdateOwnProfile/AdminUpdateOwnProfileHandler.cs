@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.Identity.Application.Shared.Mappers;
-using _116.Identity.Application.User.Services;
+using _116.Identity.Application.User.Ports;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile.Contracts;
 using _116.Storage.Contracts.Application.DTOs;
 using MapsterMapper;
@@ -12,11 +12,11 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfil
 /// Handles the <see cref="AdminUpdateOwnProfileCommand" /> to update admin user's own profile information.
 /// This endpoint requires admin user authentication - only logged-in admin users can update their own profile.
 /// </summary>
-/// <param name="authFactory">Factory for handling admin user profile update logic.</param>
+/// <param name="authService">Service for handling admin user profile update logic.</param>
 /// <param name="avatarService">Resolves and stores the user's avatar.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminUpdateOwnProfileHandler(
-    IAdminUpdateProfileAuthFactory authFactory,
+    IAdminUpdateProfileAuthService authService,
     IAvatarService avatarService,
     IMapper mapper
 ) : ICommandHandler<AdminUpdateOwnProfileCommand, AdminUpdateOwnProfileResult>
@@ -35,7 +35,7 @@ public class AdminUpdateOwnProfileHandler(
         CancellationToken cancellationToken
     )
     {
-        AdminUpdateProfileAuthData authData = await authFactory.UpdateProfileAsync(
+        AdminUpdateProfileAuthData authData = await authService.UpdateProfileAsync(
             userId: command.UserId,
             sessionId: command.SessionId,
             userName: command.UserName,
