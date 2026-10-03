@@ -10,11 +10,11 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword;
 /// <summary>
 /// Handles the <see cref="AdminForgotPasswordCommand" /> to initiate password reset for existing admin users.
 /// </summary>
-/// <param name="otpFactory">Factory for handling admin forgot password OTP creation.</param>
+/// <param name="otpService">Service for handling admin forgot password OTP creation.</param>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="logger">Logger recording why a request was refused, since the caller is not told.</param>
 public class AdminForgotPasswordHandler(
-    IAdminForgotPasswordOtpFactory otpFactory,
+    IAdminForgotPasswordOtpService otpService,
     IAuthRepository authRepository,
     ILogger<AdminForgotPasswordHandler> logger
 ) : ICommandHandler<AdminForgotPasswordCommand, AdminForgotPasswordResult>
@@ -45,7 +45,7 @@ public class AdminForgotPasswordHandler(
             return new AdminForgotPasswordResult(IsSuccess: true, Email: command.Email);
         }
 
-        await otpFactory.CreatePasswordResetOtpAsync(userId: user.Id, cancellationToken: cancellationToken);
+        await otpService.CreatePasswordResetOtpAsync(userId: user.Id, cancellationToken: cancellationToken);
 
         return new AdminForgotPasswordResult(IsSuccess: true, Email: command.Email);
     }
