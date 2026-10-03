@@ -8,9 +8,9 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfil
 public record AdminUpdateProfileAuthData(UserEntity User);
 
 /// <summary>
-/// Factory for handling admin user profile update logic.
+/// Service for handling admin user profile update logic.
 /// </summary>
-public interface IAdminUpdateProfileAuthFactory
+public interface IAdminUpdateProfileAuthService
 {
     /// <summary>
     /// Updates an admin user's profile with new information.
