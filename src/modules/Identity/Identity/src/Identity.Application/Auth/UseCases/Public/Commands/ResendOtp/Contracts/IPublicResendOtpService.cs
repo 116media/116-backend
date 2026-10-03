@@ -1,12 +1,12 @@
-using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Domain.ValueObjects;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp.Contracts;
 
 /// <summary>
-/// Factory for handling OTP resend logic.
+/// Service for handling OTP resend logic.
 /// </summary>
-public interface IPublicResendOtpFactory
+public interface IPublicResendOtpService
 {
     /// <summary>
     /// Invalidates existing OTPs and creates a new OTP for the specified purpose.
