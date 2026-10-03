@@ -1,6 +1,6 @@
 using _116.BuildingBlocks.Presentation.Constants;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.Repositories;
-using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp.Contracts;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Constants;
@@ -9,16 +9,16 @@ using _116.Identity.Domain.ValueObjects;
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp;
 
 /// <summary>
-/// Factory implementation for handling OTP resend logic.
+/// Service implementation for handling OTP resend logic.
 /// </summary>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
 /// <param name="otpService">Service for OTP generation.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class PublicResendOtpFactory(
+public class PublicResendOtpService(
     IOtpRepository otpRepository,
     IOtpService otpService,
     IIdentityUnitOfWork unitOfWork
-) : IPublicResendOtpFactory
+) : IPublicResendOtpService
 {
     /// <summary>
     /// Invalidates existing OTPs and creates a new OTP for the specified purpose.
