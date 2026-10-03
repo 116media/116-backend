@@ -2,7 +2,7 @@ using _116.Storage.Contracts.Application.DTOs;
 using _116.Storage.Contracts.Application.Services;
 using Microsoft.AspNetCore.Http;
 
-namespace _116.Identity.Application.User.Services;
+namespace _116.Identity.Application.User.Ports;
 
 /// <summary>
 /// Identity's avatar workflow: where avatars are stored, how they are replaced, and how they
