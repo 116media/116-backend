@@ -6,7 +6,7 @@ using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
 using Microsoft.Extensions.Logging;
 
-namespace _116.Mailer.Infrastructure.Services;
+namespace _116.Mailer.Application.Newsletter.Services;
 
 /// <summary>
 /// The <see cref="IEmailDispatcher" /> implementation: one enqueue per recipient the
