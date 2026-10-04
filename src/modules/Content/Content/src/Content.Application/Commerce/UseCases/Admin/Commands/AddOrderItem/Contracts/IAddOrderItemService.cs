@@ -4,10 +4,10 @@ using _116.Content.Domain.Enums;
 namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem.Contracts;
 
 /// <summary>
-/// Factory for adding a commissioned content item to a draft order.
+/// Service for adding a commissioned content item to a draft order.
 /// Validates category, optionally resolves promotion level, creates and persists the item.
 /// </summary>
-public interface IAddOrderItemFactory
+public interface IAddOrderItemService
 {
     /// <summary>
     /// Validates the order is Draft, validates the category is commissionable,
