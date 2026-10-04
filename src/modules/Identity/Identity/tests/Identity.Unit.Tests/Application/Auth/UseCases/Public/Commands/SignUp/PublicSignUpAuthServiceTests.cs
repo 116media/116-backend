@@ -1,6 +1,6 @@
 using _116.BuildingBlocks.Application.Exceptions;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.Repositories;
-using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.Contracts;
 using _116.Identity.Application.Shared.Persistence;
@@ -20,9 +20,9 @@ using Xunit;
 namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Public.Commands.SignUp;
 
 /// <summary>
-/// Unit tests for <see cref="PublicSignUpAuthFactory"/>.
+/// Unit tests for <see cref="PublicSignUpAuthService"/>.
 /// </summary>
-public class PublicSignUpAuthFactoryTests
+public class PublicSignUpAuthServiceTests
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<IOtpRepository> _otpRepositoryMock;
@@ -30,9 +30,9 @@ public class PublicSignUpAuthFactoryTests
     private readonly Mock<IOtpService> _otpServiceMock;
     private readonly Mock<IUserTokenStateRepository> _tokenStateRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
-    private readonly PublicSignUpAuthFactory _factory;
+    private readonly PublicSignUpAuthService _service;
 
-    public PublicSignUpAuthFactoryTests()
+    public PublicSignUpAuthServiceTests()
     {
         _authRepositoryMock = MockAuthRepository.Create();
         _otpRepositoryMock = MockOtpRepository.Create();
@@ -41,7 +41,7 @@ public class PublicSignUpAuthFactoryTests
         _tokenStateRepositoryMock = new Mock<IUserTokenStateRepository>();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
 
-        _factory = new PublicSignUpAuthFactory(
+        _service = new PublicSignUpAuthService(
             _authRepositoryMock.Object,
             _otpRepositoryMock.Object,
             _passwordServiceMock.Object,
@@ -69,7 +69,7 @@ public class PublicSignUpAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
 
         // Act
-        await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
+        await _service.RegisterAsync(email, userName, password, CancellationToken.None);
 
         // Assert
         _otpRepositoryMock.Verify(
@@ -99,7 +99,7 @@ public class PublicSignUpAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
 
         // Act
-        PublicSignUpAuthData result = await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
+        PublicSignUpAuthData result = await _service.RegisterAsync(email, userName, password, CancellationToken.None);
 
         // Assert
         result.User.Should().BeSameAs(user);
@@ -121,7 +121,7 @@ public class PublicSignUpAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
 
         // Act
-        await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
+        await _service.RegisterAsync(email, userName, password, CancellationToken.None);
 
         // Assert
         _authRepositoryMock.Verify(
@@ -151,7 +151,7 @@ public class PublicSignUpAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
 
         // Act
-        await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
+        await _service.RegisterAsync(email, userName, password, CancellationToken.None);
 
         // Assert
         _passwordServiceMock.Verify(x => x.Hash(password), Times.Once);
@@ -173,7 +173,7 @@ public class PublicSignUpAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
 
         // Act
-        await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
+        await _service.RegisterAsync(email, userName, password, CancellationToken.None);
 
         // Assert
         _authRepositoryMock.VerifyAddCalled();
@@ -199,7 +199,7 @@ public class PublicSignUpAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
 
         // Act
-        await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
+        await _service.RegisterAsync(email, userName, password, CancellationToken.None);
 
         // Assert
         _authRepositoryMock.Verify(
@@ -224,7 +224,7 @@ public class PublicSignUpAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
 
         // Act
-        await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
+        await _service.RegisterAsync(email, userName, password, CancellationToken.None);
 
         // Assert
         _otpServiceMock.Verify(x => x.CreateOtp(It.IsAny<Guid>(), EnumOtpPurpose.EmailVerification), Times.Once);
@@ -246,7 +246,7 @@ public class PublicSignUpAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
 
         // Act
-        await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
+        await _service.RegisterAsync(email, userName, password, CancellationToken.None);
 
         // Assert
         _otpRepositoryMock.Verify(x => x.AddAsync(otp, It.IsAny<CancellationToken>()), Times.Once);
@@ -268,7 +268,7 @@ public class PublicSignUpAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
 
         // Act
-        await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
+        await _service.RegisterAsync(email, userName, password, CancellationToken.None);
 
         // Assert
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -291,7 +291,7 @@ public class PublicSignUpAuthFactoryTests
             .ThrowsAsync(new ConflictException("Email already exists."));
 
         // Act
-        Func<Task> act = async () => await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
+        Func<Task> act = async () => await _service.RegisterAsync(email, userName, password, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
@@ -310,7 +310,7 @@ public class PublicSignUpAuthFactoryTests
             .ThrowsAsync(new ConflictException("Username already exists."));
 
         // Act
-        Func<Task> act = async () => await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
+        Func<Task> act = async () => await _service.RegisterAsync(email, userName, password, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
@@ -329,7 +329,7 @@ public class PublicSignUpAuthFactoryTests
             .ThrowsAsync(new ConflictException("Credentials already exist."));
 
         // Act
-        Func<Task> act = async () => await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
+        Func<Task> act = async () => await _service.RegisterAsync(email, userName, password, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
@@ -361,7 +361,7 @@ public class PublicSignUpAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
 
         // Act
-        await _factory.RegisterAsync(email, userName, password, cts.Token);
+        await _service.RegisterAsync(email, userName, password, cts.Token);
 
         // Assert
         _authRepositoryMock.Verify(
