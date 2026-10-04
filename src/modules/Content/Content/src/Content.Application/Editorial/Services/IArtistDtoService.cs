@@ -1,13 +1,13 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
 
-namespace _116.Content.Application.Editorial.Factories;
+namespace _116.Content.Application.Editorial.Services;
 
 /// <summary>
 /// Builds <see cref="ArtistDto" /> projections, resolving each artist's avatar in a single batch
 /// so callers never issue one file query per artist.
 /// </summary>
-public interface IArtistDtoFactory
+public interface IArtistDtoService
 {
     /// <summary>
     /// Builds the projection for one artist.
