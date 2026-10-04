@@ -1,17 +1,17 @@
 using _116.Identity.Application.Shared.OutboundEmails;
+using _116.Mailer.Application.Notifications.Services;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
-using _116.Mailer.Application.Shared.Services;
+using _116.Mailer.Application.Shared.Templates.Emails;
 using _116.Mailer.Contracts.Application.DTOs;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
-using _116.Mailer.Infrastructure.Services;
 using _116.Shared.Domain.Constants;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Mailer.Unit.Tests.Infrastructure.Services;
+namespace _116.Mailer.Unit.Tests.Application.Notifications.Services;
 
 /// <summary>
 /// Unit tests for <see cref="OutboxEmailService" />: renders, persists a
