@@ -1,15 +1,15 @@
+using _116.Mailer.Application.Newsletter.Services;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Contracts.Application.DTOs;
 using _116.Mailer.Contracts.Application.OutboundEmails;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Domain.Entities;
-using _116.Mailer.Infrastructure.Services;
 using _116.Mailer.TestData.Factories;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
-namespace _116.Mailer.Unit.Tests.Infrastructure.Services;
+namespace _116.Mailer.Unit.Tests.Application.Newsletter.Services;
 
 /// <summary>
 /// Unit tests for <see cref="EmailDispatcher" />: the message class decides whether an
