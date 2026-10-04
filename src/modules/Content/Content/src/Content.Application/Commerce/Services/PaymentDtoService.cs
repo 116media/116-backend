@@ -5,19 +5,35 @@ using _116.Content.Domain.Entities;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Storage.Contracts.Application.DTOs;
+using _116.Storage.Contracts.Application.Services;
 using MapsterMapper;
 
-namespace _116.Content.Application.Commerce.Factories;
+namespace _116.Content.Application.Commerce.Services;
 
 /// <summary>
-/// Factory implementation building payment projections from a pre-resolved verifier map.
+/// Service implementation building payment projections from a pre-resolved verifier map.
 /// </summary>
 /// <param name="mapper">Injected IMapper instance.</param>
 /// <param name="userLookup">Identity's lookup contract, resolving verifier names.</param>
-/// <param name="orderDtoFactory">Factory resolving the ordering customers.</param>
-public class PaymentDtoFactory(IMapper mapper, IUserLookupService userLookup, IContentOrderDtoFactory orderDtoFactory)
-    : IPaymentDtoFactory
+/// <param name="fileStorage">Storage contract resolving the proof file.</param>
+/// <param name="orderDtoService">Service resolving the ordering customers.</param>
+public class PaymentDtoService(
+    IMapper mapper,
+    IUserLookupService userLookup,
+    IContentOrderDtoService orderDtoService,
+    IFileStorageService fileStorage
+) : IPaymentDtoService
 {
+    /// <inheritdoc />
+    public async Task<PaymentDto> CreateWithProofAsync(ContentPaymentEntity payment, CancellationToken ct = default)
+    {
+        FileReferenceDto? proofFile = payment.PaymentProofFileId is { } proofFileId
+            ? await fileStorage.ResolveAsync(proofFileId, ct)
+            : null;
+
+        return await CreateAsync(payment, proofFile.ToFileDto(mapper), ct);
+    }
+
     /// <inheritdoc />
     public async Task<PaymentDto> CreateAsync(
         ContentPaymentEntity payment,
@@ -40,7 +56,7 @@ public class PaymentDtoFactory(IMapper mapper, IUserLookupService userLookup, IC
             [.. orders.Select(order => order.Payment!)],
             ct
         );
-        IReadOnlyDictionary<Guid, CustomerEntity> customers = await orderDtoFactory.ResolveCustomersAsync(orders, ct);
+        IReadOnlyDictionary<Guid, CustomerEntity> customers = await orderDtoService.ResolveCustomersAsync(orders, ct);
 
         return orders.Select(order => order.ToPaymentSummaryDto(mapper, verifiers, customers)).ToList();
     }
