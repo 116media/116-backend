@@ -1,11 +1,11 @@
+using _116.Storage.Application.Shared.Ports;
 using _116.Storage.Application.Shared.Repositories;
-using _116.Storage.Application.Shared.Services;
 using _116.Storage.Domain.Entities;
 using _116.Storage.Domain.Exceptions;
 using _116.Storage.Domain.StateMachines;
 using Microsoft.AspNetCore.Http;
 
-namespace _116.Storage.Infrastructure.Services;
+namespace _116.Storage.Application.Shared.Services;
 
 /// <summary>
 /// Uploads assets to cloud storage and stages their file rows. Staging never commits: the
