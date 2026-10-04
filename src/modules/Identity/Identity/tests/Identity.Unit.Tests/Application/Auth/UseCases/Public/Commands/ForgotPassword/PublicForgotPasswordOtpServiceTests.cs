@@ -1,5 +1,5 @@
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.Repositories;
-using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
@@ -17,22 +17,22 @@ using Xunit;
 namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Public.Commands.ForgotPassword;
 
 /// <summary>
-/// Unit tests for <see cref="PublicForgotPasswordOtpFactory"/>.
+/// Unit tests for <see cref="PublicForgotPasswordOtpService"/>.
 /// </summary>
-public class PublicForgotPasswordOtpFactoryTests
+public class PublicForgotPasswordOtpServiceTests
 {
     private readonly Mock<IOtpRepository> _otpRepositoryMock;
     private readonly Mock<IOtpService> _otpServiceMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
-    private readonly PublicForgotPasswordOtpFactory _factory;
+    private readonly PublicForgotPasswordOtpService _service;
 
-    public PublicForgotPasswordOtpFactoryTests()
+    public PublicForgotPasswordOtpServiceTests()
     {
         _otpRepositoryMock = MockOtpRepository.Create();
         _otpServiceMock = MockOtpService.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
 
-        _factory = new PublicForgotPasswordOtpFactory(
+        _service = new PublicForgotPasswordOtpService(
             _otpRepositoryMock.Object,
             _otpServiceMock.Object,
             _unitOfWorkMock.Object
@@ -51,7 +51,7 @@ public class PublicForgotPasswordOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp, TestConstants.Otp.DefaultCode);
 
         // Act
-        OtpCreationResult result = await _factory.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
+        OtpCreationResult result = await _service.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
 
         // Assert
         result.PlainCode.Should().Be(TestConstants.Otp.DefaultCode);
@@ -76,7 +76,7 @@ public class PublicForgotPasswordOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        OtpCreationResult result = await _factory.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
+        OtpCreationResult result = await _service.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
 
         // Assert
         result.Otp.UserId.Should().Be(userId);
@@ -93,7 +93,7 @@ public class PublicForgotPasswordOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        await _factory.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
+        await _service.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
 
         // Assert
         _otpServiceMock.Verify(x => x.CreateOtp(userId, EnumOtpPurpose.PasswordReset), Times.Once);
@@ -109,7 +109,7 @@ public class PublicForgotPasswordOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        await _factory.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
+        await _service.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
 
         // Assert
         _otpRepositoryMock.Verify(x => x.AddAsync(otp, It.IsAny<CancellationToken>()), Times.Once);
@@ -125,7 +125,7 @@ public class PublicForgotPasswordOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        await _factory.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
+        await _service.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
 
         // Assert
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -146,7 +146,7 @@ public class PublicForgotPasswordOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        await _factory.CreatePasswordResetOtpAsync(userId, cts.Token);
+        await _service.CreatePasswordResetOtpAsync(userId, cts.Token);
 
         // Assert
         _otpRepositoryMock.Verify(x => x.AddAsync(otp, cts.Token), Times.Once);
@@ -165,7 +165,7 @@ public class PublicForgotPasswordOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp, TestConstants.Otp.DefaultCode);
 
         // Act
-        await _factory.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
+        await _service.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
 
         // Assert
         OtpIssuedEvent issued = otp.DomainEvents.OfType<OtpIssuedEvent>().Should().ContainSingle().Subject;
