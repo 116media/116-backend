@@ -1,4 +1,4 @@
-namespace _116.Content.Application.Shared.Services;
+namespace _116.Content.Application.Shared.Ports;
 
 /// <summary>
 /// Port for translating lyrics text into another language. Kept behind an interface so the
