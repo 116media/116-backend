@@ -2,13 +2,13 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
 using _116.Storage.Contracts.Application.DTOs;
 
-namespace _116.Content.Application.Commerce.Factories;
+namespace _116.Content.Application.Commerce.Services;
 
 /// <summary>
 /// Builds payment projections, resolving every verifier's name in a single batch so callers never
 /// issue one user lookup per payment.
 /// </summary>
-public interface IPaymentDtoFactory
+public interface IPaymentDtoService
 {
     /// <summary>
     /// Builds the full projection for one payment, including its proof file.
@@ -30,6 +30,13 @@ public interface IPaymentDtoFactory
     /// <param name="orders">The orders whose payments to project; each must carry a payment.</param>
     /// <param name="ct">Token to observe for cancellation requests.</param>
     /// <returns>The projections, in the order supplied.</returns>
+    /// <summary>
+    /// Builds the DTO of one payment, resolving its proof file when one is attached.
+    /// </summary>
+    /// <param name="payment">The payment.</param>
+    /// <param name="ct">Token to cancel the operation.</param>
+    Task<PaymentDto> CreateWithProofAsync(ContentPaymentEntity payment, CancellationToken ct = default);
+
     Task<IReadOnlyList<PaymentSummaryDto>> CreateManyAsync(
         IReadOnlyList<ContentOrderEntity> orders,
         CancellationToken ct = default
