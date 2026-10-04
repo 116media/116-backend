@@ -8,21 +8,21 @@ using _116.Content.Domain.Enums;
 namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem;
 
 /// <summary>
-/// Factory implementation for adding order items.
+/// Service implementation for adding order items.
 /// Forces IsBonus = true when the order's package slot capacity is exceeded.
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="promotionLevelRepository">Repository for promotion level data access operations.</param>
 /// <param name="packageRepository">Repository for package data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="categoryErrors">Category domain error factory.</param>
-public class AdminAddOrderItemFactory(
+/// <param name="categoryErrors">Category domain error service.</param>
+public class AdminAddOrderItemService(
     ICategoryRepository categoryRepository,
     IPromotionLevelRepository promotionLevelRepository,
     IPackageRepository packageRepository,
     IContentUnitOfWork unitOfWork,
     CategoryErrors categoryErrors
-) : IAddOrderItemFactory
+) : IAddOrderItemService
 {
     /// <inheritdoc />
     public async Task<(ContentOrderItemEntity Item, string CategoryName, string? PromotionLevelName)> CreateItemAsync(
