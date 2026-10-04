@@ -2,13 +2,13 @@ using _116.BuildingBlocks.Presentation.Constants;
 using _116.Identity.Contracts.Application.Services;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
-using _116.Mailer.Application.Shared.Services;
+using _116.Mailer.Application.Shared.Templates.Notifications;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 using _116.Shared.Domain.Constants;
 
-namespace _116.Mailer.Infrastructure.Services;
+namespace _116.Mailer.Application.Notifications.Services;
 
 /// <summary>
 /// The <see cref="INotificationService" /> implementation: renders the notification copy
