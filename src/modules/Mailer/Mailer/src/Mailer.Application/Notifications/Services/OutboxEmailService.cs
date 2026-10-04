@@ -1,12 +1,12 @@
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
-using _116.Mailer.Application.Shared.Services;
+using _116.Mailer.Application.Shared.Templates.Emails;
 using _116.Mailer.Contracts.Application.DTOs;
 using _116.Mailer.Contracts.Application.Services;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
 
-namespace _116.Mailer.Infrastructure.Services;
+namespace _116.Mailer.Application.Notifications.Services;
 
 /// <summary>
 /// The <see cref="IEmailService" /> implementation: renders the template and persists a self-contained
