@@ -1,4 +1,6 @@
+using _116.Content.Application.Catalog.Specifications;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder.Contracts;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -6,16 +8,54 @@ using _116.Content.Domain.Enums;
 namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder;
 
 /// <summary>
-/// Factory that populates a draft order with items and tiers from a package's slots.
+/// Service that populates a draft order with items and tiers from a package's slots.
 /// Every category is priced in a single query, so slot count never drives round-trips.
 /// </summary>
+/// <param name="customerRepository">Repository resolving the commissioning customer.</param>
+/// <param name="packageRepository">Repository resolving the seeding package.</param>
+/// <param name="contentOrderRepository">Repository staging the order.</param>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="contentTypeRepository">Repository resolving the slot categories' content types.</param>
-public class AdminCreateOrderFactory(
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
+public class AdminCreateOrderService(
+    ICustomerRepository customerRepository,
+    IPackageRepository packageRepository,
+    IContentOrderRepository contentOrderRepository,
     ICategoryRepository categoryRepository,
-    IContentTypeRepository contentTypeRepository
-) : ICreateOrderFactory
+    IContentTypeRepository contentTypeRepository,
+    ContentI18n i18n
+) : ICreateOrderService
 {
+    /// <inheritdoc />
+    public async Task<CreatedOrderData> CreateAsync(Guid customerId, Guid? packageId, CancellationToken ct)
+    {
+        CustomerEntity? customer = await customerRepository.GetByIdAsync(id: customerId, cancellationToken: ct);
+
+        if (customer is null)
+        {
+            throw i18n.Customer.NotFound(id: customerId);
+        }
+
+        PackageEntity? package = null;
+
+        if (packageId is { } id)
+        {
+            package = await packageRepository.GetByIdAsync(id: id, cancellationToken: ct);
+
+            if (package is null || !new ActivePackageSpecification().IsSatisfiedBy(package))
+            {
+                throw i18n.Package.NotFound(id: id);
+            }
+        }
+
+        var order = ContentOrderEntity.Create(id: Guid.NewGuid(), customerId: customerId, packageId: packageId);
+        await contentOrderRepository.AddAsync(order: order, ct: ct);
+
+        int itemCount = package is null ? 0 : await PopulateFromPackageAsync(order: order, package: package, ct: ct);
+
+        return new CreatedOrderData(Order: order, Customer: customer, ItemCount: itemCount);
+    }
+
     /// <inheritdoc />
     public async Task<int> PopulateFromPackageAsync(
         ContentOrderEntity order,
