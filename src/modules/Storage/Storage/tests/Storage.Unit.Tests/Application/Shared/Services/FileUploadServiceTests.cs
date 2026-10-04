@@ -1,5 +1,6 @@
 using _116.BuildingBlocks.Application.Services;
 using _116.BuildingBlocks.Infrastructure.interceptors;
+using _116.Storage.Application.Shared.Ports;
 using _116.Storage.Application.Shared.Services;
 using _116.Storage.Domain.Entities;
 using _116.Storage.Domain.Enums;
@@ -7,7 +8,6 @@ using _116.Storage.Domain.Exceptions;
 using _116.Storage.Domain.StateMachines;
 using _116.Storage.Infrastructure.Persistence;
 using _116.Storage.Infrastructure.Repositories;
-using _116.Storage.Infrastructure.Services;
 using _116.Storage.TestData.Factories;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +16,7 @@ using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
 
-namespace _116.Storage.Unit.Tests.Infrastructure.Services;
+namespace _116.Storage.Unit.Tests.Application.Shared.Services;
 
 /// <summary>
 /// Unit tests for <see cref="FileUploadService" />: uploads describe what reached storage without
