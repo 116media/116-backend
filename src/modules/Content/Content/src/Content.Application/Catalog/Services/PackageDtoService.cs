@@ -4,14 +4,14 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using MapsterMapper;
 
-namespace _116.Content.Application.Catalog.Factories;
+namespace _116.Content.Application.Catalog.Services;
 
 /// <summary>
-/// Factory implementation building package projections from a pre-resolved category map.
+/// Service implementation building package projections from a pre-resolved category map.
 /// </summary>
 /// <param name="mapper">Injected IMapper instance.</param>
 /// <param name="categoryRepository">Repository resolving the slot categories and their pricing.</param>
-public class PackageDtoFactory(IMapper mapper, ICategoryRepository categoryRepository) : IPackageDtoFactory
+public class PackageDtoService(IMapper mapper, ICategoryRepository categoryRepository) : IPackageDtoService
 {
     /// <inheritdoc />
     public async Task<PackageDto> CreateAsync(PackageEntity package, CancellationToken ct = default)
