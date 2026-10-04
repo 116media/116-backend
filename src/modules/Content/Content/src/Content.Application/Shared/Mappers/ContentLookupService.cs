@@ -10,12 +10,12 @@ namespace _116.Content.Application.Shared.Mappers;
 /// <param name="customerRepository">Repository resolving the commissioning customers.</param>
 /// <param name="promotionLevelRepository">Repository resolving the purchased promotion levels.</param>
 /// <param name="tagRepository">Repository resolving the applied tags.</param>
-public class ContentLookupFactory(
+public class ContentLookupService(
     ICategoryRepository categoryRepository,
     ICustomerRepository customerRepository,
     IPromotionLevelRepository promotionLevelRepository,
     ITagRepository tagRepository
-) : IContentLookupFactory
+) : IContentLookupService
 {
     /// <inheritdoc />
     public Task<ContentLookups> ResolveForArticlesAsync(
