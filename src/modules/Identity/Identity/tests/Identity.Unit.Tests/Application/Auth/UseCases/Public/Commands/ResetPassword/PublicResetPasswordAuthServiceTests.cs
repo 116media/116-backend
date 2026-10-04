@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword.Contracts;
 using _116.Identity.Application.Session.Repositories;
@@ -20,25 +20,25 @@ using Xunit;
 namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Public.Commands.ResetPassword;
 
 /// <summary>
-/// Unit tests for <see cref="PublicResetPasswordAuthFactory"/>.
+/// Unit tests for <see cref="PublicResetPasswordAuthService"/>.
 /// </summary>
-public class PublicResetPasswordAuthFactoryTests
+public class PublicResetPasswordAuthServiceTests
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<IPasswordService> _passwordServiceMock;
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly Mock<IUserTokenStateRepository> _tokenStateRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
-    private readonly PublicResetPasswordAuthFactory _factory;
+    private readonly PublicResetPasswordAuthService _service;
 
-    public PublicResetPasswordAuthFactoryTests()
+    public PublicResetPasswordAuthServiceTests()
     {
         _authRepositoryMock = MockAuthRepository.Create();
         _passwordServiceMock = MockPasswordService.Create();
         _sessionRepositoryMock = MockSessionRepository.Create();
         _tokenStateRepositoryMock = new Mock<IUserTokenStateRepository>();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
-        _factory = new PublicResetPasswordAuthFactory(
+        _service = new PublicResetPasswordAuthService(
             _authRepositoryMock.Object,
             _passwordServiceMock.Object,
             _sessionRepositoryMock.Object,
@@ -67,7 +67,7 @@ public class PublicResetPasswordAuthFactoryTests
         _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
         // Act
-        PublicResetPasswordAuthData result = await _factory.GetUserForResetAsync(email, CancellationToken.None);
+        PublicResetPasswordAuthData result = await _service.GetUserForResetAsync(email, CancellationToken.None);
 
         // Assert
         result.User.Should().Be(user);
@@ -89,7 +89,7 @@ public class PublicResetPasswordAuthFactoryTests
         _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
         // Act
-        await _factory.GetUserForResetAsync(email, CancellationToken.None);
+        await _service.GetUserForResetAsync(email, CancellationToken.None);
 
         // Assert
         _authRepositoryMock.Verify(x => x.IsUserAccountActive(user), Times.Once);
@@ -111,7 +111,7 @@ public class PublicResetPasswordAuthFactoryTests
         _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
         // Act
-        await _factory.GetUserForResetAsync(email, CancellationToken.None);
+        await _service.GetUserForResetAsync(email, CancellationToken.None);
 
         // Assert
         _authRepositoryMock.Verify(x => x.IsUserAccountVerified(user), Times.Once);
@@ -135,7 +135,7 @@ public class PublicResetPasswordAuthFactoryTests
         _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
         // Act
-        await _factory.GetUserForResetAsync(email, CancellationToken.None);
+        await _service.GetUserForResetAsync(email, CancellationToken.None);
 
         // Assert
         _authRepositoryMock.Verify(
@@ -161,7 +161,7 @@ public class PublicResetPasswordAuthFactoryTests
         _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
 
         // Act
-        await _factory.GetUserForResetAsync(email, cancellationToken);
+        await _service.GetUserForResetAsync(email, cancellationToken);
 
         // Assert
         _authRepositoryMock.Verify(
@@ -189,7 +189,7 @@ public class PublicResetPasswordAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        UserEntity result = await _factory.ResetPasswordAsync(user, newPassword, CancellationToken.None);
+        UserEntity result = await _service.ResetPasswordAsync(user, newPassword, CancellationToken.None);
 
         // Assert
         result.PasswordHash.Should().Be(hashedPassword);
@@ -205,7 +205,7 @@ public class PublicResetPasswordAuthFactoryTests
         _passwordServiceMock.SetupVerifySuccess(newPassword, user.PasswordHash);
 
         // Act & Assert
-        Func<Task> act = async () => await _factory.ResetPasswordAsync(user, newPassword, CancellationToken.None);
+        Func<Task> act = async () => await _service.ResetPasswordAsync(user, newPassword, CancellationToken.None);
         await act.Should().ThrowExactlyAsync<ConflictException>();
     }
 
@@ -224,7 +224,7 @@ public class PublicResetPasswordAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.ResetPasswordAsync(user, newPassword, CancellationToken.None);
+        await _service.ResetPasswordAsync(user, newPassword, CancellationToken.None);
 
         // Assert
         _passwordServiceMock.Verify(x => x.Verify(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
@@ -245,7 +245,7 @@ public class PublicResetPasswordAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.ResetPasswordAsync(user, newPassword, CancellationToken.None);
+        await _service.ResetPasswordAsync(user, newPassword, CancellationToken.None);
 
         // Assert
         _passwordServiceMock.Verify(x => x.Hash(newPassword), Times.Once);
@@ -266,7 +266,7 @@ public class PublicResetPasswordAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.ResetPasswordAsync(user, newPassword, CancellationToken.None);
+        await _service.ResetPasswordAsync(user, newPassword, CancellationToken.None);
 
         // Assert
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -288,7 +288,7 @@ public class PublicResetPasswordAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(cancellationToken)).ReturnsAsync(1);
 
         // Act
-        await _factory.ResetPasswordAsync(user, newPassword, cancellationToken);
+        await _service.ResetPasswordAsync(user, newPassword, cancellationToken);
 
         // Assert
         _unitOfWorkMock.Verify(x => x.CommitAsync(cancellationToken), Times.Once);
@@ -332,7 +332,7 @@ public class PublicResetPasswordAuthFactoryTests
             .ReturnsAsync(Guid.NewGuid());
 
         // Act
-        await _factory.ResetPasswordAsync(user, newPassword, CancellationToken.None);
+        await _service.ResetPasswordAsync(user, newPassword, CancellationToken.None);
 
         // Assert
         callOrder.Should().Equal("revoke", "commit", "rotate");
