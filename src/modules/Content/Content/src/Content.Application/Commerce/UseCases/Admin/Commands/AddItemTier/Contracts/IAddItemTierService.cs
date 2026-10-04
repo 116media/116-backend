@@ -3,11 +3,11 @@ using _116.Content.Domain.Entities;
 namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier.Contracts;
 
 /// <summary>
-/// Factory for attaching a pricing tier snapshot to an order item.
+/// Service for attaching a pricing tier snapshot to an order item.
 /// Validates draft status, resolves category pricing, creates and persists the tier,
 /// and recalculates the order total.
 /// </summary>
-public interface IAddItemTierFactory
+public interface IAddItemTierService
 {
     /// <summary>
     /// Fetches order+item, validates Draft status, resolves pricing, creates
