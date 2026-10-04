@@ -1,6 +1,6 @@
 using _116.Identity.Application.Adapters.Wangkanai.Detection;
-using _116.Identity.Application.Auth.Services;
-using _116.Identity.Application.Session.Factories.Contracts;
+using _116.Identity.Application.Auth.Ports;
+using _116.Identity.Application.Session.Ports;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Shared.Cache;
@@ -19,15 +19,15 @@ using AwesomeAssertions;
 using Moq;
 using Xunit;
 using SessionFactory = _116.Identity.TestData.Factories.SessionFactory;
-using SessionsFactory = _116.Identity.Application.Session.Factories.SessionFactory;
+using SessionsService = _116.Identity.Application.Session.Services.SessionService;
 
-namespace _116.Identity.Unit.Tests.Application.Session.Factories;
+namespace _116.Identity.Unit.Tests.Application.Session.Services;
 
 /// <summary>
-/// Unit tests for <see cref="SessionsFactory"/>.
+/// Unit tests for <see cref="SessionsService"/>.
 /// </summary>
 [Collection("EnvironmentVariable")]
-public class SessionFactoryTests : IDisposable
+public class SessionServiceTests : IDisposable
 {
     private const string RefreshTokenExpirationVariable = "JWT_REFRESH_TOKEN_EXPIRATION";
 
@@ -39,9 +39,9 @@ public class SessionFactoryTests : IDisposable
     private readonly Mock<IUserTokenStateRepository> _tokenStateRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly UserSecurityState _tokenState = new(Guid.NewGuid(), 1);
-    private readonly SessionsFactory _factory;
+    private readonly SessionsService _service;
 
-    public SessionFactoryTests()
+    public SessionServiceTests()
     {
         _originalRefreshTokenExpiration = Environment.GetEnvironmentVariable(RefreshTokenExpirationVariable);
         Environment.SetEnvironmentVariable(RefreshTokenExpirationVariable, "43200");
@@ -59,7 +59,7 @@ public class SessionFactoryTests : IDisposable
 
         SessionErrors sessionErrors = TestErrorsFactory.CreateSessionErrors();
 
-        _factory = new SessionsFactory(
+        _service = new SessionsService(
             _jwtServiceMock.Object,
             _refreshTokenServiceMock.Object,
             _sessionRepositoryMock.Object,
@@ -136,7 +136,7 @@ public class SessionFactoryTests : IDisposable
             .Returns(jwtResult);
 
         // Act
-        SessionResult result = await _factory.CreateSessionAsync(user, userPermissions, CancellationToken.None);
+        SessionResult result = await _service.CreateSessionAsync(user, userPermissions, CancellationToken.None);
 
         // Assert
         result.RefreshToken.Should().Be(refreshToken);
@@ -190,7 +190,7 @@ public class SessionFactoryTests : IDisposable
             .Returns(jwtResult);
 
         // Act
-        SessionResult result = await _factory.CreateSessionAsync(user, userPermissions, CancellationToken.None);
+        SessionResult result = await _service.CreateSessionAsync(user, userPermissions, CancellationToken.None);
 
         // Assert
         result.RefreshToken.Should().Be(refreshToken);
@@ -255,7 +255,7 @@ public class SessionFactoryTests : IDisposable
             .Returns(new JwtGenerationDto("token", DateTime.UtcNow.AddHours(1)));
 
         // Act
-        await _factory.CreateSessionAsync(user, userPermissions, CancellationToken.None);
+        await _service.CreateSessionAsync(user, userPermissions, CancellationToken.None);
 
         // Assert
         _refreshTokenServiceMock.Verify(x => x.GenerateRefreshToken(), Times.Once);
@@ -318,7 +318,7 @@ public class SessionFactoryTests : IDisposable
             .Returns(new JwtGenerationDto("token", DateTime.UtcNow.AddHours(1)));
 
         // Act
-        await _factory.CreateSessionAsync(user, userPermissions, CancellationToken.None);
+        await _service.CreateSessionAsync(user, userPermissions, CancellationToken.None);
 
         // Assert
         _refreshTokenServiceMock.Verify(x => x.HashRefreshToken(refreshToken), Times.Once);
@@ -383,7 +383,7 @@ public class SessionFactoryTests : IDisposable
             .Returns(new JwtGenerationDto("token", DateTime.UtcNow.AddHours(1)));
 
         // Act
-        await _factory.CreateSessionAsync(user, userPermissions, CancellationToken.None);
+        await _service.CreateSessionAsync(user, userPermissions, CancellationToken.None);
 
         // Assert
         _sessionMetadataServiceMock.Verify(x => x.ExtractDeviceId(), Times.Once);
@@ -448,7 +448,7 @@ public class SessionFactoryTests : IDisposable
             .Returns(new JwtGenerationDto("token", DateTime.UtcNow.AddHours(1)));
 
         // Act
-        await _factory.CreateSessionAsync(user, userPermissions, CancellationToken.None);
+        await _service.CreateSessionAsync(user, userPermissions, CancellationToken.None);
 
         // Assert
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -509,7 +509,7 @@ public class SessionFactoryTests : IDisposable
             .Returns(new JwtGenerationDto("access_token", DateTime.UtcNow.AddHours(1)));
 
         // Act
-        await _factory.CreateSessionAsync(user, userPermissions, CancellationToken.None);
+        await _service.CreateSessionAsync(user, userPermissions, CancellationToken.None);
 
         // Assert
         _jwtServiceMock.Verify(
@@ -582,7 +582,7 @@ public class SessionFactoryTests : IDisposable
             .Returns(new JwtGenerationDto("token", DateTime.UtcNow.AddHours(1)));
 
         // Act
-        await _factory.CreateSessionAsync(user, userPermissions, cancellationToken);
+        await _service.CreateSessionAsync(user, userPermissions, cancellationToken);
 
         // Assert
         _sessionRepositoryMock.Verify(
