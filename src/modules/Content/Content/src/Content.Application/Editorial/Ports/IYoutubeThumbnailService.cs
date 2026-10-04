@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace _116.Content.Application.Editorial.Services;
+namespace _116.Content.Application.Editorial.Ports;
 
 /// <summary>
 /// Provides YouTube thumbnail download capabilities.
