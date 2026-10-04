@@ -1,16 +1,16 @@
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
+using _116.Mailer.Application.Notifications.Services;
 using _116.Mailer.Application.Shared.Persistence;
 using _116.Mailer.Application.Shared.Repositories;
-using _116.Mailer.Application.Shared.Services;
+using _116.Mailer.Application.Shared.Templates.Notifications;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Mailer.Domain.Entities;
-using _116.Mailer.Infrastructure.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Mailer.Unit.Tests.Infrastructure.Services;
+namespace _116.Mailer.Unit.Tests.Application.Notifications.Services;
 
 /// <summary>
 /// Unit tests for <see cref="NotificationService" />: renders, persists a self-contained
