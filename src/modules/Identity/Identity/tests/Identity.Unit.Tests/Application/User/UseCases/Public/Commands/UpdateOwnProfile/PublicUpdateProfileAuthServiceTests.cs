@@ -18,25 +18,25 @@ using Xunit;
 namespace _116.Identity.Unit.Tests.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
 
 /// <summary>
-/// Unit tests for <see cref="PublicUpdateProfileAuthFactory"/>.
+/// Unit tests for <see cref="PublicUpdateProfileAuthService"/>.
 /// </summary>
-public class PublicUpdateProfileAuthFactoryTests
+public class PublicUpdateProfileAuthServiceTests
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly Mock<IUserTokenStateRepository> _tokenStateRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly UserErrors _userErrors;
-    private readonly PublicUpdateProfileAuthFactory _factory;
+    private readonly PublicUpdateProfileAuthService _service;
 
-    public PublicUpdateProfileAuthFactoryTests()
+    public PublicUpdateProfileAuthServiceTests()
     {
         _authRepositoryMock = MockAuthRepository.Create();
         _sessionRepositoryMock = MockSessionRepository.Create();
         _tokenStateRepositoryMock = new Mock<IUserTokenStateRepository>();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
         _userErrors = TestErrorsFactory.CreateUserErrors();
-        _factory = new PublicUpdateProfileAuthFactory(
+        _service = new PublicUpdateProfileAuthService(
             _authRepositoryMock.Object,
             _sessionRepositoryMock.Object,
             _tokenStateRepositoryMock.Object,
@@ -79,7 +79,7 @@ public class PublicUpdateProfileAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        PublicUpdateProfileAuthData result = await _factory.UpdateProfileAsync(
+        PublicUpdateProfileAuthData result = await _service.UpdateProfileAsync(
             userId,
             sessionId,
             null,
@@ -114,7 +114,7 @@ public class PublicUpdateProfileAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.UpdateProfileAsync(
+        await _service.UpdateProfileAsync(
             userId,
             sessionId,
             null,
@@ -149,7 +149,7 @@ public class PublicUpdateProfileAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.UpdateProfileAsync(
+        await _service.UpdateProfileAsync(
             userId,
             sessionId,
             null,
@@ -184,7 +184,7 @@ public class PublicUpdateProfileAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.UpdateProfileAsync(
+        await _service.UpdateProfileAsync(
             userId,
             sessionId,
             null,
@@ -224,7 +224,7 @@ public class PublicUpdateProfileAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.UpdateProfileAsync(
+        await _service.UpdateProfileAsync(
             userId,
             sessionId,
             newEmail,
@@ -268,7 +268,7 @@ public class PublicUpdateProfileAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.UpdateProfileAsync(
+        await _service.UpdateProfileAsync(
             userId,
             sessionId,
             null,
@@ -308,7 +308,7 @@ public class PublicUpdateProfileAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.UpdateProfileAsync(
+        await _service.UpdateProfileAsync(
             userId,
             sessionId,
             null,
@@ -354,7 +354,7 @@ public class PublicUpdateProfileAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.UpdateProfileAsync(
+        await _service.UpdateProfileAsync(
             userId,
             sessionId,
             null,
@@ -400,7 +400,7 @@ public class PublicUpdateProfileAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        PublicUpdateProfileAuthData result = await _factory.UpdateProfileAsync(
+        PublicUpdateProfileAuthData result = await _service.UpdateProfileAsync(
             userId,
             sessionId,
             null,
@@ -438,7 +438,7 @@ public class PublicUpdateProfileAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.UpdateProfileAsync(
+        await _service.UpdateProfileAsync(
             userId,
             sessionId,
             null,
@@ -476,7 +476,7 @@ public class PublicUpdateProfileAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(cancellationToken)).ReturnsAsync(1);
 
         // Act
-        await _factory.UpdateProfileAsync(
+        await _service.UpdateProfileAsync(
             userId,
             sessionId,
             null,
@@ -546,7 +546,7 @@ public class PublicUpdateProfileAuthFactoryTests
             .ReturnsAsync(Guid.NewGuid());
 
         // Act
-        await _factory.UpdateProfileAsync(
+        await _service.UpdateProfileAsync(
             userId,
             sessionId,
             newEmail,
@@ -585,7 +585,7 @@ public class PublicUpdateProfileAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.UpdateProfileAsync(
+        await _service.UpdateProfileAsync(
             userId,
             sessionId,
             null,
