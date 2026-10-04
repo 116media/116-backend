@@ -1,6 +1,6 @@
-using _116.Identity.Application.Auth.Services;
-using _116.Identity.Application.Session.Factories.Contracts;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Session.Repositories;
+using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Shared.Cache;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Exceptions;
@@ -19,15 +19,15 @@ using AwesomeAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
-using RefreshTokenFactory = _116.Identity.Application.Session.Factories.RefreshTokenFactory;
+using RefreshTokenRotationService = _116.Identity.Application.Session.Services.RefreshTokenRotationService;
 
-namespace _116.Identity.Unit.Tests.Application.Session.UseCases.Public.Commands.RefreshToken;
+namespace _116.Identity.Unit.Tests.Application.Session.Services;
 
 /// <summary>
-/// Unit tests for <see cref="RefreshTokenFactory"/>.
+/// Unit tests for <see cref="RefreshTokenRotationService"/>.
 /// </summary>
 [Collection("EnvironmentVariable")]
-public class RefreshTokenFactoryTests : IDisposable
+public class RefreshTokenRotationServiceTests : IDisposable
 {
     private const string RefreshTokenExpirationVariable = "JWT_REFRESH_TOKEN_EXPIRATION";
 
@@ -37,9 +37,9 @@ public class RefreshTokenFactoryTests : IDisposable
     private readonly Mock<IUserTokenStateRepository> _tokenStateRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly UserSecurityState _tokenState = new(Guid.NewGuid(), 1);
-    private readonly RefreshTokenFactory _factory;
+    private readonly RefreshTokenRotationService _service;
 
-    public RefreshTokenFactoryTests()
+    public RefreshTokenRotationServiceTests()
     {
         _originalRefreshTokenExpiration = Environment.GetEnvironmentVariable(RefreshTokenExpirationVariable);
         Environment.SetEnvironmentVariable(RefreshTokenExpirationVariable, "43200");
@@ -55,14 +55,14 @@ public class RefreshTokenFactoryTests : IDisposable
 
         SessionErrors sessionErrors = TestErrorsFactory.CreateSessionErrors();
 
-        _factory = new RefreshTokenFactory(
+        _service = new RefreshTokenRotationService(
             _sessionRepositoryMock.Object,
             _refreshTokenServiceMock.Object,
             _tokenStateRepositoryMock.Object,
             _unitOfWorkMock.Object,
             sessionErrors,
             TimeProvider.System,
-            NullLogger<RefreshTokenFactory>.Instance
+            NullLogger<RefreshTokenRotationService>.Instance
         );
     }
 
@@ -108,7 +108,7 @@ public class RefreshTokenFactoryTests : IDisposable
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        RefreshTokenData result = await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
+        RefreshTokenData result = await _service.RefreshTokenAsync(refreshToken, CancellationToken.None);
 
         // Assert
         result.User.Should().Be(user);
@@ -129,7 +129,7 @@ public class RefreshTokenFactoryTests : IDisposable
         _sessionRepositoryMock.SetupGetByRefreshTokenHashReturnsNull(refreshTokenHash);
 
         // Act & Assert
-        Func<Task> act = async () => await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
+        Func<Task> act = async () => await _service.RefreshTokenAsync(refreshToken, CancellationToken.None);
         await act.Should().ThrowExactlyAsync<RefreshTokenExpiryException>();
     }
 
@@ -145,7 +145,7 @@ public class RefreshTokenFactoryTests : IDisposable
         _sessionRepositoryMock.SetupGetByRefreshTokenHashReturnsNull(refreshTokenHash);
 
         // Act & Assert
-        Func<Task> act = async () => await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
+        Func<Task> act = async () => await _service.RefreshTokenAsync(refreshToken, CancellationToken.None);
         await act.Should().ThrowExactlyAsync<RefreshTokenExpiryException>();
 
         _refreshTokenServiceMock.Verify(x => x.HashRefreshToken(refreshToken), Times.Once);
@@ -163,7 +163,7 @@ public class RefreshTokenFactoryTests : IDisposable
         _sessionRepositoryMock.SetupGetByRefreshTokenHashReturnsNull(refreshTokenHash);
 
         // Act & Assert
-        Func<Task> act = async () => await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
+        Func<Task> act = async () => await _service.RefreshTokenAsync(refreshToken, CancellationToken.None);
         await act.Should().ThrowExactlyAsync<RefreshTokenExpiryException>();
 
         _sessionRepositoryMock.Verify(
@@ -205,7 +205,7 @@ public class RefreshTokenFactoryTests : IDisposable
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
+        await _service.RefreshTokenAsync(refreshToken, CancellationToken.None);
 
         // Assert
         _refreshTokenServiceMock.Verify(x => x.GenerateRefreshToken(), Times.Once);
@@ -245,7 +245,7 @@ public class RefreshTokenFactoryTests : IDisposable
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
+        await _service.RefreshTokenAsync(refreshToken, CancellationToken.None);
 
         // Assert
         _sessionRepositoryMock.Verify(
@@ -293,7 +293,7 @@ public class RefreshTokenFactoryTests : IDisposable
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
+        await _service.RefreshTokenAsync(refreshToken, CancellationToken.None);
 
         // Assert
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -332,7 +332,7 @@ public class RefreshTokenFactoryTests : IDisposable
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        RefreshTokenData result = await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
+        RefreshTokenData result = await _service.RefreshTokenAsync(refreshToken, CancellationToken.None);
 
         // Assert
         result.User.Should().Be(user);
@@ -370,7 +370,7 @@ public class RefreshTokenFactoryTests : IDisposable
         _unitOfWorkMock.Setup(x => x.CommitAsync(cancellationToken)).ReturnsAsync(1);
 
         // Act
-        await _factory.RefreshTokenAsync(refreshToken, cancellationToken);
+        await _service.RefreshTokenAsync(refreshToken, cancellationToken);
 
         // Assert
         _sessionRepositoryMock.Verify(
@@ -401,7 +401,7 @@ public class RefreshTokenFactoryTests : IDisposable
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        Func<Task> act = async () => await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
+        Func<Task> act = async () => await _service.RefreshTokenAsync(refreshToken, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowExactlyAsync<RefreshTokenExpiryException>();
@@ -445,7 +445,7 @@ public class RefreshTokenFactoryTests : IDisposable
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        Func<Task> act = async () => await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
+        Func<Task> act = async () => await _service.RefreshTokenAsync(refreshToken, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowExactlyAsync<RefreshTokenExpiryException>();
@@ -487,7 +487,7 @@ public class RefreshTokenFactoryTests : IDisposable
             .ReturnsAsync(revokedSession);
 
         // Act
-        Func<Task> act = async () => await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
+        Func<Task> act = async () => await _service.RefreshTokenAsync(refreshToken, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowExactlyAsync<RefreshTokenExpiryException>();
@@ -516,7 +516,7 @@ public class RefreshTokenFactoryTests : IDisposable
             .ReturnsAsync((SessionEntity?)null);
 
         // Act
-        Func<Task> act = async () => await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
+        Func<Task> act = async () => await _service.RefreshTokenAsync(refreshToken, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowExactlyAsync<RefreshTokenExpiryException>();
