@@ -17,17 +17,17 @@ namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Public.Commands.Res
 /// </summary>
 public class PublicResetPasswordHandlerTests
 {
-    private readonly Mock<IPublicResetPasswordAuthFactory> _authFactoryMock;
+    private readonly Mock<IPublicResetPasswordAuthService> _authServiceMock;
     private readonly Mock<IOtpRepository> _otpRepositoryMock;
     private readonly PublicResetPasswordHandler _handler;
 
     public PublicResetPasswordHandlerTests()
     {
-        _authFactoryMock = new Mock<IPublicResetPasswordAuthFactory>();
+        _authServiceMock = new Mock<IPublicResetPasswordAuthService>();
         _otpRepositoryMock = MockOtpRepository.Create();
 
         _handler = new PublicResetPasswordHandler(
-            _authFactoryMock.Object,
+            _authServiceMock.Object,
             _otpRepositoryMock.Object,
             TimeProvider.System
         );
@@ -48,11 +48,11 @@ public class PublicResetPasswordHandlerTests
         PublicResetPasswordCommand command = new(Email: email, Code: code, NewPassword: newPassword);
         PublicResetPasswordAuthData authData = new(User: user);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.GetUserForResetAsync(email, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
         _otpRepositoryMock.SetupValidateUsedOtp(otp);
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.ResetPasswordAsync(user, newPassword, It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
@@ -60,7 +60,7 @@ public class PublicResetPasswordHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _authFactoryMock.Verify(x => x.GetUserForResetAsync(email, It.IsAny<CancellationToken>()), Times.Once);
+        _authServiceMock.Verify(x => x.GetUserForResetAsync(email, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -76,11 +76,11 @@ public class PublicResetPasswordHandlerTests
         PublicResetPasswordCommand command = new(Email: email, Code: code, NewPassword: newPassword);
         PublicResetPasswordAuthData authData = new(User: user);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.GetUserForResetAsync(email, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
         _otpRepositoryMock.SetupValidateUsedOtp(otp);
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.ResetPasswordAsync(user, newPassword, It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
@@ -107,11 +107,11 @@ public class PublicResetPasswordHandlerTests
         PublicResetPasswordCommand command = new(Email: email, Code: code, NewPassword: newPassword);
         PublicResetPasswordAuthData authData = new(User: user);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.GetUserForResetAsync(email, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
         _otpRepositoryMock.SetupValidateUsedOtp(otp);
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.ResetPasswordAsync(user, newPassword, It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
@@ -119,7 +119,7 @@ public class PublicResetPasswordHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _authFactoryMock.Verify(
+        _authServiceMock.Verify(
             x => x.ResetPasswordAsync(user, newPassword, It.IsAny<CancellationToken>()),
             Times.Once
         );
@@ -136,7 +136,7 @@ public class PublicResetPasswordHandlerTests
         string email = "nonexistent@example.com";
         PublicResetPasswordCommand command = new(Email: email, Code: "123456", NewPassword: "NewPassword123!");
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.GetUserForResetAsync(email, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new NotFoundException("User not found."));
 
@@ -158,7 +158,7 @@ public class PublicResetPasswordHandlerTests
         PublicResetPasswordCommand command = new(Email: email, Code: code, NewPassword: "NewPassword123!");
         PublicResetPasswordAuthData authData = new(User: user);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.GetUserForResetAsync(email, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
         _otpRepositoryMock
@@ -185,7 +185,7 @@ public class PublicResetPasswordHandlerTests
         PublicResetPasswordCommand command = new(Email: email, Code: code, NewPassword: "NewPassword123!");
         PublicResetPasswordAuthData authData = new(User: user);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.GetUserForResetAsync(email, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
         _otpRepositoryMock
@@ -199,7 +199,7 @@ public class PublicResetPasswordHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _authFactoryMock.Verify(
+        _authServiceMock.Verify(
             x => x.ResetPasswordAsync(It.IsAny<UserEntity>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
@@ -223,11 +223,11 @@ public class PublicResetPasswordHandlerTests
         PublicResetPasswordCommand command = new(Email: email, Code: code, NewPassword: newPassword);
         PublicResetPasswordAuthData authData = new(User: user);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.GetUserForResetAsync(email, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
         _otpRepositoryMock.SetupValidateUsedOtp(otp);
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.ResetPasswordAsync(user, newPassword, It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
@@ -235,7 +235,7 @@ public class PublicResetPasswordHandlerTests
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _authFactoryMock.Verify(x => x.GetUserForResetAsync(email, cts.Token), Times.Once);
+        _authServiceMock.Verify(x => x.GetUserForResetAsync(email, cts.Token), Times.Once);
     }
 
     [Fact]
@@ -252,11 +252,11 @@ public class PublicResetPasswordHandlerTests
         PublicResetPasswordCommand command = new(Email: email, Code: code, NewPassword: newPassword);
         PublicResetPasswordAuthData authData = new(User: user);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.GetUserForResetAsync(email, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
         _otpRepositoryMock.SetupValidateUsedOtp(otp);
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.ResetPasswordAsync(user, newPassword, It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
