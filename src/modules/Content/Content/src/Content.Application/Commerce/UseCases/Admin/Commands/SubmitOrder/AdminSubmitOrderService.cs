@@ -6,12 +6,12 @@ using _116.Content.Domain.Entities;
 namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder;
 
 /// <summary>
-/// Factory implementation for the order submission flow.
+/// Service implementation for the order submission flow.
 /// </summary>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="contentOrderErrors">Content order domain error factory.</param>
-public class AdminSubmitOrderFactory(IContentUnitOfWork unitOfWork, ContentOrderErrors contentOrderErrors)
-    : ISubmitOrderFactory
+/// <param name="contentOrderErrors">Content order domain error service.</param>
+public class AdminSubmitOrderService(IContentUnitOfWork unitOfWork, ContentOrderErrors contentOrderErrors)
+    : ISubmitOrderService
 {
     /// <inheritdoc />
     public async Task SubmitAsync(ContentOrderEntity order, CancellationToken cancellationToken)
