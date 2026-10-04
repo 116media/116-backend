@@ -2,13 +2,13 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 
-namespace _116.Content.Application.Catalog.Factories;
+namespace _116.Content.Application.Catalog.Services;
 
 /// <summary>
 /// Builds <see cref="CategoryDto" /> projections, resolving each category's poster, content type
 /// and pricing tiers in a single batch so callers never issue one query per category.
 /// </summary>
-public interface ICategoryDtoFactory
+public interface ICategoryDtoService
 {
     /// <summary>
     /// Builds the projection for one category.
