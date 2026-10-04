@@ -4,23 +4,23 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using MapsterMapper;
 
-namespace _116.Content.Application.Commerce.Factories;
+namespace _116.Content.Application.Commerce.Services;
 
 /// <summary>
-/// Factory implementation building order projections from pre-resolved lookup maps.
+/// Service implementation building order projections from pre-resolved lookup maps.
 /// </summary>
 /// <param name="mapper">Injected IMapper instance.</param>
 /// <param name="customerRepository">Repository resolving ordering customers.</param>
 /// <param name="categoryRepository">Repository resolving item categories.</param>
 /// <param name="promotionLevelRepository">Repository resolving purchased promotion levels.</param>
 /// <param name="pricingTierRepository">Repository resolving purchased pricing tiers.</param>
-public class ContentOrderDtoFactory(
+public class ContentOrderDtoService(
     IMapper mapper,
     ICustomerRepository customerRepository,
     ICategoryRepository categoryRepository,
     IPromotionLevelRepository promotionLevelRepository,
     IPricingTierRepository pricingTierRepository
-) : IContentOrderDtoFactory
+) : IContentOrderDtoService
 {
     /// <inheritdoc />
     public async Task<ContentOrderSummaryDto> CreateSummaryAsync(
