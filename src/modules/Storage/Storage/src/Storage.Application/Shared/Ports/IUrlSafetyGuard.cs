@@ -1,4 +1,4 @@
-namespace _116.Storage.Application.Shared.Services;
+namespace _116.Storage.Application.Shared.Ports;
 
 /// <summary>
 /// Rejects URLs that would make the server dial itself or the private network (SSRF).
