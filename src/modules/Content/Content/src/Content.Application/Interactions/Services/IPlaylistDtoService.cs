@@ -1,13 +1,13 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
 
-namespace _116.Content.Application.Interactions.Factories;
+namespace _116.Content.Application.Interactions.Services;
 
 /// <summary>
 /// Builds playlist projections, resolving every video thumbnail in a single batch so callers never
 /// issue one file query per video.
 /// </summary>
-public interface IPlaylistDtoFactory
+public interface IPlaylistDtoService
 {
     /// <summary>
     /// Builds the detail projection for one playlist, with every video's thumbnail resolved.
