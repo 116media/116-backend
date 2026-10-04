@@ -1,5 +1,5 @@
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.Repositories;
-using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
@@ -18,22 +18,22 @@ using Xunit;
 namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Public.Commands.ResendOtp;
 
 /// <summary>
-/// Unit tests for <see cref="PublicResendOtpFactory"/>.
+/// Unit tests for <see cref="PublicResendOtpService"/>.
 /// </summary>
-public class PublicResendOtpFactoryTests
+public class PublicResendOtpServiceTests
 {
     private readonly Mock<IOtpRepository> _otpRepositoryMock;
     private readonly Mock<IOtpService> _otpServiceMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
-    private readonly PublicResendOtpFactory _factory;
+    private readonly PublicResendOtpService _service;
 
-    public PublicResendOtpFactoryTests()
+    public PublicResendOtpServiceTests()
     {
         _otpRepositoryMock = MockOtpRepository.Create();
         _otpServiceMock = MockOtpService.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
 
-        _factory = new PublicResendOtpFactory(
+        _service = new PublicResendOtpService(
             _otpRepositoryMock.Object,
             _otpServiceMock.Object,
             _unitOfWorkMock.Object
@@ -53,7 +53,7 @@ public class PublicResendOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp, TestConstants.Otp.DefaultCode);
 
         // Act
-        OtpCreationResult? result = await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
+        OtpCreationResult? result = await _service.ResendOtpAsync(userId, purpose, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -79,7 +79,7 @@ public class PublicResendOtpFactoryTests
         _otpRepositoryMock.SetupCountRecentOtps(userId, purpose, TestConstants.Otp.MaxResendsPerWindow);
 
         // Act
-        OtpCreationResult? result = await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
+        OtpCreationResult? result = await _service.ResendOtpAsync(userId, purpose, CancellationToken.None);
 
         // Assert
         result.Should().BeNull();
@@ -99,7 +99,7 @@ public class PublicResendOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        OtpCreationResult? result = await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
+        OtpCreationResult? result = await _service.ResendOtpAsync(userId, purpose, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -117,7 +117,7 @@ public class PublicResendOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
+        await _service.ResendOtpAsync(userId, purpose, CancellationToken.None);
 
         // Assert
         _otpRepositoryMock.Verify(
@@ -137,7 +137,7 @@ public class PublicResendOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
+        await _service.ResendOtpAsync(userId, purpose, CancellationToken.None);
 
         // Assert
         _otpServiceMock.Verify(x => x.CreateOtp(userId, purpose), Times.Once);
@@ -154,7 +154,7 @@ public class PublicResendOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
+        await _service.ResendOtpAsync(userId, purpose, CancellationToken.None);
 
         // Assert
         _otpRepositoryMock.Verify(x => x.AddAsync(otp, It.IsAny<CancellationToken>()), Times.Once);
@@ -171,7 +171,7 @@ public class PublicResendOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
+        await _service.ResendOtpAsync(userId, purpose, CancellationToken.None);
 
         // Assert
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -193,7 +193,7 @@ public class PublicResendOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        OtpCreationResult? result = await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
+        OtpCreationResult? result = await _service.ResendOtpAsync(userId, purpose, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -217,7 +217,7 @@ public class PublicResendOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        await _factory.ResendOtpAsync(userId, purpose, cts.Token);
+        await _service.ResendOtpAsync(userId, purpose, cts.Token);
 
         // Assert
         _otpRepositoryMock.Verify(
@@ -241,7 +241,7 @@ public class PublicResendOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp, TestConstants.Otp.DefaultCode);
 
         // Act
-        await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
+        await _service.ResendOtpAsync(userId, purpose, CancellationToken.None);
 
         // Assert
         OtpIssuedEvent issued = otp.DomainEvents.OfType<OtpIssuedEvent>().Should().ContainSingle().Subject;
