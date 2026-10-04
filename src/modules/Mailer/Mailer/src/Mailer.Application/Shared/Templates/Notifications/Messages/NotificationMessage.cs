@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Localization;
 
-namespace _116.Mailer.Application.Notifications.Messages;
+namespace _116.Mailer.Application.Shared.Templates.Notifications.Messages;
 
 /// <summary>
 /// Localizer facade for in-app notification resources. Keys follow the
