@@ -2,14 +2,13 @@ using System.Reflection;
 using _116.Content.Application.Shared.OutboundEmails;
 using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Mailer.Application.Newsletter.OutboundEmails;
-using _116.Mailer.Application.Shared.Services;
-using _116.Mailer.Application.Templates;
-using _116.Mailer.Application.Templates.Messages;
+using _116.Mailer.Application.Shared.Templates.Emails;
+using _116.Mailer.Application.Shared.Templates.Emails.Messages;
 using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Mailer.Unit.Tests.Application.Templates;
+namespace _116.Mailer.Unit.Tests.Application.Shared.Templates.Emails;
 
 /// <summary>
 /// Unit tests for <see cref="EmailTemplateRenderer" /> against the real
