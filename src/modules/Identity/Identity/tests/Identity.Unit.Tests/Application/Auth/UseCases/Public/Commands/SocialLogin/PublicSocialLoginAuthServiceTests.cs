@@ -1,9 +1,11 @@
 using _116.Identity.Application.Adapters.SocialAuth;
+using _116.Identity.Application.Auth.Exceptions;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
+using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
-using _116.Identity.Application.User.Services;
+using _116.Identity.Application.User.Ports;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
@@ -15,6 +17,7 @@ using _116.Storage.Contracts.Application.DTOs;
 using _116.Storage.Contracts.Application.Services;
 using _116.Storage.TestData.Factories;
 using _116.Storage.TestData.Mocks.Infrastructure;
+using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -22,27 +25,48 @@ using Xunit;
 namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Public.Commands.SocialLogin;
 
 /// <summary>
-/// Unit tests for <see cref="PublicSocialLoginAuthFactory"/>.
+/// Unit tests for <see cref="PublicSocialLoginAuthService"/>.
 /// </summary>
-public class PublicSocialLoginAuthFactoryTests
+public class PublicSocialLoginAuthServiceTests
 {
     private const EnumAuthProvider Provider = EnumAuthProvider.Google;
 
+    private const string IdToken = "provider-id-token";
+
+    private readonly Mock<ISocialTokenVerifierFactory> _verifierFactoryMock = new();
+    private readonly Mock<ISocialTokenVerifier> _verifierMock = new();
     private readonly Mock<IAvatarService> _avatarServiceMock;
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
-    private readonly PublicSocialLoginAuthFactory _factory;
+    private readonly PublicSocialLoginAuthService _service;
 
-    public PublicSocialLoginAuthFactoryTests()
+    public PublicSocialLoginAuthServiceTests()
     {
         _authRepositoryMock = MockAuthRepository.Create();
         _avatarServiceMock = MockAvatarService.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
-        _factory = new PublicSocialLoginAuthFactory(
+        _verifierFactoryMock.Setup(x => x.For(Provider)).Returns(_verifierMock.Object);
+
+        _service = new PublicSocialLoginAuthService(
+            _verifierFactoryMock.Object,
             _authRepositoryMock.Object,
             _avatarServiceMock.Object,
-            _unitOfWorkMock.Object
+            _unitOfWorkMock.Object,
+            TestErrorsFactory.CreateIdentityI18n()
         );
+    }
+
+    /// <summary>
+    /// Arranges the verifier to yield the payload, then authenticates through the raw token.
+    /// </summary>
+    private Task<PublicSocialLoginAuthData> AuthenticateAsync(
+        SocialTokenPayload payload,
+        CancellationToken cancellationToken = default
+    )
+    {
+        _verifierMock.Setup(x => x.VerifyAsync(IdToken, It.IsAny<CancellationToken>())).ReturnsAsync(payload);
+
+        return _service.AuthenticateAsync(Provider, IdToken, cancellationToken);
     }
 
     private static SocialTokenPayload Payload(string email, string userName, string? pictureUrl) =>
@@ -54,10 +78,10 @@ public class PublicSocialLoginAuthFactoryTests
             PictureUrl: pictureUrl
         );
 
-    #region AuthenticateOrCreateAsync Tests
+    #region AuthenticateAsync Tests
 
     [Fact]
-    public async Task AuthenticateOrCreateAsync_WithValidData_ShouldReturnAuthData()
+    public async Task AuthenticateAsync_WithValidData_ShouldReturnAuthData()
     {
         // Arrange
         SocialTokenPayload payload = Payload("user@example.com", "socialuser", "https://avatar.url/image.jpg");
@@ -81,18 +105,14 @@ public class PublicSocialLoginAuthFactoryTests
             .ReturnsAsync(StoredFileFactory.From(avatarFile));
 
         // Act
-        PublicSocialLoginAuthData result = await _factory.AuthenticateOrCreateAsync(
-            payload,
-            Provider,
-            CancellationToken.None
-        );
+        PublicSocialLoginAuthData result = await AuthenticateAsync(payload, CancellationToken.None);
 
         // Assert
         result.User.Should().Be(user);
     }
 
     [Fact]
-    public async Task AuthenticateOrCreateAsync_WithoutPicture_ShouldNotUpdateAvatar()
+    public async Task AuthenticateAsync_WithoutPicture_ShouldNotUpdateAvatar()
     {
         // Arrange
         SocialTokenPayload payload = Payload("user@example.com", "socialuser", pictureUrl: null);
@@ -111,13 +131,13 @@ public class PublicSocialLoginAuthFactoryTests
             .ReturnsAsync(user);
 
         // Act
-        await _factory.AuthenticateOrCreateAsync(payload, Provider, CancellationToken.None);
+        await AuthenticateAsync(payload, CancellationToken.None);
 
         // Assert
     }
 
     [Fact]
-    public async Task AuthenticateOrCreateAsync_ShouldGetOrCreateExternalUser_WithSubjectId()
+    public async Task AuthenticateAsync_ShouldGetOrCreateExternalUser_WithSubjectId()
     {
         // Arrange
         SocialTokenPayload payload = Payload("user@example.com", "socialuser", pictureUrl: null);
@@ -140,7 +160,7 @@ public class PublicSocialLoginAuthFactoryTests
             .ReturnsAsync((StoredFile?)null);
 
         // Act
-        await _factory.AuthenticateOrCreateAsync(payload, Provider, CancellationToken.None);
+        await AuthenticateAsync(payload, CancellationToken.None);
 
         // Assert
         _authRepositoryMock.Verify(
@@ -157,7 +177,7 @@ public class PublicSocialLoginAuthFactoryTests
     }
 
     [Fact]
-    public async Task AuthenticateOrCreateAsync_ShouldUpdateAvatarFromPicture()
+    public async Task AuthenticateAsync_ShouldUpdateAvatarFromPicture()
     {
         // Arrange
         SocialTokenPayload payload = Payload("user@example.com", "socialuser", "https://avatar.url/image.jpg");
@@ -180,13 +200,13 @@ public class PublicSocialLoginAuthFactoryTests
             .ReturnsAsync((StoredFile?)null);
 
         // Act
-        await _factory.AuthenticateOrCreateAsync(payload, Provider, CancellationToken.None);
+        await AuthenticateAsync(payload, CancellationToken.None);
 
         // Assert
     }
 
     [Fact]
-    public async Task AuthenticateOrCreateAsync_WithAManuallyUploadedAvatar_ShouldNotTouchTheProviderPicture()
+    public async Task AuthenticateAsync_WithAManuallyUploadedAvatar_ShouldNotTouchTheProviderPicture()
     {
         // Arrange
         SocialTokenPayload payload = Payload("user@example.com", "socialuser", "https://avatar.url/image.jpg");
@@ -206,7 +226,7 @@ public class PublicSocialLoginAuthFactoryTests
             .ReturnsAsync(user);
 
         // Act
-        await _factory.AuthenticateOrCreateAsync(payload, Provider, CancellationToken.None);
+        await AuthenticateAsync(payload, CancellationToken.None);
 
         // Assert
 
@@ -214,7 +234,7 @@ public class PublicSocialLoginAuthFactoryTests
     }
 
     [Fact]
-    public async Task AuthenticateOrCreateAsync_WithAvatarFileReturned_ShouldUpdateUserAvatar()
+    public async Task AuthenticateAsync_WithAvatarFileReturned_ShouldUpdateUserAvatar()
     {
         // Arrange
         SocialTokenPayload payload = Payload("user@example.com", "socialuser", "https://avatar.url/image.jpg");
@@ -239,7 +259,7 @@ public class PublicSocialLoginAuthFactoryTests
             .ReturnsAsync(StoredFileFactory.From(avatarFile));
 
         // Act
-        await _factory.AuthenticateOrCreateAsync(payload, Provider, CancellationToken.None);
+        await AuthenticateAsync(payload, CancellationToken.None);
 
         // Assert
         user.AvatarFileId.Should().Be(avatarFileId);
@@ -247,7 +267,7 @@ public class PublicSocialLoginAuthFactoryTests
     }
 
     [Fact]
-    public async Task AuthenticateOrCreateAsync_ShouldCommitTransaction()
+    public async Task AuthenticateAsync_ShouldCommitTransaction()
     {
         // Arrange
         SocialTokenPayload payload = Payload("user@example.com", "socialuser", pictureUrl: null);
@@ -270,14 +290,14 @@ public class PublicSocialLoginAuthFactoryTests
             .ReturnsAsync((StoredFile?)null);
 
         // Act
-        await _factory.AuthenticateOrCreateAsync(payload, Provider, CancellationToken.None);
+        await AuthenticateAsync(payload, CancellationToken.None);
 
         // Assert
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
     [Fact]
-    public async Task AuthenticateOrCreateAsync_WithCancellationToken_ShouldPassToRepositories()
+    public async Task AuthenticateAsync_WithCancellationToken_ShouldPassToRepositories()
     {
         // Arrange
         SocialTokenPayload payload = Payload("user@example.com", "socialuser", "https://avatar.url/image.jpg");
@@ -301,7 +321,7 @@ public class PublicSocialLoginAuthFactoryTests
             .ReturnsAsync((StoredFile?)null);
 
         // Act
-        await _factory.AuthenticateOrCreateAsync(payload, Provider, cancellationToken);
+        await AuthenticateAsync(payload, cancellationToken);
 
         // Assert
         _authRepositoryMock.Verify(
@@ -323,7 +343,7 @@ public class PublicSocialLoginAuthFactoryTests
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public async Task AuthenticateOrCreateAsync_WithABlankPictureUrl_ShouldNotTouchTheAvatar(string pictureUrl)
+    public async Task AuthenticateAsync_WithABlankPictureUrl_ShouldNotTouchTheAvatar(string pictureUrl)
     {
         // Arrange
         SocialTokenPayload payload = Payload("user@example.com", "socialuser", pictureUrl);
@@ -342,8 +362,67 @@ public class PublicSocialLoginAuthFactoryTests
             .ReturnsAsync(user);
 
         // Act
-        await _factory.AuthenticateOrCreateAsync(payload, Provider, CancellationToken.None);
+        await AuthenticateAsync(payload, CancellationToken.None);
 
         // Assert
     }
+
+    #region Token Verification
+
+    [Fact]
+    public async Task AuthenticateAsync_WhenProviderEmailNotVerified_ShouldThrowWithoutTouchingTheRepository()
+    {
+        // Arrange
+        SocialTokenPayload payload = Payload("user@example.com", "socialuser", null) with
+        {
+            EmailVerified = false,
+        };
+
+        // Act
+        Func<Task> act = async () => await AuthenticateAsync(payload);
+
+        // Assert
+        await act.Should().ThrowAsync<AccountNotVerifiedException>();
+        _authRepositoryMock.Verify(
+            x =>
+                x.GetOrCreateExternalUserAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<AuthProvider>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async Task AuthenticateAsync_WhenTheTokenDoesNotVerify_ShouldPropagateTheException()
+    {
+        // Arrange
+        _verifierMock
+            .Setup(x => x.VerifyAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new SocialTokenVerificationException());
+
+        // Act
+        Func<Task> act = async () => await _service.AuthenticateAsync(Provider, IdToken, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<SocialTokenVerificationException>();
+    }
+
+    [Fact]
+    public async Task AuthenticateAsync_WhenTheProviderIsUnsupported_ShouldPropagateTheException()
+    {
+        // Arrange
+        _verifierFactoryMock.Setup(x => x.For(Provider)).Throws(new UnsupportedProviderException(Provider));
+
+        // Act
+        Func<Task> act = async () => await _service.AuthenticateAsync(Provider, IdToken, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<UnsupportedProviderException>();
+    }
+
+    #endregion
 }
