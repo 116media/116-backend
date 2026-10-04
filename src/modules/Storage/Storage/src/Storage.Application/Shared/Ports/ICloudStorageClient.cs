@@ -1,6 +1,6 @@
 using _116.Storage.Contracts.Domain.Enums;
 
-namespace _116.Storage.Application.Shared.Services;
+namespace _116.Storage.Application.Shared.Ports;
 
 /// <summary>
 /// One asset to store: its bytes plus the identity it should be stored under.
