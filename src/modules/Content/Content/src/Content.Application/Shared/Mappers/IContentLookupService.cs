@@ -6,7 +6,7 @@ namespace _116.Content.Application.Shared.Mappers;
 /// Resolves the rows an article, video or lyrics projection names — categories, customers,
 /// promotion levels and tags — in one batch per kind, so no projection reads a navigation.
 /// </summary>
-public interface IContentLookupFactory
+public interface IContentLookupService
 {
     /// <summary>
     /// Resolves the lookups a set of articles names.
