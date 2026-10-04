@@ -1,6 +1,6 @@
 using _116.Mailer.Contracts.Application.DTOs;
 
-namespace _116.Mailer.Application.Shared.Services;
+namespace _116.Mailer.Application.Shared.Ports;
 
 /// <summary>
 /// A fully rendered, provider-agnostic email ready for transport. The sender
