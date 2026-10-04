@@ -4,13 +4,13 @@ using _116.Content.Domain.Entities;
 using _116.Storage.Contracts.Application.DTOs;
 using _116.Storage.Contracts.Application.Services;
 
-namespace _116.Content.Application.Editorial.Factories;
+namespace _116.Content.Application.Editorial.Services;
 
 /// <summary>
-/// Factory implementation building album projections from a pre-resolved cover map.
+/// Service implementation building album projections from a pre-resolved cover map.
 /// </summary>
 /// <param name="fileStorage">Storage's file contract.</param>
-public class AlbumDtoFactory(IFileStorageService fileStorage) : IAlbumDtoFactory
+public class AlbumDtoService(IFileStorageService fileStorage) : IAlbumDtoService
 {
     /// <inheritdoc />
     public async Task<AlbumDto> CreateAsync(AlbumEntity album, CancellationToken ct = default)
