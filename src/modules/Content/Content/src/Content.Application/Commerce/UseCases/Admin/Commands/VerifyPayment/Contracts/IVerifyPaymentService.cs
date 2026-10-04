@@ -3,10 +3,10 @@ using _116.Content.Domain.Entities;
 namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment.Contracts;
 
 /// <summary>
-/// Factory for handling the full payment verification flow, including
+/// Service for handling the full payment verification flow, including
 /// stamping social boost and promotion on linked articles/videos.
 /// </summary>
-public interface IVerifyPaymentFactory
+public interface IVerifyPaymentService
 {
     /// <summary>
     /// Verifies the payment, marks the order as paid, and stamps promotion
