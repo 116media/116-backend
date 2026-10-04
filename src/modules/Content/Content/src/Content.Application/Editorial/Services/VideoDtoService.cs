@@ -6,29 +6,29 @@ using _116.Storage.Contracts.Application.DTOs;
 using _116.Storage.Contracts.Application.Services;
 using MapsterMapper;
 
-namespace _116.Content.Application.Editorial.Factories;
+namespace _116.Content.Application.Editorial.Services;
 
 /// <summary>
-/// Factory implementation building video projections from a pre-resolved thumbnail map
+/// Service implementation building video projections from a pre-resolved thumbnail map
 /// and the derived published-lyrics fact.
 /// </summary>
 /// <param name="mapper">Injected IMapper instance.</param>
 /// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="videoRepository">Repository computing the published-lyrics fact.</param>
-/// <param name="contentLookupFactory">Resolves the categories, customers and promotion levels named.</param>
-public class VideoDtoFactory(
+/// <param name="contentLookupService">Resolves the categories, customers and promotion levels named.</param>
+public class VideoDtoService(
     IMapper mapper,
     IFileStorageService fileStorage,
     IVideoRepository videoRepository,
-    IContentLookupFactory contentLookupFactory
-) : IVideoDtoFactory
+    IContentLookupService contentLookupService
+) : IVideoDtoService
 {
     /// <inheritdoc />
     public async Task<VideoDetailDto> CreateDetailAsync(VideoEntity video, CancellationToken ct = default)
     {
         IReadOnlyDictionary<Guid, FileReferenceDto> thumbnails = await ResolveThumbnailsAsync([video], ct);
         bool hasLyrics = await videoRepository.HasPublishedLyricsAsync(videoId: video.Id, cancellationToken: ct);
-        ContentLookups lookups = await contentLookupFactory.ResolveForVideosAsync([video], ct);
+        ContentLookups lookups = await contentLookupService.ResolveForVideosAsync([video], ct);
 
         return video.ToVideoDetailDto(mapper, lookups, ThumbnailUrl(video, thumbnails), hasLyrics);
     }
@@ -42,7 +42,7 @@ public class VideoDtoFactory(
     {
         IReadOnlyDictionary<Guid, FileReferenceDto> thumbnails = await ResolveThumbnailsAsync([video], ct);
         bool hasLyrics = await videoRepository.HasPublishedLyricsAsync(videoId: video.Id, cancellationToken: ct);
-        ContentLookups lookups = await contentLookupFactory.ResolveForVideosAsync([video], ct);
+        ContentLookups lookups = await contentLookupService.ResolveForVideosAsync([video], ct);
 
         return video.ToPublicVideoDetailDto(mapper, lookups, ThumbnailUrl(video, thumbnails), hasLyrics, ratedStars);
     }
@@ -55,7 +55,7 @@ public class VideoDtoFactory(
     {
         IReadOnlyDictionary<Guid, FileReferenceDto> thumbnails = await ResolveThumbnailsAsync(videos, ct);
         IReadOnlySet<Guid> videosWithLyrics = await ResolveVideosWithLyricsAsync(videos, ct);
-        ContentLookups lookups = await contentLookupFactory.ResolveForVideosAsync(videos, ct);
+        ContentLookups lookups = await contentLookupService.ResolveForVideosAsync(videos, ct);
 
         return
         [
@@ -73,7 +73,7 @@ public class VideoDtoFactory(
     {
         IReadOnlyDictionary<Guid, FileReferenceDto> thumbnails = await ResolveThumbnailsAsync(videos, ct);
         IReadOnlySet<Guid> videosWithLyrics = await ResolveVideosWithLyricsAsync(videos, ct);
-        ContentLookups lookups = await contentLookupFactory.ResolveForVideosAsync(videos, ct);
+        ContentLookups lookups = await contentLookupService.ResolveForVideosAsync(videos, ct);
 
         return videos.ToPublicVideoSummaryDtos(lookups, thumbnails, videosWithLyrics);
     }
@@ -108,6 +108,28 @@ public class VideoDtoFactory(
     /// <param name="video">The video.</param>
     /// <param name="thumbnails">The resolved thumbnails, keyed by file id.</param>
     /// <returns>The URL, or null when the video has no thumbnail.</returns>
+    /// <inheritdoc />
+    public async Task<PublicVideoSummaryContext> ResolvePublicContextAsync(
+        IReadOnlyList<VideoEntity> videos,
+        CancellationToken ct = default
+    )
+    {
+        IReadOnlyDictionary<Guid, FileReferenceDto> thumbnails = await ResolveThumbnailsAsync(videos, ct);
+        IReadOnlySet<Guid> videosWithLyrics = await ResolveVideosWithLyricsAsync(videos, ct);
+        ContentLookups lookups = await contentLookupService.ResolveForVideosAsync(videos, ct);
+
+        return new PublicVideoSummaryContext(lookups, thumbnails, videosWithLyrics);
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<PublicVideoSummaryDto> CreatePublicMany(
+        IReadOnlyList<VideoEntity> videos,
+        PublicVideoSummaryContext context
+    )
+    {
+        return videos.ToPublicVideoSummaryDtos(context.Lookups, context.Thumbnails, context.VideosWithLyrics);
+    }
+
     private static string? ThumbnailUrl(VideoEntity video, IReadOnlyDictionary<Guid, FileReferenceDto> thumbnails) =>
         video.ThumbnailFileId.HasValue ? thumbnails.GetValueOrDefault(video.ThumbnailFileId.Value)?.StorageUrl : null;
 }
