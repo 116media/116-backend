@@ -1,14 +1,15 @@
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Storage.Contracts.Application.DTOs;
 
-namespace _116.Content.Application.Editorial.Factories;
+namespace _116.Content.Application.Editorial.Services;
 
 /// <summary>
 /// Builds video projections, resolving every thumbnail in a single batch so callers never issue one
 /// file query per video.
 /// </summary>
-public interface IVideoDtoFactory
+public interface IVideoDtoService
 {
     /// <summary>
     /// Builds the admin detail projection for one video.
@@ -78,4 +79,38 @@ public interface IVideoDtoFactory
         IReadOnlyList<VideoEntity> videos,
         CancellationToken ct = default
     );
+
+    /// <summary>
+    /// Resolves in one batch everything the public summaries of a set of videos need, for callers
+    /// assembling several groups from the same batch.
+    /// </summary>
+    /// <param name="videos">The videos.</param>
+    /// <param name="ct">Token to cancel the operation.</param>
+    Task<PublicVideoSummaryContext> ResolvePublicContextAsync(
+        IReadOnlyList<VideoEntity> videos,
+        CancellationToken ct = default
+    );
+
+    /// <summary>
+    /// Builds public summaries from an already resolved context, without further IO.
+    /// </summary>
+    /// <param name="videos">The videos.</param>
+    /// <param name="context">The context resolved for the batch.</param>
+    IReadOnlyList<PublicVideoSummaryDto> CreatePublicMany(
+        IReadOnlyList<VideoEntity> videos,
+        PublicVideoSummaryContext context
+    );
 }
+
+/// <summary>
+/// Everything the public summaries of a batch of videos read: the lookups, the thumbnails and
+/// the published-lyrics fact.
+/// </summary>
+/// <param name="Lookups">The categories, customers and promotion levels the cards name.</param>
+/// <param name="Thumbnails">The resolved thumbnail files by id.</param>
+/// <param name="VideosWithLyrics">The ids of the videos with published lyrics.</param>
+public record PublicVideoSummaryContext(
+    ContentLookups Lookups,
+    IReadOnlyDictionary<Guid, FileReferenceDto> Thumbnails,
+    IReadOnlySet<Guid> VideosWithLyrics
+);
