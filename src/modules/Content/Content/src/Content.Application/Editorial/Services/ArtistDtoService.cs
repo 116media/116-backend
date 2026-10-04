@@ -4,13 +4,13 @@ using _116.Content.Domain.Entities;
 using _116.Storage.Contracts.Application.DTOs;
 using _116.Storage.Contracts.Application.Services;
 
-namespace _116.Content.Application.Editorial.Factories;
+namespace _116.Content.Application.Editorial.Services;
 
 /// <summary>
-/// Factory implementation building artist projections from a pre-resolved avatar map.
+/// Service implementation building artist projections from a pre-resolved avatar map.
 /// </summary>
 /// <param name="fileStorage">Storage's file contract.</param>
-public class ArtistDtoFactory(IFileStorageService fileStorage) : IArtistDtoFactory
+public class ArtistDtoService(IFileStorageService fileStorage) : IArtistDtoService
 {
     /// <inheritdoc />
     public async Task<ArtistDto> CreateAsync(
