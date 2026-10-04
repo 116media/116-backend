@@ -1,13 +1,11 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Application.User.UseCases.Admin.Commands.AssignRoleToUser;
+using _116.Identity.Application.User.UseCases.Admin.Commands.AssignRoleToUser.Contracts;
 using _116.Identity.Domain.Entities;
 using _116.Identity.TestData.Factories;
 using _116.Identity.TestData.Mocks.Infrastructure;
-using _116.Identity.TestData.Mocks.Repositories;
-using _116.Storage.TestData.Mocks.Infrastructure;
 using _116.Tests.TestData;
 using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
@@ -17,102 +15,63 @@ using Xunit;
 namespace _116.Identity.Unit.Tests.Application.User.UseCases.Admin.Commands.AssignRoleToUser;
 
 /// <summary>
-/// Unit tests for <see cref="AdminAssignRoleToUserHandler"/>.
+/// Unit tests for <see cref="AdminAssignRoleToUserHandler"/>: the grant call, the commit, the token
+/// bump and the response. The gates are covered by <c>AdminAssignRoleToUserServiceTests</c>.
 /// </summary>
 public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
 {
-    private readonly Mock<IRoleRepository> _roleRepositoryMock;
-    private readonly Mock<IAuthRepository> _authRepositoryMock;
+    private readonly Mock<IAdminAssignRoleToUserService> _assignRoleServiceMock;
     private readonly Mock<IUserTokenStateRepository> _tokenStateRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
-    private readonly IdentityI18n _userErrors;
     private readonly AdminAssignRoleToUserHandler _handler;
 
     public AdminAssignRoleToUserHandlerTests()
     {
-        _roleRepositoryMock = MockRoleRepository.Create();
-        _authRepositoryMock = MockAuthRepository.Create();
+        _assignRoleServiceMock = new Mock<IAdminAssignRoleToUserService>();
         _tokenStateRepositoryMock = new Mock<IUserTokenStateRepository>();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
-        _userErrors = TestErrorsFactory.CreateIdentityI18n();
 
         _handler = new AdminAssignRoleToUserHandler(
-            _roleRepositoryMock.Object,
-            _authRepositoryMock.Object,
+            _assignRoleServiceMock.Object,
             _tokenStateRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            Mapper,
-            _userErrors
+            Mapper
         );
+    }
+
+    private (UserEntity User, RoleEntity Role, AdminAssignRoleToUserCommand Command) ArrangeGrant()
+    {
+        UserEntity user = UserFactory.Create("test@example.com");
+        RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
+        user.GrantRole(role.Id, role.Name);
+
+        _assignRoleServiceMock
+            .Setup(x => x.GrantAsync(user.Id, role.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new RoleGrantData(User: user, Role: role));
+
+        return (user, role, new AdminAssignRoleToUserCommand(UserId: user.Id.ToString(), RoleId: role.Id));
     }
 
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WithValidRequest_ShouldReturnRoles()
+    public async Task Handle_WithValidRequest_ShouldReturnTheRolesIncludingTheFreshGrant()
     {
         // Arrange
-        UserEntity user = UserFactory.Create("test@example.com");
-        RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
-        AdminAssignRoleToUserCommand command = new(UserId: user.Id.ToString(), RoleId: role.Id);
-
-        _roleRepositoryMock.SetupGetByIdOrThrow(role);
-        _authRepositoryMock.SetupGetUserWithRolesById(user);
+        (_, RoleEntity role, AdminAssignRoleToUserCommand command) = ArrangeGrant();
 
         // Act
         AdminAssignRoleToUserResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Roles.Should().ContainSingle();
-        user.HasRole(role.Id).Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Handle_ShouldValidateRoleExists()
-    {
-        // Arrange
-        UserEntity user = UserFactory.Create("test@example.com");
-        RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
-        AdminAssignRoleToUserCommand command = new(UserId: user.Id.ToString(), RoleId: role.Id);
-
-        _roleRepositoryMock.SetupGetByIdOrThrow(role);
-        _authRepositoryMock.SetupGetUserWithRolesById(user);
-
-        // Act
-        await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        _roleRepositoryMock.Verify(x => x.GetRoleByIdOrThrowAsync(role.Id, It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task Handle_ShouldGrantTheRoleThroughTheUserAggregate()
-    {
-        // Arrange
-        UserEntity user = UserFactory.Create("test@example.com");
-        RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
-        AdminAssignRoleToUserCommand command = new(UserId: user.Id.ToString(), RoleId: role.Id);
-
-        _roleRepositoryMock.SetupGetByIdOrThrow(role);
-        _authRepositoryMock.SetupGetUserWithRolesById(user);
-
-        // Act
-        await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        user.UserRoles.Should().ContainSingle(ur => ur.RoleId == role.Id && ur.UserId == user.Id);
+        result.Roles.Should().ContainSingle(r => r.Id == role.Id && r.Name == role.Name);
     }
 
     [Fact]
     public async Task Handle_ShouldCommitUnitOfWork()
     {
         // Arrange
-        UserEntity user = UserFactory.Create("test@example.com");
-        RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
-        AdminAssignRoleToUserCommand command = new(UserId: user.Id.ToString(), RoleId: role.Id);
-
-        _roleRepositoryMock.SetupGetByIdOrThrow(role);
-        _authRepositoryMock.SetupGetUserWithRolesById(user);
+        (_, _, AdminAssignRoleToUserCommand command) = ArrangeGrant();
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -121,116 +80,50 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
+    [Fact]
+    public async Task Handle_ShouldBumpTheTargetUserTokenVersionAfterCommitting()
+    {
+        // Arrange
+        (UserEntity user, _, AdminAssignRoleToUserCommand command) = ArrangeGrant();
+
+        var callOrder = new List<string>();
+        _unitOfWorkMock
+            .Setup(x => x.CommitAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => callOrder.Add("commit"))
+            .ReturnsAsync(1);
+        _tokenStateRepositoryMock
+            .Setup(x => x.BumpTokenVersionAsync(user.Id, It.IsAny<CancellationToken>()))
+            .Callback(() => callOrder.Add("bump"))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        callOrder.Should().Equal("commit", "bump");
+    }
+
     #endregion
 
     #region Failure Cases
 
     [Fact]
-    public async Task Handle_WhenRoleNotFound_ShouldThrowNotFoundException()
+    public async Task Handle_WhenTheGrantIsRefused_ShouldNotCommitOrBump()
     {
         // Arrange
         var userId = Guid.NewGuid();
         var roleId = Guid.NewGuid();
-        AdminAssignRoleToUserCommand command = new(UserId: userId.ToString(), RoleId: roleId);
-
-        _roleRepositoryMock.SetupGetByIdOrThrowNotFound(roleId);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<NotFoundException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenUserNotFound_ShouldThrowNotFoundException()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
-        AdminAssignRoleToUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
-
-        _roleRepositoryMock.SetupGetByIdOrThrow(role);
-        _authRepositoryMock.SetupGetUserWithRolesByIdNotFound(userId);
+        _assignRoleServiceMock
+            .Setup(x => x.GrantAsync(userId, roleId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(TestErrorsFactory.CreateIdentityI18n().User.RoleAlreadyAssignedToUser());
 
         // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<NotFoundException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenRoleIsInactive_ShouldThrowBadRequestException()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        RoleEntity role = RoleFactory.CreateInactive();
-        AdminAssignRoleToUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
-
-        _roleRepositoryMock.SetupGetByIdOrThrow(role);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenRoleIsDeleted_ShouldThrowBadRequestException()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        RoleEntity role = RoleFactory.CreateDeleted();
-        AdminAssignRoleToUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
-
-        _roleRepositoryMock.SetupGetByIdOrThrow(role);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenRoleAlreadyAssigned_ShouldThrowConflictException()
-    {
-        // Arrange
-        RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
-        UserEntity user = UserFactory.Create("test@example.com");
-        user.GrantInitialRole(role.Id);
-        AdminAssignRoleToUserCommand command = new(UserId: user.Id.ToString(), RoleId: role.Id);
-
-        _roleRepositoryMock.SetupGetByIdOrThrow(role);
-        _authRepositoryMock.SetupGetUserWithRolesById(user);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+        Func<Task> act = async () =>
+            await _handler.Handle(new AdminAssignRoleToUserCommand(userId.ToString(), roleId), CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenRoleAlreadyAssigned_ShouldNotCommitOrBump()
-    {
-        // Arrange
-        RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
-        UserEntity user = UserFactory.Create("test@example.com");
-        user.GrantInitialRole(role.Id);
-        AdminAssignRoleToUserCommand command = new(UserId: user.Id.ToString(), RoleId: role.Id);
-
-        _roleRepositoryMock.SetupGetByIdOrThrow(role);
-        _authRepositoryMock.SetupGetUserWithRolesById(user);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
-        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _unitOfWorkMock.VerifyCommitNotCalled();
         _tokenStateRepositoryMock.Verify(
             x => x.BumpTokenVersionAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never
@@ -242,74 +135,18 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
     #region Cancellation Token Tests
 
     [Fact]
-    public async Task Handle_WithCancellationToken_ShouldPassToRoleRepository()
+    public async Task Handle_WithCancellationToken_ShouldPassToTheServiceAndUnitOfWork()
     {
         // Arrange
-        UserEntity user = UserFactory.Create("test@example.com");
-        RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
-        AdminAssignRoleToUserCommand command = new(UserId: user.Id.ToString(), RoleId: role.Id);
+        (UserEntity user, RoleEntity role, AdminAssignRoleToUserCommand command) = ArrangeGrant();
         using CancellationTokenSource cts = new();
-
-        _roleRepositoryMock.SetupGetByIdOrThrow(role);
-        _authRepositoryMock.SetupGetUserWithRolesById(user);
 
         // Act
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _roleRepositoryMock.Verify(x => x.GetRoleByIdOrThrowAsync(role.Id, cts.Token), Times.Once);
-    }
-
-    [Fact]
-    public async Task Handle_WithCancellationToken_ShouldPassToUnitOfWork()
-    {
-        // Arrange
-        UserEntity user = UserFactory.Create("test@example.com");
-        RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
-        AdminAssignRoleToUserCommand command = new(UserId: user.Id.ToString(), RoleId: role.Id);
-        using CancellationTokenSource cts = new();
-
-        _roleRepositoryMock.SetupGetByIdOrThrow(role);
-        _authRepositoryMock.SetupGetUserWithRolesById(user);
-
-        // Act
-        await _handler.Handle(command, cts.Token);
-
-        // Assert
+        _assignRoleServiceMock.Verify(x => x.GrantAsync(user.Id, role.Id, cts.Token), Times.Once);
         _unitOfWorkMock.Verify(x => x.CommitAsync(cts.Token), Times.Once);
-    }
-
-    #endregion
-
-    #region Token Invalidation
-
-    [Fact]
-    public async Task Handle_ShouldBumpTheTargetUserTokenVersionAfterCommitting()
-    {
-        // Arrange
-        UserEntity user = UserFactory.Create("test@example.com");
-        RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
-        AdminAssignRoleToUserCommand command = new(UserId: user.Id.ToString(), RoleId: role.Id);
-
-        _roleRepositoryMock.SetupGetByIdOrThrow(role);
-        _authRepositoryMock.SetupGetUserWithRolesById(user);
-
-        var callOrder = new List<string>();
-        _unitOfWorkMock
-            .Setup(x => x.CommitAsync(It.IsAny<CancellationToken>()))
-            .Callback(() => callOrder.Add("commit"))
-            .ReturnsAsync(1);
-
-        _tokenStateRepositoryMock
-            .Setup(x => x.BumpTokenVersionAsync(user.Id, It.IsAny<CancellationToken>()))
-            .Callback(() => callOrder.Add("bump"))
-            .Returns(Task.CompletedTask);
-
-        // Act
-        await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        callOrder.Should().Equal("commit", "bump");
     }
 
     #endregion
