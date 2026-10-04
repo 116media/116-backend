@@ -7,7 +7,7 @@ using _116.Content.Domain.Entities;
 namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment;
 
 /// <summary>
-/// Factory implementation for the payment verification flow. Verifies the
+/// Service implementation for the payment verification flow. Verifies the
 /// payment and marks the order paid in one transaction; the order raises
 /// <c>OrderPaidEvent</c> with the paid-for effects computed here at raise
 /// time from the payment's verification instant, and the post-commit event
@@ -16,11 +16,11 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPaymen
 /// <param name="promotionLevelRepository">Repository for promotion level data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="timeProvider">Clock stamping the verification time.</param>
-public class AdminVerifyPaymentFactory(
+public class AdminVerifyPaymentService(
     IPromotionLevelRepository promotionLevelRepository,
     IContentUnitOfWork unitOfWork,
     TimeProvider timeProvider
-) : IVerifyPaymentFactory
+) : IVerifyPaymentService
 {
     /// <inheritdoc />
     public async Task VerifyAsync(
