@@ -14,19 +14,19 @@ using Xunit;
 namespace _116.Identity.Unit.Tests.Application.User.UseCases.Public.Commands.UpdateAvatar;
 
 /// <summary>
-/// Unit tests for <see cref="PublicUpdateAvatarAuthFactory"/>.
+/// Unit tests for <see cref="PublicUpdateAvatarAuthService"/>.
 /// </summary>
-public class PublicUpdateAvatarAuthFactoryTests
+public class PublicUpdateAvatarAuthServiceTests
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
-    private readonly PublicUpdateAvatarAuthFactory _factory;
+    private readonly PublicUpdateAvatarAuthService _service;
 
-    public PublicUpdateAvatarAuthFactoryTests()
+    public PublicUpdateAvatarAuthServiceTests()
     {
         _authRepositoryMock = MockAuthRepository.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
-        _factory = new PublicUpdateAvatarAuthFactory(_authRepositoryMock.Object, _unitOfWorkMock.Object);
+        _service = new PublicUpdateAvatarAuthService(_authRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
     #region GetUserForAvatarUpdateAsync Tests
@@ -47,7 +47,7 @@ public class PublicUpdateAvatarAuthFactoryTests
         _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         // Act
-        PublicUpdateAvatarAuthData result = await _factory.GetUserForAvatarUpdateAsync(
+        PublicUpdateAvatarAuthData result = await _service.GetUserForAvatarUpdateAsync(
             userId,
             sessionId,
             CancellationToken.None
@@ -73,7 +73,7 @@ public class PublicUpdateAvatarAuthFactoryTests
         _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         // Act
-        await _factory.GetUserForAvatarUpdateAsync(userId, sessionId, CancellationToken.None);
+        await _service.GetUserForAvatarUpdateAsync(userId, sessionId, CancellationToken.None);
 
         // Assert
         _authRepositoryMock.Verify(x => x.IsUserAccountActive(user), Times.Once);
@@ -95,7 +95,7 @@ public class PublicUpdateAvatarAuthFactoryTests
         _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         // Act
-        await _factory.GetUserForAvatarUpdateAsync(userId, sessionId, CancellationToken.None);
+        await _service.GetUserForAvatarUpdateAsync(userId, sessionId, CancellationToken.None);
 
         // Assert
         _authRepositoryMock.Verify(x => x.IsUserAccountVerified(user), Times.Once);
@@ -117,7 +117,7 @@ public class PublicUpdateAvatarAuthFactoryTests
         _authRepositoryMock.SetupIsSessionValid(sessionId);
 
         // Act
-        await _factory.GetUserForAvatarUpdateAsync(userId, sessionId, CancellationToken.None);
+        await _service.GetUserForAvatarUpdateAsync(userId, sessionId, CancellationToken.None);
 
         // Assert
         _authRepositoryMock.Verify(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()), Times.Once);
@@ -142,7 +142,7 @@ public class PublicUpdateAvatarAuthFactoryTests
         _authRepositoryMock.Setup(x => x.IsSessionValidAsync(sessionId, cancellationToken)).ReturnsAsync(true);
 
         // Act
-        await _factory.GetUserForAvatarUpdateAsync(userId, sessionId, cancellationToken);
+        await _service.GetUserForAvatarUpdateAsync(userId, sessionId, cancellationToken);
 
         // Assert
         _authRepositoryMock.Verify(
@@ -167,7 +167,7 @@ public class PublicUpdateAvatarAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        PublicUpdateAvatarAuthData result = await _factory.UpdateAvatarAsync(
+        PublicUpdateAvatarAuthData result = await _service.UpdateAvatarAsync(
             user,
             avatarFileId,
             CancellationToken.None
@@ -187,7 +187,7 @@ public class PublicUpdateAvatarAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.UpdateAvatarAsync(user, avatarFileId, CancellationToken.None);
+        await _service.UpdateAvatarAsync(user, avatarFileId, CancellationToken.None);
 
         // Assert
         user.AvatarSource.Should().Be(EnumAvatarSource.Manual);
@@ -204,7 +204,7 @@ public class PublicUpdateAvatarAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        await _factory.UpdateAvatarAsync(user, avatarFileId, CancellationToken.None);
+        await _service.UpdateAvatarAsync(user, avatarFileId, CancellationToken.None);
 
         // Assert
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -221,7 +221,7 @@ public class PublicUpdateAvatarAuthFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(cancellationToken)).ReturnsAsync(1);
 
         // Act
-        await _factory.UpdateAvatarAsync(user, avatarFileId, cancellationToken);
+        await _service.UpdateAvatarAsync(user, avatarFileId, cancellationToken);
 
         // Assert
         _unitOfWorkMock.Verify(x => x.CommitAsync(cancellationToken), Times.Once);
