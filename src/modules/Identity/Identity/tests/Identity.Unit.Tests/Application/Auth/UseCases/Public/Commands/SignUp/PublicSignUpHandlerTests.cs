@@ -17,13 +17,13 @@ namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Public.Commands.Sig
 /// </summary>
 public class PublicSignUpHandlerTests : BaseHandlerTest
 {
-    private readonly Mock<IPublicSignUpAuthFactory> _authFactoryMock;
+    private readonly Mock<IPublicSignUpAuthService> _authServiceMock;
     private readonly PublicSignUpHandler _handler;
 
     public PublicSignUpHandlerTests()
     {
-        _authFactoryMock = new Mock<IPublicSignUpAuthFactory>();
-        _handler = new PublicSignUpHandler(_authFactoryMock.Object, Mapper);
+        _authServiceMock = new Mock<IPublicSignUpAuthService>();
+        _handler = new PublicSignUpHandler(_authServiceMock.Object, Mapper);
     }
 
     #region Success Cases
@@ -41,7 +41,7 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
         PublicSignUpAuthData authData = new(User: user, UserPermissions: permissions);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
 
@@ -68,7 +68,7 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
         PublicSignUpAuthData authData = new(User: user, UserPermissions: permissions);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
 
@@ -76,7 +76,7 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _authFactoryMock.Verify(
+        _authServiceMock.Verify(
             x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()),
             Times.Once
         );
@@ -95,7 +95,7 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
         PublicSignUpAuthData authData = new(User: user, UserPermissions: permissions);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
 
@@ -104,11 +104,11 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
 
         // Assert
         result.VerificationRequired.Should().BeTrue();
-        _authFactoryMock.Verify(
+        _authServiceMock.Verify(
             x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()),
             Times.Once
         );
-        _authFactoryMock.VerifyNoOtherCalls();
+        _authServiceMock.VerifyNoOtherCalls();
     }
 
     #endregion
@@ -124,7 +124,7 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
         string password = "Password123!";
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new ConflictException("Email already exists."));
 
@@ -144,7 +144,7 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
         string password = "Password123!";
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new ConflictException("Username already exists."));
 
@@ -164,7 +164,7 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
         string password = "Password123!";
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new ConflictException("Email already exists."));
 
@@ -173,11 +173,11 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
-        _authFactoryMock.Verify(
+        _authServiceMock.Verify(
             x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()),
             Times.Once
         );
-        _authFactoryMock.VerifyNoOtherCalls();
+        _authServiceMock.VerifyNoOtherCalls();
     }
 
     #endregion
@@ -198,7 +198,7 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
         PublicSignUpAuthData authData = new(User: user, UserPermissions: permissions);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
 
@@ -206,7 +206,7 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _authFactoryMock.Verify(x => x.RegisterAsync(email, userName, password, cts.Token), Times.Once);
+        _authServiceMock.Verify(x => x.RegisterAsync(email, userName, password, cts.Token), Times.Once);
     }
 
     [Fact]
@@ -223,7 +223,7 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
         PublicSignUpAuthData authData = new(User: user, UserPermissions: permissions);
 
-        _authFactoryMock
+        _authServiceMock
             .Setup(x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()))
             .ReturnsAsync(authData);
 
