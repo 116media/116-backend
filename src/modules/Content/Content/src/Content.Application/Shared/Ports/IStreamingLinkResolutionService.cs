@@ -1,7 +1,7 @@
 using _116.Content.Application.Shared.Exceptions;
 using _116.Content.Domain.Enums;
 
-namespace _116.Content.Application.Shared.Services;
+namespace _116.Content.Application.Shared.Ports;
 
 /// <summary>
 /// Resolves one verified platform URL into deep links across every streaming platform, via an
