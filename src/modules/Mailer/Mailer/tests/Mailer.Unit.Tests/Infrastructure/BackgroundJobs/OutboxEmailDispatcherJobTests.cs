@@ -1,6 +1,6 @@
 using _116.Mailer.Application.Shared.Exceptions;
+using _116.Mailer.Application.Shared.Ports;
 using _116.Mailer.Application.Shared.Repositories;
-using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
 using _116.Mailer.Infrastructure.BackgroundJobs;
