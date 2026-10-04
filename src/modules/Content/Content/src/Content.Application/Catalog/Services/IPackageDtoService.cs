@@ -1,13 +1,13 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
 
-namespace _116.Content.Application.Catalog.Factories;
+namespace _116.Content.Application.Catalog.Services;
 
 /// <summary>
 /// Builds <see cref="PackageDto" /> projections, resolving the categories the slots reference —
 /// and their pricing, which the calculated package price sums — in a single batch.
 /// </summary>
-public interface IPackageDtoFactory
+public interface IPackageDtoService
 {
     /// <summary>
     /// Builds the projection for one package.
