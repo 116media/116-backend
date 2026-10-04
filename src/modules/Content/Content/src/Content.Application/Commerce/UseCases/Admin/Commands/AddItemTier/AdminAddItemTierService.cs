@@ -8,22 +8,22 @@ using _116.Content.Domain.Enums;
 namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier;
 
 /// <summary>
-/// Factory implementation for attaching pricing tiers to order items.
+/// Service implementation for attaching pricing tiers to order items.
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="pricingTierRepository">Repository for pricing tier data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="contentOrderErrors">Content order domain error factory.</param>
-/// <param name="categoryErrors">Category domain error factory.</param>
-public class AdminAddItemTierFactory(
+/// <param name="contentOrderErrors">Content order domain error service.</param>
+/// <param name="categoryErrors">Category domain error service.</param>
+public class AdminAddItemTierService(
     IContentOrderRepository contentOrderRepository,
     ICategoryRepository categoryRepository,
     IPricingTierRepository pricingTierRepository,
     IContentUnitOfWork unitOfWork,
     ContentOrderErrors contentOrderErrors,
     CategoryErrors categoryErrors
-) : IAddItemTierFactory
+) : IAddItemTierService
 {
     /// <inheritdoc />
     public async Task<(ContentItemTierEntity Tier, string TierName)> AttachTierAsync(
