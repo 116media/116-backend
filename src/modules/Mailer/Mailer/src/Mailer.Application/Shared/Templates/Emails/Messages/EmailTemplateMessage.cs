@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Localization;
 
-namespace _116.Mailer.Application.Templates.Messages;
+namespace _116.Mailer.Application.Shared.Templates.Emails.Messages;
 
 /// <summary>
 /// Localizer facade for email template resources. Keys follow the
