@@ -1,12 +1,11 @@
-using _116.Mailer.Application.Notifications;
-using _116.Mailer.Application.Notifications.Messages;
-using _116.Mailer.Application.Shared.Services;
+using _116.Mailer.Application.Shared.Templates.Notifications;
+using _116.Mailer.Application.Shared.Templates.Notifications.Messages;
 using _116.Mailer.Contracts.Domain.Enums;
 using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Mailer.Unit.Tests.Application.Notifications;
+namespace _116.Mailer.Unit.Tests.Application.Shared.Templates.Notifications;
 
 /// <summary>
 /// Unit tests for <see cref="NotificationRenderer" /> against the real
