@@ -5,10 +5,10 @@ using _116.Content.Domain.Entities;
 using _116.Storage.Contracts.Application.Services;
 using MapsterMapper;
 
-namespace _116.Content.Application.Interactions.Factories;
+namespace _116.Content.Application.Interactions.Services;
 
 /// <summary>
-/// Factory implementation building playlist projections from pre-resolved videos and thumbnails.
+/// Service implementation building playlist projections from pre-resolved videos and thumbnails.
 /// Only published videos are resolved, so an entry whose video was unpublished or deleted drops
 /// out of the projection — the rule the filtered include used to carry.
 /// </summary>
@@ -16,12 +16,12 @@ namespace _116.Content.Application.Interactions.Factories;
 /// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="videoRepository">Repository resolving the playlist's published videos.</param>
 /// <param name="categoryRepository">Repository resolving those videos' categories.</param>
-public class PlaylistDtoFactory(
+public class PlaylistDtoService(
     IMapper mapper,
     IFileStorageService fileStorage,
     IVideoRepository videoRepository,
     ICategoryRepository categoryRepository
-) : IPlaylistDtoFactory
+) : IPlaylistDtoService
 {
     /// <inheritdoc />
     public async Task<PlaylistDetailDto> CreateDetailAsync(PlaylistEntity playlist, CancellationToken ct = default)
