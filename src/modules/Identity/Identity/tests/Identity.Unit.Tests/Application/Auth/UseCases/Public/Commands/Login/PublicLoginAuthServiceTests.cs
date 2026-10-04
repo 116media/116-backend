@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Auth.Ports;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.Contracts;
 using _116.Identity.Application.Shared.Errors;
@@ -16,9 +16,9 @@ using Xunit;
 namespace _116.Identity.Unit.Tests.Application.Auth.UseCases.Public.Commands.Login;
 
 /// <summary>
-/// Unit tests for <see cref="PublicLoginAuthFactory"/>.
+/// Unit tests for <see cref="PublicLoginAuthService"/>.
 /// </summary>
-public class PublicLoginAuthFactoryTests
+public class PublicLoginAuthServiceTests
 {
     /// <summary>
     /// A stored hash written at the superseded work factor, which login replaces in place.
@@ -34,9 +34,9 @@ public class PublicLoginAuthFactoryTests
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<IPasswordService> _passwordServiceMock;
     private readonly Mock<IAccountLockoutRepository> _lockoutRepositoryMock;
-    private readonly PublicLoginAuthFactory _factory;
+    private readonly PublicLoginAuthService _service;
 
-    public PublicLoginAuthFactoryTests()
+    public PublicLoginAuthServiceTests()
     {
         _authRepositoryMock = MockAuthRepository.Create();
         _passwordServiceMock = MockPasswordService.Create();
@@ -53,7 +53,7 @@ public class PublicLoginAuthFactoryTests
                 )
             );
 
-        _factory = new PublicLoginAuthFactory(
+        _service = new PublicLoginAuthService(
             _authRepositoryMock.Object,
             _passwordServiceMock.Object,
             _lockoutRepositoryMock.Object,
@@ -75,7 +75,7 @@ public class PublicLoginAuthFactoryTests
         _passwordServiceMock.SetupVerifyOrDummySuccess(password, user.PasswordHash);
 
         // Act
-        PublicLoginAuthData result = await _factory.AuthenticateAsync(credentials, password, CancellationToken.None);
+        PublicLoginAuthData result = await _service.AuthenticateAsync(credentials, password, CancellationToken.None);
 
         // Assert
         result.User.Should().BeSameAs(user);
@@ -94,7 +94,7 @@ public class PublicLoginAuthFactoryTests
         _passwordServiceMock.SetupVerifyOrDummySuccess(password, user.PasswordHash);
 
         // Act
-        await _factory.AuthenticateAsync(credentials, password, CancellationToken.None);
+        await _service.AuthenticateAsync(credentials, password, CancellationToken.None);
 
         // Assert
         _authRepositoryMock.Verify(
@@ -115,7 +115,7 @@ public class PublicLoginAuthFactoryTests
         _passwordServiceMock.SetupVerifyOrDummySuccess(password, user.PasswordHash);
 
         // Act
-        await _factory.AuthenticateAsync(credentials, password, CancellationToken.None);
+        await _service.AuthenticateAsync(credentials, password, CancellationToken.None);
 
         // Assert
         _passwordServiceMock.Verify(x => x.VerifyOrDummy(password, user.PasswordHash), Times.Once);
@@ -133,7 +133,7 @@ public class PublicLoginAuthFactoryTests
         _passwordServiceMock.SetupVerifyOrDummySuccess(password, user.PasswordHash);
 
         // Act
-        PublicLoginAuthData result = await _factory.AuthenticateAsync(credentials, password, CancellationToken.None);
+        PublicLoginAuthData result = await _service.AuthenticateAsync(credentials, password, CancellationToken.None);
 
         // Assert
         result.User.Should().BeSameAs(user);
@@ -152,7 +152,7 @@ public class PublicLoginAuthFactoryTests
         _passwordServiceMock.SetupVerifyOrDummySuccess(password, user.PasswordHash);
 
         // Act
-        await _factory.AuthenticateAsync(credentials, password, CancellationToken.None);
+        await _service.AuthenticateAsync(credentials, password, CancellationToken.None);
 
         // Assert
         _lockoutRepositoryMock.Verify(
@@ -176,7 +176,7 @@ public class PublicLoginAuthFactoryTests
         _passwordServiceMock.SetupHashReturns(CurrentPasswordHash);
 
         // Act
-        await _factory.AuthenticateAsync(credentials, password, CancellationToken.None);
+        await _service.AuthenticateAsync(credentials, password, CancellationToken.None);
 
         // Assert
         user.PasswordHash.Should().Be(CurrentPasswordHash);
@@ -197,7 +197,7 @@ public class PublicLoginAuthFactoryTests
         _passwordServiceMock.SetupNeedsRehash(needsRehash: false);
 
         // Act
-        await _factory.AuthenticateAsync(credentials, password, CancellationToken.None);
+        await _service.AuthenticateAsync(credentials, password, CancellationToken.None);
 
         // Assert
         user.PasswordHash.Should().Be(CurrentPasswordHash);
@@ -218,7 +218,7 @@ public class PublicLoginAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByCredentialsAsyncReturnsNull(credentials);
 
         // Act
-        Func<Task> act = async () => await _factory.AuthenticateAsync(credentials, password, CancellationToken.None);
+        Func<Task> act = async () => await _service.AuthenticateAsync(credentials, password, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<AuthenticationException>().WithMessage(_userErrors.InvalidCredentials().Message);
@@ -234,7 +234,7 @@ public class PublicLoginAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByCredentialsAsyncReturnsNull(credentials);
 
         // Act
-        Func<Task> act = async () => await _factory.AuthenticateAsync(credentials, password, CancellationToken.None);
+        Func<Task> act = async () => await _service.AuthenticateAsync(credentials, password, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<AuthenticationException>();
@@ -251,7 +251,7 @@ public class PublicLoginAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByCredentialsAsyncReturnsNull(credentials);
 
         // Act
-        Func<Task> act = async () => await _factory.AuthenticateAsync(credentials, password, CancellationToken.None);
+        Func<Task> act = async () => await _service.AuthenticateAsync(credentials, password, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<AuthenticationException>();
@@ -272,7 +272,7 @@ public class PublicLoginAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByCredentialsAsync(user);
 
         // Act
-        Func<Task> act = async () => await _factory.AuthenticateAsync(credentials, password, CancellationToken.None);
+        Func<Task> act = async () => await _service.AuthenticateAsync(credentials, password, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<AuthenticationException>().WithMessage(_userErrors.InvalidCredentials().Message);
@@ -289,7 +289,7 @@ public class PublicLoginAuthFactoryTests
         _authRepositoryMock.SetupGetUserWithRolesByCredentialsAsync(user);
 
         // Act
-        Func<Task> act = async () => await _factory.AuthenticateAsync(credentials, password, CancellationToken.None);
+        Func<Task> act = async () => await _service.AuthenticateAsync(credentials, password, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<AuthenticationException>();
@@ -321,7 +321,7 @@ public class PublicLoginAuthFactoryTests
             );
 
         // Act
-        Func<Task> act = async () => await _factory.AuthenticateAsync(credentials, password, CancellationToken.None);
+        Func<Task> act = async () => await _service.AuthenticateAsync(credentials, password, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<AuthenticationException>().WithMessage(_userErrors.InvalidCredentials().Message);
@@ -345,7 +345,7 @@ public class PublicLoginAuthFactoryTests
         _passwordServiceMock.SetupVerifyOrDummySuccess(password, user.PasswordHash);
 
         // Act
-        await _factory.AuthenticateAsync(credentials, password, cts.Token);
+        await _service.AuthenticateAsync(credentials, password, cts.Token);
 
         // Assert
         _authRepositoryMock.Verify(
