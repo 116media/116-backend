@@ -1,13 +1,13 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
 
-namespace _116.Content.Application.Editorial.Factories;
+namespace _116.Content.Application.Editorial.Services;
 
 /// <summary>
 /// Builds <see cref="AlbumDto" /> projections, resolving each album's cover in a single batch so
 /// callers never issue one file query per album.
 /// </summary>
-public interface IAlbumDtoFactory
+public interface IAlbumDtoService
 {
     /// <summary>
     /// Builds the projection for one album.
