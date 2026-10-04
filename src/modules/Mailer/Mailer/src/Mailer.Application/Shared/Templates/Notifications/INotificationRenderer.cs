@@ -1,6 +1,6 @@
 using _116.Mailer.Contracts.Domain.Enums;
 
-namespace _116.Mailer.Application.Shared.Services;
+namespace _116.Mailer.Application.Shared.Templates.Notifications;
 
 /// <summary>
 /// The rendered parts of an in-app notification.
