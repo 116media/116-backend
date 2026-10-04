@@ -2,13 +2,13 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 
-namespace _116.Content.Application.Commerce.Factories;
+namespace _116.Content.Application.Commerce.Services;
 
 /// <summary>
 /// Builds order projections, resolving the customer, category, promotion level and pricing tier
 /// names in one batch so callers never issue a lookup per row.
 /// </summary>
-public interface IContentOrderDtoFactory
+public interface IContentOrderDtoService
 {
     /// <summary>
     /// Builds the summary projection for one order.
