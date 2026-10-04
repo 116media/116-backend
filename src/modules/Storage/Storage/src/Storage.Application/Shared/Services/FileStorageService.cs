@@ -1,7 +1,7 @@
 using _116.Storage.Application.Shared.Cache;
 using _116.Storage.Application.Shared.Mappers;
+using _116.Storage.Application.Shared.Ports;
 using _116.Storage.Application.Shared.Repositories;
-using _116.Storage.Application.Shared.Services;
 using _116.Storage.Contracts.Application.DTOs;
 using _116.Storage.Contracts.Application.Services;
 using _116.Storage.Contracts.Domain.Enums;
@@ -10,7 +10,7 @@ using MapsterMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Hybrid;
 
-namespace _116.Storage.Infrastructure.Services;
+namespace _116.Storage.Application.Shared.Services;
 
 /// <summary>
 /// Storage's implementation of the cross-module storage contract. Translates between the opaque
