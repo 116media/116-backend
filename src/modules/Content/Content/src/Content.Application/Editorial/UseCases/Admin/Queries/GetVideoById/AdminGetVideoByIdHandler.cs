@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
@@ -20,11 +20,11 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetVideoById
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="userLookup">Cross-module service for resolving author profiles.</param>
 /// <param name="fileStorage">Storage's file contract.</param>
-/// <param name="videoDtoFactory">Builds video projections with their thumbnails resolved.</param>
+/// <param name="videoDtoService">Builds video projections with their thumbnails resolved.</param>
 public class AdminGetVideoByIdHandler(
     IVideoRepository videoRepository,
     IUserLookupService userLookup,
-    IVideoDtoFactory videoDtoFactory,
+    IVideoDtoService videoDtoService,
     IFileStorageService fileStorage
 ) : IQueryHandler<AdminGetVideoByIdQuery, AdminGetVideoByIdResult>
 {
@@ -36,7 +36,7 @@ public class AdminGetVideoByIdHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await videoDtoFactory.CreateDetailAsync(video, cancellationToken);
+        var dto = await videoDtoService.CreateDetailAsync(video, cancellationToken);
 
         UserProfileDto? authorInfo = await userLookup.GetUserProfileByIdAsync(
             userId: video.AuthorId,
