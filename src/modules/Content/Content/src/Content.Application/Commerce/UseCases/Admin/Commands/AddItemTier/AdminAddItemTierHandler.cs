@@ -8,8 +8,8 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier;
 /// <summary>
 /// Handles the <see cref="AdminAddItemTierCommand" /> to attach a pricing tier snapshot to a specific order item.
 /// </summary>
-/// <param name="addItemTierFactory">Factory for the tier attachment flow.</param>
-public class AdminAddItemTierHandler(IAddItemTierFactory addItemTierFactory)
+/// <param name="addItemTierService">Service for the tier attachment flow.</param>
+public class AdminAddItemTierHandler(IAddItemTierService addItemTierService)
     : ICommandHandler<AdminAddItemTierCommand, AdminAddItemTierResult>
 {
     /// <inheritdoc />
@@ -22,7 +22,7 @@ public class AdminAddItemTierHandler(IAddItemTierFactory addItemTierFactory)
         Guid itemId = Guid.Parse(command.OrderItemId);
         Guid tierId = Guid.Parse(command.PricingTierId);
 
-        (ContentItemTierEntity tier, string tierName) = await addItemTierFactory.AttachTierAsync(
+        (ContentItemTierEntity tier, string tierName) = await addItemTierService.AttachTierAsync(
             orderId: orderId,
             orderItemId: itemId,
             pricingTierId: tierId,
