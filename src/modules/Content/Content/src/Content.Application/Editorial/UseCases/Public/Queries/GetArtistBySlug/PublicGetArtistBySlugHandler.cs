@@ -1,35 +1,27 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.BuildingBlocks.Application.Pagination;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistBySlug.Contracts;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Facade;
-using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Storage.Contracts.Application.Services;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistBySlug;
 
 /// <summary>
-/// Handles the <see cref="PublicGetArtistBySlugQuery" /> to retrieve an artist's public
-/// profile page and their published catalog.
+/// Handles the <see cref="PublicGetArtistBySlugQuery" /> to serve an artist profile with its
+/// totals and a page each of its published lyrics and videos.
 /// </summary>
-/// <param name="artistRepository">Repository for artist profile data access operations.</param>
-/// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
-/// <param name="videoRepository">Repository for video data access operations.</param>
-/// <param name="artistDtoFactory">Builds artist projections with their avatars resolved.</param>
-/// <param name="videoDtoFactory">Builds video projections with their thumbnails resolved.</param>
-/// <param name="fileStorage">Storage's file contract, for the lyrics listed alongside.</param>
+/// <param name="artistRepository">Repository resolving the artist and its totals.</param>
+/// <param name="artistDtoService">Service assembling the artist DTO.</param>
+/// <param name="pageService">Service paging the artist's lyrics and videos.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetArtistBySlugHandler(
     IArtistRepository artistRepository,
-    ILyricsRepository lyricsRepository,
-    IVideoRepository videoRepository,
-    IArtistDtoFactory artistDtoFactory,
-    IVideoDtoFactory videoDtoFactory,
-    IFileStorageService fileStorage,
-    ContentI18n i18n,
-    IContentLookupFactory contentLookupFactory
+    IArtistDtoService artistDtoService,
+    IPublicArtistPageService pageService,
+    ContentI18n i18n
 ) : IQueryHandler<PublicGetArtistBySlugQuery, PublicGetArtistBySlugResult>
 {
     /// <inheritdoc />
@@ -53,63 +45,24 @@ public class PublicGetArtistBySlugHandler(
             cancellationToken: cancellationToken
         );
 
-        // A profile with zero items on every surface is not served: unclaimed staff-curated
-        // stubs must not become crawlable dead pages carrying a real person's name. The check
-        // runs before any mapping so nothing is resolved for a response about to be discarded.
+        // An empty profile is not served, so unclaimed stubs never become crawlable dead pages.
         if (totals.Songs + totals.Videos + totals.Albums + totals.Mixtapes + totals.News == 0)
         {
             throw i18n.Artist.NotFound(id: artist.Id);
         }
 
-        int lyricsPageSize = query.LyricsPage.PageSize;
-        int lyricsPageIndex = query.LyricsPage.PageIndex;
-
-        (List<LyricsEntity> lyricsList, int lyricsTotalCount) = await lyricsRepository.GetPublishedByArtistAsync(
-            artistId: artist.Id,
-            page: lyricsPageIndex + 1,
-            pageSize: lyricsPageSize,
-            cancellationToken: cancellationToken
-        );
-
-        int videosPageSize = query.VideosPage.PageSize;
-        int videosPageIndex = query.VideosPage.PageIndex;
-
-        (List<VideoEntity> videoList, int videosTotalCount) = await videoRepository.GetPublishedByArtistAsync(
-            artistId: artist.Id,
-            page: videosPageIndex + 1,
-            pageSize: videosPageSize,
-            cancellationToken: cancellationToken
-        );
-
         IReadOnlyList<ArtistSocialLinkEntity> socialLinks = artist.SocialLinks.OrderBy(link => link.Platform).ToList();
+        ArtistDto artistDto = await artistDtoService.CreateAsync(artist, socialLinks, cancellationToken);
 
-        ArtistDto artistDto = await artistDtoFactory.CreateAsync(artist, socialLinks, cancellationToken);
-
-        IReadOnlyList<PublicLyricsSummaryDto> lyricsDtos = await lyricsList
-            .AsReadOnly()
-            .ToPublicLyricsSummaryDtosAsync(
-                await contentLookupFactory.ResolveForLyricsAsync(lyricsList.AsReadOnly(), cancellationToken),
-                fileStorage,
-                cancellationToken
-            );
-
-        IReadOnlyList<PublicVideoSummaryDto> videoDtos = await videoDtoFactory.CreatePublicManyAsync(
-            videoList.AsReadOnly(),
-            cancellationToken
+        PaginatedResult<PublicLyricsSummaryDto> lyrics = await pageService.GetLyricsPageAsync(
+            artistId: artist.Id,
+            page: query.LyricsPage,
+            cancellationToken: cancellationToken
         );
-
-        var lyricsResult = new PaginatedResult<PublicLyricsSummaryDto>(
-            pageIndex: lyricsPageIndex,
-            pageSize: lyricsPageSize,
-            count: lyricsTotalCount,
-            items: lyricsDtos
-        );
-
-        var videosResult = new PaginatedResult<PublicVideoSummaryDto>(
-            pageIndex: videosPageIndex,
-            pageSize: videosPageSize,
-            count: videosTotalCount,
-            items: videoDtos
+        PaginatedResult<PublicVideoSummaryDto> videos = await pageService.GetVideosPageAsync(
+            artistId: artist.Id,
+            page: query.VideosPage,
+            cancellationToken: cancellationToken
         );
 
         var totalsDto = new ArtistTotalsDto(
@@ -120,11 +73,6 @@ public class PublicGetArtistBySlugHandler(
             News: totals.News
         );
 
-        return new PublicGetArtistBySlugResult(
-            Artist: artistDto,
-            Totals: totalsDto,
-            Lyrics: lyricsResult,
-            Videos: videosResult
-        );
+        return new PublicGetArtistBySlugResult(Artist: artistDto, Totals: totalsDto, Lyrics: lyrics, Videos: videos);
     }
 }
