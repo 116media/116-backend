@@ -1,28 +1,21 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Editorial.Factories;
-using _116.Content.Application.Shared.Errors.Facade;
-using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Editorial.Services;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtist.Contracts;
 using _116.Content.Application.Shared.Persistence;
-using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Storage.Contracts.Application.Services;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtist;
 
 /// <summary>
-/// Handles the <see cref="AdminCreateArtistCommand" /> to create a new, unclaimed artist profile.
+/// Handles the <see cref="AdminCreateArtistCommand" /> to create an artist profile.
 /// </summary>
-/// <param name="artistRepository">Repository for artist profile data access operations.</param>
+/// <param name="createArtistService">Service resolving and staging the artist.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="artistDtoFactory">Builds artist projections with their avatars resolved.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
-/// <param name="timeProvider">Clock supplying today for the birthdate guard.</param>
+/// <param name="artistDtoService">Service assembling the artist DTO.</param>
 public class AdminCreateArtistHandler(
-    IArtistRepository artistRepository,
+    IAdminCreateArtistService createArtistService,
     IContentUnitOfWork unitOfWork,
-    IArtistDtoFactory artistDtoFactory,
-    ContentI18n i18n,
-    TimeProvider timeProvider
+    IArtistDtoService artistDtoService
 ) : ICommandHandler<AdminCreateArtistCommand, AdminCreateArtistResult>
 {
     /// <inheritdoc />
@@ -31,32 +24,10 @@ public class AdminCreateArtistHandler(
         CancellationToken cancellationToken
     )
     {
-        ArtistEntity? existing = await artistRepository.GetBySlugAsync(
-            slug: command.Slug,
-            cancellationToken: cancellationToken
-        );
-
-        if (existing is not null)
-        {
-            throw i18n.Artist.SlugAlreadyExists(slug: command.Slug);
-        }
-
-        ArtistEntity artist = ArtistEntity.Create(
-            id: Guid.NewGuid(),
-            name: command.Name,
-            slug: command.Slug,
-            bio: command.Bio,
-            realName: command.RealName,
-            aliases: command.Aliases,
-            birthdate: command.Birthdate,
-            hometown: command.Hometown,
-            today: DateOnly.FromDateTime(dateTime: timeProvider.GetUtcNow().UtcDateTime)
-        );
-
-        await artistRepository.AddAsync(artist: artist, cancellationToken: cancellationToken);
+        ArtistEntity artist = await createArtistService.CreateAsync(command, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        var dto = await artistDtoFactory.CreateAsync(artist, ct: cancellationToken);
+        var dto = await artistDtoService.CreateAsync(artist, ct: cancellationToken);
         return new AdminCreateArtistResult(Artist: dto);
     }
 }
