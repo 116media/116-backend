@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Catalog.Factories;
+using _116.Content.Application.Catalog.Services;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -15,12 +15,12 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UploadCategor
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="fileStorage">Storage's file contract.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="categoryDtoFactory">Builds category projections with their posters resolved.</param>
+/// <param name="categoryDtoService">Builds category projections with their posters resolved.</param>
 public class AdminUploadCategoryPosterHandler(
     ICategoryRepository categoryRepository,
     IFileStorageService fileStorage,
     IContentUnitOfWork unitOfWork,
-    ICategoryDtoFactory categoryDtoFactory
+    ICategoryDtoService categoryDtoService
 ) : ICommandHandler<AdminUploadCategoryPosterCommand, AdminUploadCategoryPosterResult>
 {
     /// <inheritdoc />
@@ -65,7 +65,7 @@ public class AdminUploadCategoryPosterHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await categoryDtoFactory.CreateAsync(updated, cancellationToken);
+        var dto = await categoryDtoService.CreateAsync(updated, cancellationToken);
         return new AdminUploadCategoryPosterResult(Category: dto);
     }
 }
