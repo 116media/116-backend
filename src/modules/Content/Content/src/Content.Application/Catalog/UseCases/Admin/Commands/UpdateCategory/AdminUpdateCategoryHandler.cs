@@ -1,27 +1,25 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Catalog.Factories;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Catalog.Services;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategory.Contracts;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Content.Domain.Enums;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategory;
 
 /// <summary>
-/// Handles the <see cref="AdminUpdateCategoryCommand" /> to update an existing category.
+/// Handles the <see cref="AdminUpdateCategoryCommand" /> to update a category, handing the
+/// exclusive and default-for-lyrics flags over from their current holders in one transaction.
 /// </summary>
-/// <param name="contentTypeRepository">Repository resolving the category's content type.</param>
-/// <param name="categoryRepository">Repository for category data access operations.</param>
+/// <param name="updateCategoryService">Service loading and gating the category.</param>
+/// <param name="categoryRepository">Repository resolving the current holders and reloading the result.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="categoryDtoFactory">Builds category projections with their posters resolved.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
+/// <param name="categoryDtoService">Service assembling the category DTO.</param>
 public class AdminUpdateCategoryHandler(
+    IAdminUpdateCategoryService updateCategoryService,
     ICategoryRepository categoryRepository,
-    IContentTypeRepository contentTypeRepository,
     IContentUnitOfWork unitOfWork,
-    ICategoryDtoFactory categoryDtoFactory,
-    ContentI18n i18n
+    ICategoryDtoService categoryDtoService
 ) : ICommandHandler<AdminUpdateCategoryCommand, AdminUpdateCategoryResult>
 {
     /// <inheritdoc />
@@ -30,53 +28,7 @@ public class AdminUpdateCategoryHandler(
         CancellationToken cancellationToken
     )
     {
-        Guid id = Guid.Parse(command.Id);
-
-        CategoryEntity category = await categoryRepository.GetByIdOrThrowAsync(
-            id: id,
-            cancellationToken: cancellationToken
-        );
-
-        ContentTypeEntity contentType = await contentTypeRepository.GetByIdOrThrowAsync(
-            id: category.ContentTypeId,
-            cancellationToken: cancellationToken
-        );
-
-        CategoryEntity? slugConflict = await categoryRepository.GetBySlugAsync(
-            slug: command.Slug,
-            cancellationToken: cancellationToken
-        );
-
-        if (slugConflict is not null && slugConflict.Id != id)
-        {
-            throw i18n.Category.AlreadyExists(slug: command.Slug);
-        }
-
-        if (command.IsExclusive)
-        {
-            if (!category.IsActive)
-            {
-                throw i18n.Category.CannotMakeInactiveExclusive();
-            }
-
-            if (contentType.Name != nameof(EnumCoreContentType.Video))
-            {
-                throw i18n.Category.OnlyVideoCategoryCanBeExclusive();
-            }
-        }
-
-        if (command.IsDefaultForLyrics)
-        {
-            if (!category.IsActive)
-            {
-                throw i18n.Category.CannotMakeInactiveDefaultForLyrics();
-            }
-
-            if (contentType.Name != nameof(EnumCoreContentType.Lyrics))
-            {
-                throw i18n.Category.OnlyLyricsCategoryCanBeDefault();
-            }
-        }
+        CategoryEntity category = await updateCategoryService.EnsureUpdatableAsync(command, cancellationToken);
 
         await unitOfWork.ExecuteInTransactionAsync(
             async ct =>
@@ -109,10 +61,9 @@ public class AdminUpdateCategoryHandler(
                     }
                 }
 
+                // The partial unique indexes are checked per statement, so the clear must reach the database before the set.
                 if (hasClearedPredecessor)
                 {
-                    // The partial unique indexes are checked per statement, so the clear must
-                    // reach the database before the set, inside the same transaction.
                     await unitOfWork.CommitAsync(cancellationToken: ct);
                 }
 
@@ -128,11 +79,10 @@ public class AdminUpdateCategoryHandler(
         );
 
         CategoryEntity updated = await categoryRepository.GetByIdOrThrowAsync(
-            id: id,
+            id: category.Id,
             cancellationToken: cancellationToken
         );
-
-        var dto = await categoryDtoFactory.CreateAsync(updated, cancellationToken);
+        var dto = await categoryDtoService.CreateAsync(updated, cancellationToken);
         return new AdminUpdateCategoryResult(Category: dto);
     }
 }
