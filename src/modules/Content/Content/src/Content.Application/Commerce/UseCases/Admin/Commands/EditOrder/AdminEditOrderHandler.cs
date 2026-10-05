@@ -1,66 +1,37 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Commerce.Factories;
+using _116.Content.Application.Commerce.Services;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrder.Contracts;
 using _116.Content.Application.Shared.DTOs;
-using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
-using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 
 namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrder;
 
 /// <summary>
-/// Handles the <see cref="AdminEditOrderCommand" /> to edit a draft content order.
+/// Handles the <see cref="AdminEditOrderCommand" /> to change an order's customer or package.
 /// </summary>
-/// <param name="contentOrderRepository">Repository for content order data access operations.</param>
-/// <param name="customerRepository">Repository for customer data access operations.</param>
+/// <param name="editOrderService">Service resolving and applying the edit.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="orderDtoFactory">Builds order projections with their lookups resolved.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
+/// <param name="orderDtoService">Service assembling the order summary.</param>
 public class AdminEditOrderHandler(
-    IContentOrderRepository contentOrderRepository,
-    ICustomerRepository customerRepository,
+    IAdminEditOrderService editOrderService,
     IContentUnitOfWork unitOfWork,
-    IContentOrderDtoFactory orderDtoFactory,
-    ContentI18n i18n
+    IContentOrderDtoService orderDtoService
 ) : ICommandHandler<AdminEditOrderCommand, AdminEditOrderResult>
 {
     /// <inheritdoc />
     public async Task<AdminEditOrderResult> Handle(AdminEditOrderCommand command, CancellationToken cancellationToken)
     {
-        Guid orderId = Guid.Parse(command.OrderId);
-
-        ContentOrderEntity? order = await contentOrderRepository.GetByIdWithItemsAsync(
-            id: orderId,
-            ct: cancellationToken
+        ContentOrderEntity order = await editOrderService.EditAsync(
+            orderId: Guid.Parse(command.OrderId),
+            customerId: command.CustomerId is not null ? Guid.Parse(command.CustomerId) : null,
+            packageId: command.PackageId,
+            cancellationToken: cancellationToken
         );
 
-        if (order is null)
-        {
-            throw i18n.ContentOrder.NotFound(id: orderId);
-        }
-
-        Guid? newCustomerId = command.CustomerId is not null ? Guid.Parse(command.CustomerId) : null;
-
-        if (newCustomerId.HasValue)
-        {
-            await customerRepository.GetByIdOrThrowAsync(id: newCustomerId.Value, cancellationToken: cancellationToken);
-        }
-
-        order.Update(customerId: newCustomerId, packageId: command.PackageId);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        ContentOrderEntity? updated = await contentOrderRepository.GetByIdWithItemsAsync(
-            id: orderId,
-            ct: cancellationToken
-        );
-
-        if (updated is null)
-        {
-            throw i18n.ContentOrder.NotFound(id: orderId);
-        }
-
-        ContentOrderSummaryDto dto = await orderDtoFactory.CreateSummaryAsync(updated, cancellationToken);
-
+        ContentOrderSummaryDto dto = await orderDtoService.CreateSummaryAsync(order, cancellationToken);
         return new AdminEditOrderResult(Order: dto);
     }
 }
