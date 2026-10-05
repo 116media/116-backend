@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Catalog.Factories;
+using _116.Content.Application.Catalog.Services;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
@@ -11,8 +11,8 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Queries.GetPackageById
 /// Handles the <see cref="AdminGetPackageByIdQuery" /> to retrieve a package by its identifier.
 /// </summary>
 /// <param name="packageRepository">Repository for package data access operations.</param>
-/// <param name="packageDtoFactory">Builds package projections with their categories resolved.</param>
-public class AdminGetPackageByIdHandler(IPackageRepository packageRepository, IPackageDtoFactory packageDtoFactory)
+/// <param name="packageDtoService">Builds package projections with their categories resolved.</param>
+public class AdminGetPackageByIdHandler(IPackageRepository packageRepository, IPackageDtoService packageDtoService)
     : IQueryHandler<AdminGetPackageByIdQuery, AdminGetPackageByIdResult>
 {
     /// <inheritdoc />
@@ -26,7 +26,7 @@ public class AdminGetPackageByIdHandler(IPackageRepository packageRepository, IP
             cancellationToken: cancellationToken
         );
 
-        PackageDto dto = await packageDtoFactory.CreateAsync(package, cancellationToken);
+        PackageDto dto = await packageDtoService.CreateAsync(package, cancellationToken);
         return new AdminGetPackageByIdResult(Package: dto);
     }
 }
