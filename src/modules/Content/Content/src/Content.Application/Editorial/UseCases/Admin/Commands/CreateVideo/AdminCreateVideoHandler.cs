@@ -1,7 +1,6 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Editorial.Factories;
-using _116.Content.Application.Shared.Errors.Facade;
-using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Editorial.Services;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo.Contracts;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -9,19 +8,17 @@ using _116.Content.Domain.Entities;
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo;
 
 /// <summary>
-/// Handles the <see cref="AdminCreateVideoCommand" /> to create a new video draft (step 1).
+/// Handles the <see cref="AdminCreateVideoCommand" /> to create a video.
 /// </summary>
-/// <param name="categoryRepository">Repository for category data access operations.</param>
-/// <param name="videoRepository">Repository for video data access operations.</param>
+/// <param name="createVideoService">Service resolving and staging the video.</param>
+/// <param name="videoRepository">Repository reloading the committed video.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
-/// <param name="videoDtoFactory">Builds video projections with their thumbnails resolved.</param>
+/// <param name="videoDtoService">Service assembling the video detail.</param>
 public class AdminCreateVideoHandler(
-    ICategoryRepository categoryRepository,
+    IAdminCreateVideoService createVideoService,
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
-    IVideoDtoFactory videoDtoFactory,
-    ContentI18n i18n
+    IVideoDtoService videoDtoService
 ) : ICommandHandler<AdminCreateVideoCommand, AdminCreateVideoResult>
 {
     /// <inheritdoc />
@@ -30,59 +27,14 @@ public class AdminCreateVideoHandler(
         CancellationToken cancellationToken
     )
     {
-        await categoryRepository.GetByIdOrThrowAsync(id: command.CategoryId, cancellationToken: cancellationToken);
-
-        VideoEntity? existing = await videoRepository.GetBySlugAsync(
-            slug: command.Slug,
-            cancellationToken: cancellationToken
-        );
-
-        if (existing is not null)
-        {
-            throw i18n.Video.SlugAlreadyExists(slug: command.Slug);
-        }
-
-        VideoEntity video;
-
-        if (command.CustomerId.HasValue)
-        {
-            video = VideoEntity.CreatePaid(
-                id: Guid.NewGuid(),
-                customerId: command.CustomerId.Value,
-                orderItemId: command.OrderItemId!.Value,
-                categoryId: command.CategoryId,
-                title: command.Title,
-                slug: command.Slug,
-                authorId: command.AuthorId,
-                description: command.Description
-            );
-        }
-        else
-        {
-            video = VideoEntity.CreateFree(
-                id: Guid.NewGuid(),
-                categoryId: command.CategoryId,
-                title: command.Title,
-                slug: command.Slug,
-                authorId: command.AuthorId,
-                description: command.Description
-            );
-        }
-
-        if (command.ShootingScheduledAt.HasValue)
-        {
-            video.ScheduleShoot(command.ShootingScheduledAt.Value);
-        }
-
-        await videoRepository.AddAsync(video: video, cancellationToken: cancellationToken);
+        VideoEntity video = await createVideoService.CreateAsync(command, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         VideoEntity created = await videoRepository.GetByIdOrThrowAsync(
             id: video.Id,
             cancellationToken: cancellationToken
         );
-
-        var dto = await videoDtoFactory.CreateDetailAsync(created, cancellationToken);
+        var dto = await videoDtoService.CreateDetailAsync(created, cancellationToken);
         return new AdminCreateVideoResult(Video: dto);
     }
 }
