@@ -1,36 +1,24 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Shared.Errors.Facade;
-using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Editorial.Services;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyrics.Contracts;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Identity.Contracts.Application.Services;
-using _116.Storage.Contracts.Application.Services;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyrics;
 
 /// <summary>
-/// Handles the <see cref="AdminCreateLyricsCommand" /> to create a new lyrics page.
+/// Handles the <see cref="AdminCreateLyricsCommand" /> to create a lyrics page.
 /// </summary>
-/// <param name="categoryRepository">Repository for category data access operations.</param>
-/// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
-/// <param name="videoRepository">Repository for video data access operations.</param>
+/// <param name="createLyricsService">Service resolving and staging the lyrics.</param>
+/// <param name="lyricsRepository">Repository reloading the committed lyrics.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="mapper">The Mapster mapper used for tags.</param>
-/// <param name="userLookup">Service for resolving author profiles from the Identity module.</param>
-/// <param name="fileStorage">Storage's file contract.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
+/// <param name="lyricsDtoService">Service assembling the lyrics detail.</param>
 public class AdminCreateLyricsHandler(
-    ICategoryRepository categoryRepository,
+    IAdminCreateLyricsService createLyricsService,
     ILyricsRepository lyricsRepository,
-    IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper,
-    IUserLookupService userLookup,
-    IFileStorageService fileStorage,
-    ContentI18n i18n,
-    IContentLookupFactory contentLookupFactory
+    ILyricsDtoService lyricsDtoService
 ) : ICommandHandler<AdminCreateLyricsCommand, AdminCreateLyricsResult>
 {
     /// <inheritdoc />
@@ -39,79 +27,14 @@ public class AdminCreateLyricsHandler(
         CancellationToken cancellationToken
     )
     {
-        await categoryRepository.GetByIdOrThrowAsync(id: command.CategoryId, cancellationToken: cancellationToken);
-
-        LyricsEntity? existing = await lyricsRepository.GetBySlugAsync(
-            slug: command.Slug,
-            cancellationToken: cancellationToken
-        );
-
-        if (existing is not null)
-        {
-            throw i18n.Lyrics.SlugAlreadyExists(slug: command.Slug);
-        }
-
-        LyricsEntity lyrics = CreateLyrics(command);
-
-        if (command.VideoId.HasValue)
-        {
-            await videoRepository.ExistsOrThrowAsync(
-                videoId: command.VideoId.Value,
-                cancellationToken: cancellationToken
-            );
-        }
-
-        await lyricsRepository.AddAsync(lyrics: lyrics, cancellationToken: cancellationToken);
+        LyricsEntity lyrics = await createLyricsService.CreateAsync(command, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         LyricsEntity created = await lyricsRepository.GetByIdOrThrowAsync(
             id: lyrics.Id,
             cancellationToken: cancellationToken
         );
-
-        var dto = await created.ToLyricsDetailDtoAsync(
-            await contentLookupFactory.ResolveForLyricsAsync([created], cancellationToken),
-            mapper,
-            userLookup,
-            fileStorage,
-            cancellationToken
-        );
+        var dto = await lyricsDtoService.CreateDetailAsync(created, cancellationToken);
         return new AdminCreateLyricsResult(Lyrics: dto);
-    }
-
-    /// <summary>
-    /// Creates a <see cref="LyricsEntity"/> based on the command payload.
-    /// Produces a paid lyrics page when <see cref="AdminCreateLyricsCommand.CustomerId"/> is
-    /// present, otherwise produces a free lyrics page.
-    /// </summary>
-    /// <param name="command">The command containing lyrics creation data.</param>
-    /// <returns>A new <see cref="LyricsEntity"/> instance.</returns>
-    private LyricsEntity CreateLyrics(AdminCreateLyricsCommand command)
-    {
-        return command.CustomerId.HasValue
-            ? LyricsEntity.CreatePaid(
-                id: Guid.NewGuid(),
-                customerId: command.CustomerId.Value,
-                orderItemId: command.OrderItemId!.Value,
-                categoryId: command.CategoryId,
-                videoId: command.VideoId,
-                songTitle: command.SongTitle,
-                artistName: command.ArtistName,
-                lyricsText: command.LyricsText,
-                language: command.Language,
-                slug: command.Slug,
-                authorId: command.AuthorId
-            )
-            : LyricsEntity.CreateFree(
-                id: Guid.NewGuid(),
-                categoryId: command.CategoryId,
-                videoId: command.VideoId,
-                songTitle: command.SongTitle,
-                artistName: command.ArtistName,
-                lyricsText: command.LyricsText,
-                language: command.Language,
-                slug: command.Slug,
-                authorId: command.AuthorId
-            );
     }
 }
