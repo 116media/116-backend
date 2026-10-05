@@ -1,28 +1,22 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Catalog.Factories;
+using _116.Content.Application.Catalog.Services;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.AddPackageSlot.Contracts;
 using _116.Content.Application.Shared.DTOs;
-using _116.Content.Application.Shared.Errors.Facade;
-using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
-using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.AddPackageSlot;
 
 /// <summary>
-/// Handles the <see cref="AdminAddPackageSlotCommand" /> to add a new slot to an existing package.
+/// Handles the <see cref="AdminAddPackageSlotCommand" /> to add a slot to a package.
 /// </summary>
-/// <param name="packageRepository">Repository for package data access operations.</param>
-/// <param name="categoryRepository">Repository for verifying category existence.</param>
+/// <param name="addSlotService">Service resolving and applying the slot.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="packageDtoFactory">Builds package projections with their categories resolved.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
+/// <param name="packageDtoService">Service assembling the package DTO.</param>
 public class AdminAddPackageSlotHandler(
-    IPackageRepository packageRepository,
-    ICategoryRepository categoryRepository,
+    IAdminAddPackageSlotService addSlotService,
     IContentUnitOfWork unitOfWork,
-    IPackageDtoFactory packageDtoFactory,
-    ContentI18n i18n
+    IPackageDtoService packageDtoService
 ) : ICommandHandler<AdminAddPackageSlotCommand, AdminAddPackageSlotResult>
 {
     /// <inheritdoc />
@@ -31,30 +25,17 @@ public class AdminAddPackageSlotHandler(
         CancellationToken cancellationToken
     )
     {
-        Guid packageId = Guid.Parse(command.PackageId);
-
-        PackageEntity package = await packageRepository.GetByIdOrThrowAsync(
-            id: packageId,
+        PackageEntity package = await addSlotService.AddSlotAsync(
+            packageId: Guid.Parse(command.PackageId),
+            categoryId: command.CategoryId,
+            isRequired: command.IsRequired,
+            quantity: command.Quantity,
             cancellationToken: cancellationToken
         );
 
-        if (command.CategoryId.HasValue)
-        {
-            CategoryEntity? category = await categoryRepository.GetByIdAsync(
-                id: command.CategoryId.Value,
-                cancellationToken: cancellationToken
-            );
-
-            if (category is null)
-            {
-                throw i18n.Category.NotFound(id: command.CategoryId.Value);
-            }
-        }
-
-        package.AddSlot(categoryId: command.CategoryId, isRequired: command.IsRequired, quantity: command.Quantity);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        PackageDto dto = await packageDtoFactory.CreateAsync(package, cancellationToken);
+        PackageDto dto = await packageDtoService.CreateAsync(package, cancellationToken);
         return new AdminAddPackageSlotResult(Package: dto);
     }
 }
