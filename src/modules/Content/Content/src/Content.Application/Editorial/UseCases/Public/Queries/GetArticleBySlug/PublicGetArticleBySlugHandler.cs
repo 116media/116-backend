@@ -1,29 +1,24 @@
 using _116.BuildingBlocks.Application.CQRS;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Errors.Facade;
-using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Storage.Contracts.Application.Services;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticleBySlug;
 
 /// <summary>
-/// Handles the <see cref="PublicGetArticleBySlugQuery" /> to retrieve a single published article by its slug.
+/// Handles the <see cref="PublicGetArticleBySlugQuery" /> to serve a published article.
 /// </summary>
-/// <param name="articleRepository">Repository for article data access operations.</param>
-/// <param name="articleInteractionRepository">Repository for article interaction data access operations.</param>
-/// <param name="fileStorage">Storage's file contract.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="articleRepository">Repository resolving the article.</param>
+/// <param name="articleInteractionRepository">Repository resolving the reader's like and bookmark state.</param>
+/// <param name="articleDtoService">Service assembling the public article detail.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetArticleBySlugHandler(
     IArticleRepository articleRepository,
     IArticleInteractionRepository articleInteractionRepository,
-    IFileStorageService fileStorage,
-    IMapper mapper,
-    ContentI18n i18n,
-    IContentLookupFactory contentLookupFactory
+    IArticleDtoService articleDtoService,
+    ContentI18n i18n
 ) : IQueryHandler<PublicGetArticleBySlugQuery, PublicGetArticleBySlugResult>
 {
     /// <inheritdoc />
@@ -59,14 +54,7 @@ public class PublicGetArticleBySlugHandler(
             );
         }
 
-        var dto = await article.ToPublicArticleDetailDtoAsync(
-            mapper,
-            await contentLookupFactory.ResolveForArticlesAsync([article], cancellationToken),
-            fileStorage,
-            cancellationToken,
-            isLiked: isLiked,
-            isBookmarked: isBookmarked
-        );
+        var dto = await articleDtoService.CreatePublicDetailAsync(article, isLiked, isBookmarked, cancellationToken);
         return new PublicGetArticleBySlugResult(Article: dto);
     }
 }
