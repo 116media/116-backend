@@ -1,33 +1,23 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Commerce.Factories;
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Facade;
-using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Identity.Contracts.Application.Services;
-using _116.Storage.Contracts.Application.DTOs;
-using _116.Storage.Contracts.Application.Services;
-using MapsterMapper;
 
 namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderById;
 
 /// <summary>
-/// Handles the <see cref="AdminGetOrderByIdQuery" /> to retrieve a full order detail by identifier.
+/// Handles the <see cref="AdminGetOrderByIdQuery" /> to serve an order with its items and payment.
 /// </summary>
-/// <param name="contentOrderRepository">Repository for content order data access operations.</param>
-/// <param name="fileStorage">Storage's file contract.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="orderDtoFactory">Builds order projections with their lookups resolved.</param>
-/// <param name="orderDtoFactory">Builds order projections with their lookups resolved.</param>
-/// <param name="userLookup">Cross-module service for resolving admin user names.</param>
+/// <param name="contentOrderRepository">Repository loading the order with its items.</param>
+/// <param name="orderDtoService">Service assembling the order detail.</param>
+/// <param name="paymentDtoService">Service assembling the payment with its proof.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminGetOrderByIdHandler(
     IContentOrderRepository contentOrderRepository,
-    IFileStorageService fileStorage,
-    IMapper mapper,
-    IContentOrderDtoFactory orderDtoFactory,
-    IPaymentDtoFactory paymentDtoFactory,
+    IContentOrderDtoService orderDtoService,
+    IPaymentDtoService paymentDtoService,
     ContentI18n i18n
 ) : IQueryHandler<AdminGetOrderByIdQuery, AdminGetOrderByIdResult>
 {
@@ -39,25 +29,19 @@ public class AdminGetOrderByIdHandler(
             ct: cancellationToken
         );
 
-        if (order is not null)
+        if (order is null)
         {
-            ContentOrderDetailDto dto = await orderDtoFactory.CreateDetailAsync(order, cancellationToken);
+            throw i18n.ContentOrder.NotFound(id: query.Id);
+        }
 
-            if (order.Payment?.PaymentProofFileId is not { } proofFileId)
-            {
-                return new AdminGetOrderByIdResult(Order: dto);
-            }
+        ContentOrderDetailDto dto = await orderDtoService.CreateDetailAsync(order, cancellationToken);
 
-            FileReferenceDto? proofFile = await fileStorage.ResolveAsync(proofFileId, cancellationToken);
-            var proofDto = proofFile.ToFileDto(mapper);
-            dto = dto with
-            {
-                Payment = await paymentDtoFactory.CreateAsync(order.Payment, proofDto, cancellationToken),
-            };
-
+        if (order.Payment?.PaymentProofFileId is null)
+        {
             return new AdminGetOrderByIdResult(Order: dto);
         }
 
-        throw i18n.ContentOrder.NotFound(id: query.Id);
+        dto = dto with { Payment = await paymentDtoService.CreateWithProofAsync(order.Payment, cancellationToken) };
+        return new AdminGetOrderByIdResult(Order: dto);
     }
 }
