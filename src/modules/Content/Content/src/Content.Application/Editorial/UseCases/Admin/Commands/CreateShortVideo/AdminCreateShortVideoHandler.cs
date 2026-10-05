@@ -1,31 +1,24 @@
 using _116.BuildingBlocks.Application.CQRS;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Errors.Facade;
-using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Storage.Contracts.Application.Services;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateShortVideo;
 
 /// <summary>
-/// Handles the <see cref="AdminCreateShortVideoCommand" /> to create a new short video draft.
-/// The video file is uploaded separately afterwards via the dedicated upload endpoint, so the
-/// draft starts inactive (hidden from the feed) until a file is attached and it is activated.
+/// Handles the <see cref="AdminCreateShortVideoCommand" /> to create a short, standalone or as a teaser of a video.
 /// </summary>
-/// <param name="shortVideoRepository">Repository for short video data access operations.</param>
-/// <param name="fileStorage">Storage's file contract.</param>
+/// <param name="shortVideoRepository">Repository checking the slug, staging and reloading the short.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="shortVideoDtoService">Service assembling the short DTO.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminCreateShortVideoHandler(
     IShortVideoRepository shortVideoRepository,
-    IFileStorageService fileStorage,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper,
-    ContentI18n i18n,
-    IVideoRepository videoRepository
+    IShortVideoDtoService shortVideoDtoService,
+    ContentI18n i18n
 ) : ICommandHandler<AdminCreateShortVideoCommand, AdminCreateShortVideoResult>
 {
     /// <inheritdoc />
@@ -44,27 +37,20 @@ public class AdminCreateShortVideoHandler(
             throw i18n.ShortVideo.SlugAlreadyExists(slug: command.Slug);
         }
 
-        ShortVideoEntity shortVideo;
-
-        if (command.VideoId.HasValue)
-        {
-            shortVideo = ShortVideoEntity.CreateTeaser(
+        ShortVideoEntity shortVideo = command.VideoId is { } videoId
+            ? ShortVideoEntity.CreateTeaser(
                 id: Guid.NewGuid(),
                 title: command.Title,
                 slug: command.Slug,
-                videoId: command.VideoId.Value,
+                videoId: videoId,
                 authorId: command.AuthorId
-            );
-        }
-        else
-        {
-            shortVideo = ShortVideoEntity.CreateStandalone(
+            )
+            : ShortVideoEntity.CreateStandalone(
                 id: Guid.NewGuid(),
                 title: command.Title,
                 slug: command.Slug,
                 authorId: command.AuthorId
             );
-        }
 
         await shortVideoRepository.AddAsync(shortVideo: shortVideo, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
@@ -73,8 +59,7 @@ public class AdminCreateShortVideoHandler(
             id: shortVideo.Id,
             cancellationToken: cancellationToken
         );
-
-        var dto = await created.ToShortVideoDtoAsync(mapper, fileStorage, videoRepository, cancellationToken);
+        var dto = await shortVideoDtoService.CreateAsync(created, cancellationToken);
         return new AdminCreateShortVideoResult(ShortVideo: dto);
     }
 }
