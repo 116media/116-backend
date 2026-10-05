@@ -1,30 +1,21 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Shared.Mappers;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Identity.Contracts.Application.Services;
-using _116.Storage.Contracts.Application.Services;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyricsMetadata;
 
 /// <summary>
-/// Handles the <see cref="AdminUpdateLyricsMetadataCommand" /> to update the song-credit
-/// metadata of an existing lyrics page.
+/// Handles the <see cref="AdminUpdateLyricsMetadataCommand" /> to revise a lyrics page's release metadata.
 /// </summary>
-/// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
+/// <param name="lyricsRepository">Repository loading and reloading the lyrics.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="mapper">The Mapster mapper used for tags.</param>
-/// <param name="userLookup">Service for resolving author profiles from the Identity module.</param>
-/// <param name="fileStorage">Storage's file contract.</param>
+/// <param name="lyricsDtoService">Service assembling the lyrics detail.</param>
 public class AdminUpdateLyricsMetadataHandler(
     ILyricsRepository lyricsRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper,
-    IUserLookupService userLookup,
-    IFileStorageService fileStorage,
-    IContentLookupFactory contentLookupFactory
+    ILyricsDtoService lyricsDtoService
 ) : ICommandHandler<AdminUpdateLyricsMetadataCommand, AdminUpdateLyricsMetadataResult>
 {
     /// <inheritdoc />
@@ -45,20 +36,14 @@ public class AdminUpdateLyricsMetadataHandler(
             songwriter: command.Songwriter,
             producer: command.Producer
         );
+
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         LyricsEntity updated = await lyricsRepository.GetByIdOrThrowAsync(
             id: lyrics.Id,
             cancellationToken: cancellationToken
         );
-
-        var dto = await updated.ToLyricsDetailDtoAsync(
-            await contentLookupFactory.ResolveForLyricsAsync([updated], cancellationToken),
-            mapper,
-            userLookup,
-            fileStorage,
-            cancellationToken
-        );
+        var dto = await lyricsDtoService.CreateDetailAsync(updated, cancellationToken);
         return new AdminUpdateLyricsMetadataResult(Lyrics: dto);
     }
 }
