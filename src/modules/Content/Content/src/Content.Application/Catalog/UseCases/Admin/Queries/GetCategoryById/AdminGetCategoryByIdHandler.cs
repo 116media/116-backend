@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Catalog.Factories;
+using _116.Content.Application.Catalog.Services;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 
@@ -9,8 +9,8 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Queries.GetCategoryByI
 /// Handles the <see cref="AdminGetCategoryByIdQuery" /> to retrieve a category by its identifier.
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
-/// <param name="categoryDtoFactory">Builds category projections with their posters resolved.</param>
-public class AdminGetCategoryByIdHandler(ICategoryRepository categoryRepository, ICategoryDtoFactory categoryDtoFactory)
+/// <param name="categoryDtoService">Builds category projections with their posters resolved.</param>
+public class AdminGetCategoryByIdHandler(ICategoryRepository categoryRepository, ICategoryDtoService categoryDtoService)
     : IQueryHandler<AdminGetCategoryByIdQuery, AdminGetCategoryByIdResult>
 {
     /// <inheritdoc />
@@ -24,7 +24,7 @@ public class AdminGetCategoryByIdHandler(ICategoryRepository categoryRepository,
             cancellationToken: cancellationToken
         );
 
-        var dto = await categoryDtoFactory.CreateAsync(category, cancellationToken);
+        var dto = await categoryDtoService.CreateAsync(category, cancellationToken);
         return new AdminGetCategoryByIdResult(Category: dto);
     }
 }
