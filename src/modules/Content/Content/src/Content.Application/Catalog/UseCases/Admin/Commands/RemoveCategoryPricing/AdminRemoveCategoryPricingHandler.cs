@@ -1,27 +1,24 @@
 using _116.BuildingBlocks.Application.CQRS;
+using _116.Content.Application.Catalog.Services;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Facade;
-using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using MapsterMapper;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.RemoveCategoryPricing;
 
 /// <summary>
-/// Handles the <see cref="AdminRemoveCategoryPricingCommand" /> to remove a pricing tier from a category.
+/// Handles the <see cref="AdminRemoveCategoryPricingCommand" /> to drop a category's pricing row.
 /// </summary>
-/// <param name="pricingTierRepository">Repository resolving the remaining priced tiers.</param>
-/// <param name="categoryRepository">Repository for category data access operations.</param>
+/// <param name="categoryRepository">Repository loading the category aggregate.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="pricingDtoService">Service assembling the remaining pricing rows.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminRemoveCategoryPricingHandler(
     ICategoryRepository categoryRepository,
-    IPricingTierRepository pricingTierRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper,
+    ICategoryPricingDtoService pricingDtoService,
     ContentI18n i18n
 ) : ICommandHandler<AdminRemoveCategoryPricingCommand, AdminRemoveCategoryPricingResult>
 {
@@ -46,20 +43,10 @@ public class AdminRemoveCategoryPricingHandler(
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        IReadOnlyDictionary<Guid, PricingTierEntity> pricingTiers = await pricingTierRepository.GetByIdsAsync(
-            ids: [.. category.Pricing.Select(pricing => pricing.PricingTierId).Distinct()],
-            cancellationToken: cancellationToken
+        IReadOnlyList<CategoryPricingDto> dtoList = await pricingDtoService.CreateManyAsync(
+            category.Pricing,
+            cancellationToken
         );
-
-        IReadOnlyList<CategoryPricingDto> dtoList =
-        [
-            .. category
-                .Pricing.OrderBy(pricing => pricing.PricingTierId)
-                .Select(pricing =>
-                    pricing.ToCategoryPricingDto(mapper, pricingTiers.GetValueOrDefault(pricing.PricingTierId))
-                ),
-        ];
-
         return new AdminRemoveCategoryPricingResult(Pricing: dtoList, IsSuccess: true);
     }
 }
