@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 using _116.BuildingBlocks.Application.Services;
-using _116.Content.Application.Editorial.Services;
+using _116.Content.Application.Editorial.Ports;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
