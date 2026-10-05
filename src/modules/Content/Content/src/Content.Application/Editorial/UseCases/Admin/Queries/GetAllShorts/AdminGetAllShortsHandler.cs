@@ -1,37 +1,20 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.BuildingBlocks.Application.Pagination;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.DTOs;
-using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Identity.Contracts.Application.Services;
-using _116.Storage.Contracts.Application.Services;
-using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllShorts;
 
 /// <summary>
-/// Handles the <see cref="AdminGetAllShortsQuery" /> to retrieve a paginated list of short videos.
-/// Enriches each short with the author's profile (user name, email, avatar URL, role).
+/// Handles the <see cref="AdminGetAllShortsQuery" /> to page every short for the admin listing.
 /// </summary>
-/// <param name="shortVideoRepository">
-/// Repository for short video data access operations.
-/// </param>
-/// <param name="userLookup">
-/// Cross-module service for resolving author profiles.
-/// </param>
-/// <param name="fileStorage">
-/// Repository for resolving avatar file URLs.
-/// </param>
-/// <param name="mapper">
-/// Mapster mapper for entity-to-DTO transformations.
-/// </param>
+/// <param name="shortVideoRepository">Repository paging the shorts.</param>
+/// <param name="shortVideoDtoService">Service assembling the short DTOs with their authors.</param>
 public class AdminGetAllShortsHandler(
     IShortVideoRepository shortVideoRepository,
-    IUserLookupService userLookup,
-    IFileStorageService fileStorage,
-    IMapper mapper,
-    IVideoRepository videoRepository
+    IShortVideoDtoService shortVideoDtoService
 ) : IQueryHandler<AdminGetAllShortsQuery, AdminGetAllShortsResult>
 {
     /// <inheritdoc />
@@ -48,11 +31,8 @@ public class AdminGetAllShortsHandler(
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<ShortVideoDto> dtoList = await shortVideos.ToShortVideoDtosAsync(
-            mapper,
-            userLookup,
-            fileStorage,
-            videoRepository,
+        IReadOnlyList<ShortVideoDto> dtoList = await shortVideoDtoService.CreateManyWithAuthorAsync(
+            shortVideos,
             cancellationToken
         );
 
@@ -62,7 +42,6 @@ public class AdminGetAllShortsHandler(
             count: totalCount,
             items: dtoList
         );
-
         return new AdminGetAllShortsResult(ShortVideos: paginatedResult);
     }
 }
