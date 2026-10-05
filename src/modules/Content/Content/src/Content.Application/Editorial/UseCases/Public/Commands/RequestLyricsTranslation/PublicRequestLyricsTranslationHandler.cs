@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Ports;
 using _116.Content.Application.Shared.Repositories;
-using _116.Content.Application.Shared.Services;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 
