@@ -16,7 +16,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPopularA
 public class PublicGetPopularArticlesHandler(
     IArticleRepository articleRepository,
     IFileStorageService fileStorage,
-    IContentLookupFactory contentLookupFactory
+    IContentLookupService contentLookupService
 ) : IQueryHandler<PublicGetPopularArticlesQuery, PublicGetPopularArticlesResult>
 {
     /// <inheritdoc />
@@ -33,7 +33,7 @@ public class PublicGetPopularArticlesHandler(
         );
 
         IReadOnlyList<PublicArticleSummaryDto> dtoList = await articles.ToPublicArticleSummaryDtosAsync(
-            await contentLookupFactory.ResolveForArticlesAsync(articles, cancellationToken),
+            await contentLookupService.ResolveForArticlesAsync(articles, cancellationToken),
             fileStorage,
             cancellationToken
         );
