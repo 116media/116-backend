@@ -1,6 +1,6 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.BuildingBlocks.Application.Pagination;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
@@ -16,12 +16,12 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistRe
 /// </summary>
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
 /// <param name="albumRepository">Repository for album data access operations.</param>
-/// <param name="albumDtoFactory">Builds album projections with their covers resolved.</param>
+/// <param name="albumDtoService">Builds album projections with their covers resolved.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetArtistReleasesHandler(
     IArtistRepository artistRepository,
     IAlbumRepository albumRepository,
-    IAlbumDtoFactory albumDtoFactory,
+    IAlbumDtoService albumDtoService,
     ContentI18n i18n
 ) : IQueryHandler<PublicGetArtistReleasesQuery, PublicGetArtistReleasesResult>
 {
@@ -49,7 +49,7 @@ public class PublicGetArtistReleasesHandler(
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<AlbumDto> albumDtos = await albumDtoFactory.CreateManyAsync(
+        IReadOnlyList<AlbumDto> albumDtos = await albumDtoService.CreateManyAsync(
             albums.AsReadOnly(),
             cancellationToken
         );
