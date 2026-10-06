@@ -33,7 +33,7 @@ public class AdminActivatePackageHandlerTests : BaseContentHandlerTest
         _handler = new AdminActivatePackageHandler(
             _packageRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            CreatePackageDtoFactory(),
+            CreatePackageDtoService(),
             TestErrorsFactory.CreateContentI18n()
         );
     }
