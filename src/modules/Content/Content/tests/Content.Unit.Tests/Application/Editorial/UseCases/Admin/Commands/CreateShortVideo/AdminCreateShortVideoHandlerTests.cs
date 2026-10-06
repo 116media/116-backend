@@ -38,11 +38,9 @@ public class AdminCreateShortVideoHandlerTests : BaseContentHandlerTest
 
         _handler = new AdminCreateShortVideoHandler(
             _shortVideoRepositoryMock.Object,
-            _fileStorageMock.Object,
             _unitOfWorkMock.Object,
-            Mapper,
-            TestErrorsFactory.CreateContentI18n(),
-            MockVideoRepository.Create().Object
+            CreateShortVideoDtoService(_fileStorageMock.Object),
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
