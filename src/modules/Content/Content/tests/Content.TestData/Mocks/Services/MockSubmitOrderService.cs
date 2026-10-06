@@ -2,26 +2,26 @@ using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder.Cont
 using _116.Content.Domain.Entities;
 using Moq;
 
-namespace _116.Content.TestData.Mocks.Factories;
+namespace _116.Content.TestData.Mocks.Services;
 
 /// <summary>
-/// Provides mock setup helpers for <see cref="ISubmitOrderFactory"/>.
+/// Provides mock setup helpers for <see cref="ISubmitOrderService"/>.
 /// </summary>
-public static class MockSubmitOrderFactory
+public static class MockSubmitOrderService
 {
     /// <summary>
-    /// Creates a new mock instance of ISubmitOrderFactory.
+    /// Creates a new mock instance of ISubmitOrderService.
     /// </summary>
-    public static Mock<ISubmitOrderFactory> Create() => new();
+    public static Mock<ISubmitOrderService> Create() => new();
 
-    public static Mock<ISubmitOrderFactory> SetupSubmitAsync(this Mock<ISubmitOrderFactory> mock)
+    public static Mock<ISubmitOrderService> SetupSubmitAsync(this Mock<ISubmitOrderService> mock)
     {
         mock.Setup(x => x.SubmitAsync(It.IsAny<ContentOrderEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         return mock;
     }
 
-    public static void VerifySubmitCalled(this Mock<ISubmitOrderFactory> mock)
+    public static void VerifySubmitCalled(this Mock<ISubmitOrderService> mock)
     {
         mock.Verify(x => x.SubmitAsync(It.IsAny<ContentOrderEntity>(), It.IsAny<CancellationToken>()), Times.Once);
     }
