@@ -38,11 +38,14 @@ public class AdminApproveLyricsSubmissionHandlerTests
         _categoryRepositoryMock = MockCategoryRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminApproveLyricsSubmissionHandler(
-            _submissionRepositoryMock.Object,
+            new AdminApproveLyricsSubmissionService(
+                _submissionRepositoryMock.Object,
+                _lyricsRepositoryMock.Object,
+                _categoryRepositoryMock.Object,
+                _i18n
+            ),
             _lyricsRepositoryMock.Object,
-            _categoryRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            _i18n
+            _unitOfWorkMock.Object
         );
     }
 
