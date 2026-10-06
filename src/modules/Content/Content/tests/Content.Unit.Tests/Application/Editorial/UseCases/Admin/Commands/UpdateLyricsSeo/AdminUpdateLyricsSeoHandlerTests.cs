@@ -38,10 +38,7 @@ public class AdminUpdateLyricsSeoHandlerTests : BaseContentHandlerTest
         _handler = new AdminUpdateLyricsSeoHandler(
             _lyricsRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            Mapper,
-            userLookupMock.Object,
-            fileStorageMock.Object,
-            CreateContentLookupFactory()
+            CreateLyricsDtoService(fileStorageMock.Object, userLookupMock.Object)
         );
     }
 
