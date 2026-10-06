@@ -17,23 +17,23 @@ using Xunit;
 namespace _116.Content.Unit.Tests.Application.Commerce.UseCases.Admin.Commands.AddItemTier;
 
 /// <summary>
-/// Unit tests for <see cref="AdminAddItemTierFactory"/>.
+/// Unit tests for <see cref="AdminAddItemTierService"/>.
 /// </summary>
-public class AdminAddItemTierFactoryTests
+public class AdminAddItemTierServiceTests
 {
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
     private readonly Mock<IPricingTierRepository> _pricingTierRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly AdminAddItemTierFactory _factory;
+    private readonly AdminAddItemTierService _service;
 
-    public AdminAddItemTierFactoryTests()
+    public AdminAddItemTierServiceTests()
     {
         _orderRepositoryMock = MockContentOrderRepository.Create();
         _categoryRepositoryMock = MockCategoryRepository.Create();
         _pricingTierRepositoryMock = MockPricingTierRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _factory = new AdminAddItemTierFactory(
+        _service = new AdminAddItemTierService(
             _orderRepositoryMock.Object,
             _categoryRepositoryMock.Object,
             _pricingTierRepositoryMock.Object,
@@ -64,7 +64,7 @@ public class AdminAddItemTierFactoryTests
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
 
         // Act
-        (ContentItemTierEntity tier, string tierName) = await _factory.AttachTierAsync(
+        (ContentItemTierEntity tier, string tierName) = await _service.AttachTierAsync(
             order.Id,
             item.Id,
             pricingTier.Id,
@@ -92,7 +92,7 @@ public class AdminAddItemTierFactoryTests
 
         // Act
         Func<Task> act = async () =>
-            await _factory.AttachTierAsync(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), CancellationToken.None);
+            await _service.AttachTierAsync(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
@@ -108,7 +108,7 @@ public class AdminAddItemTierFactoryTests
 
         // Act
         Func<Task> act = async () =>
-            await _factory.AttachTierAsync(submittedOrder.Id, Guid.NewGuid(), Guid.NewGuid(), CancellationToken.None);
+            await _service.AttachTierAsync(submittedOrder.Id, Guid.NewGuid(), Guid.NewGuid(), CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
@@ -124,7 +124,7 @@ public class AdminAddItemTierFactoryTests
 
         // Act
         Func<Task> act = async () =>
-            await _factory.AttachTierAsync(order.Id, Guid.NewGuid(), Guid.NewGuid(), CancellationToken.None);
+            await _service.AttachTierAsync(order.Id, Guid.NewGuid(), Guid.NewGuid(), CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
@@ -148,7 +148,7 @@ public class AdminAddItemTierFactoryTests
 
         // Act
         Func<Task> act = async () =>
-            await _factory.AttachTierAsync(order.Id, item.Id, pricingTier.Id, CancellationToken.None);
+            await _service.AttachTierAsync(order.Id, item.Id, pricingTier.Id, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
@@ -173,7 +173,7 @@ public class AdminAddItemTierFactoryTests
 
         // Act
         Func<Task> act = async () =>
-            await _factory.AttachTierAsync(order.Id, item.Id, pricingTier.Id, CancellationToken.None);
+            await _service.AttachTierAsync(order.Id, item.Id, pricingTier.Id, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
