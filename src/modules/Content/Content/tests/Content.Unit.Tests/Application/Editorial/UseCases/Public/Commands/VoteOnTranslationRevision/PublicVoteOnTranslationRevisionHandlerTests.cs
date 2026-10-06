@@ -39,11 +39,9 @@ public class PublicVoteOnTranslationRevisionHandlerTests
         _translationRepositoryMock = MockTranslationRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new PublicVoteOnTranslationRevisionHandler(
-            _revisionRepositoryMock.Object,
-            _voteRepositoryMock.Object,
+            new PublicTranslationRevisionVoteService(_revisionRepositoryMock.Object, _voteRepositoryMock.Object, _i18n),
             _translationRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            _i18n
+            _unitOfWorkMock.Object
         );
     }
 
