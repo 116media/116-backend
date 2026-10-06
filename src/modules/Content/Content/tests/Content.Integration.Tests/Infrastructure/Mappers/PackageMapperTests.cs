@@ -1,4 +1,4 @@
-using _116.Content.Application.Catalog.Factories;
+using _116.Content.Application.Catalog.Services;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
@@ -8,7 +8,7 @@ using _116.Content.TestData.Factories;
 namespace _116.Content.Integration.Tests.Infrastructure.Mappers;
 
 /// <summary>
-/// Integration tests for <see cref="PackageMapper" /> through <see cref="IPackageDtoFactory" />.
+/// Integration tests for <see cref="PackageMapper" /> through <see cref="IPackageDtoService" />.
 /// Verifies that the slot category names and the calculated price come from the factory's
 /// batched category lookup rather than from a navigation.
 /// </summary>
@@ -26,7 +26,7 @@ public class PackageMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         await using var readContext = CreateDbContext<ContentDbContext>();
         PackageEntity loaded = await readContext.Packages.Include(p => p.Slots).FirstAsync(p => p.Id == package.Id);
 
-        PackageDto dto = await Resolve<IPackageDtoFactory>().CreateAsync(loaded);
+        PackageDto dto = await Resolve<IPackageDtoService>().CreateAsync(loaded);
 
         dto.Id.Should().Be(loaded.Id);
         dto.Name.Should().Be("Gold Package");
@@ -56,7 +56,7 @@ public class PackageMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         await using var readContext = CreateDbContext<ContentDbContext>();
         PackageEntity loaded = await readContext.Packages.Include(p => p.Slots).FirstAsync(p => p.Id == package.Id);
 
-        PackageDto dto = await Resolve<IPackageDtoFactory>().CreateAsync(loaded);
+        PackageDto dto = await Resolve<IPackageDtoService>().CreateAsync(loaded);
 
         dto.Slots.Should().ContainSingle();
         dto.Slots[0].CategoryName.Should().Be("Music");
@@ -92,7 +92,7 @@ public class PackageMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         await using var readContext = CreateDbContext<ContentDbContext>();
         PackageEntity loaded = await readContext.Packages.Include(p => p.Slots).FirstAsync(p => p.Id == package.Id);
 
-        PackageDto dto = await Resolve<IPackageDtoFactory>().CreateAsync(loaded);
+        PackageDto dto = await Resolve<IPackageDtoService>().CreateAsync(loaded);
 
         dto.CalculatedPriceUsd.Should().Be(100.00m);
     }
@@ -109,7 +109,7 @@ public class PackageMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         await using var readContext = CreateDbContext<ContentDbContext>();
         List<PackageEntity> loaded = await readContext.Packages.Include(p => p.Slots).ToListAsync();
 
-        IReadOnlyList<PackageDto> dtos = await Resolve<IPackageDtoFactory>().CreateManyAsync(loaded);
+        IReadOnlyList<PackageDto> dtos = await Resolve<IPackageDtoService>().CreateManyAsync(loaded);
 
         dtos.Should().HaveCount(2);
         dtos.Select(d => d.Name).Should().BeEquivalentTo(["Silver", "Gold"]);
