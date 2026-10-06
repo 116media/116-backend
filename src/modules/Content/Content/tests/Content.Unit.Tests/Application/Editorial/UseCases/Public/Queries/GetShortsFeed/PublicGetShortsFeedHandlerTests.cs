@@ -39,10 +39,7 @@ public class PublicGetShortsFeedHandlerTests : BaseContentHandlerTest
 
         _handler = new PublicGetShortsFeedHandler(
             _shortVideoRepositoryMock.Object,
-            _userLookupMock.Object,
-            _fileStorageMock.Object,
-            Mapper,
-            MockVideoRepository.Create().Object
+            CreateShortVideoDtoService(_fileStorageMock.Object, _userLookupMock.Object)
         );
     }
 
