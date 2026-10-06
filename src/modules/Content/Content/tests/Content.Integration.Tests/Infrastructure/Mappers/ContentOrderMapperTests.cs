@@ -1,4 +1,4 @@
-using _116.Content.Application.Commerce.Factories;
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
@@ -8,7 +8,7 @@ using _116.Content.TestData.Factories;
 namespace _116.Content.Integration.Tests.Infrastructure.Mappers;
 
 /// <summary>
-/// Integration tests for <see cref="ContentOrderMapper" /> through <see cref="IContentOrderDtoFactory" />.
+/// Integration tests for <see cref="ContentOrderMapper" /> through <see cref="IContentOrderDtoService" />.
 /// Verifies that the customer, category and tier names the projections carry are resolved from
 /// PostgreSQL by the factory's batched lookups rather than by a navigation.
 /// </summary>
@@ -27,7 +27,7 @@ public class ContentOrderMapperTests(PostgresFixture postgres) : BaseRepositoryT
         seedContext.ContentOrders.Add(order);
         await seedContext.SaveChangesAsync();
 
-        var factory = Resolve<IContentOrderDtoFactory>();
+        var factory = Resolve<IContentOrderDtoService>();
 
         ContentOrderSummaryDto dto = await factory.CreateSummaryAsync(order);
 
@@ -50,7 +50,7 @@ public class ContentOrderMapperTests(PostgresFixture postgres) : BaseRepositoryT
         seedContext.ContentOrders.AddRange(firstOrder, secondOrder);
         await seedContext.SaveChangesAsync();
 
-        var factory = Resolve<IContentOrderDtoFactory>();
+        var factory = Resolve<IContentOrderDtoService>();
 
         IReadOnlyList<ContentOrderSummaryDto> dtos = await factory.CreateManySummariesAsync([firstOrder, secondOrder]);
 
@@ -88,7 +88,7 @@ public class ContentOrderMapperTests(PostgresFixture postgres) : BaseRepositoryT
             .Include(o => o.Payment)
             .FirstAsync(o => o.Id == order.Id);
 
-        var factory = Resolve<IContentOrderDtoFactory>();
+        var factory = Resolve<IContentOrderDtoService>();
 
         ContentOrderDetailDto dto = await factory.CreateDetailAsync(loaded);
 
