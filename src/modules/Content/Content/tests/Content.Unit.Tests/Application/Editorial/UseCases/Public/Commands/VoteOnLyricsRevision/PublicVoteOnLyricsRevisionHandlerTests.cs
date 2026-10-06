@@ -39,11 +39,9 @@ public class PublicVoteOnLyricsRevisionHandlerTests
         _lyricsRepositoryMock = MockLyricsRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new PublicVoteOnLyricsRevisionHandler(
-            _revisionRepositoryMock.Object,
-            _voteRepositoryMock.Object,
+            new PublicLyricsRevisionVoteService(_revisionRepositoryMock.Object, _voteRepositoryMock.Object, _i18n),
             _lyricsRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            _i18n
+            _unitOfWorkMock.Object
         );
     }
 
