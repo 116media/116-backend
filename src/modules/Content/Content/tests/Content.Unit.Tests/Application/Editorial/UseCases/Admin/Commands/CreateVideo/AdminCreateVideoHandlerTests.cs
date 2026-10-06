@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -42,16 +42,19 @@ public class AdminCreateVideoHandlerTests : BaseContentHandlerTest
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminCreateVideoHandler(
-            _categoryRepositoryMock.Object,
+            new AdminCreateVideoService(
+                _categoryRepositoryMock.Object,
+                _videoRepositoryMock.Object,
+                TestErrorsFactory.CreateContentI18n()
+            ),
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            new VideoDtoFactory(
+            new VideoDtoService(
                 Mapper,
                 _fileStorageMock.Object,
                 _videoRepositoryMock.Object,
-                CreateContentLookupFactory()
-            ),
-            TestErrorsFactory.CreateContentI18n()
+                CreateContentLookupService()
+            )
         );
     }
 
