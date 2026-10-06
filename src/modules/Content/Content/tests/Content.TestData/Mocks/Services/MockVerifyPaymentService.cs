@@ -2,19 +2,19 @@ using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment.Co
 using _116.Content.Domain.Entities;
 using Moq;
 
-namespace _116.Content.TestData.Mocks.Factories;
+namespace _116.Content.TestData.Mocks.Services;
 
 /// <summary>
-/// Provides mock setup helpers for <see cref="IVerifyPaymentFactory"/>.
+/// Provides mock setup helpers for <see cref="IVerifyPaymentService"/>.
 /// </summary>
-public static class MockVerifyPaymentFactory
+public static class MockVerifyPaymentService
 {
     /// <summary>
-    /// Creates a new mock instance of IVerifyPaymentFactory.
+    /// Creates a new mock instance of IVerifyPaymentService.
     /// </summary>
-    public static Mock<IVerifyPaymentFactory> Create() => new();
+    public static Mock<IVerifyPaymentService> Create() => new();
 
-    public static Mock<IVerifyPaymentFactory> SetupVerifyAsync(this Mock<IVerifyPaymentFactory> mock)
+    public static Mock<IVerifyPaymentService> SetupVerifyAsync(this Mock<IVerifyPaymentService> mock)
     {
         mock.Setup(x =>
                 x.VerifyAsync(
