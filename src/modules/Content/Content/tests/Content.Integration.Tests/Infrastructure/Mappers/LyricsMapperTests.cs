@@ -37,7 +37,7 @@ public class LyricsMapperTests(PostgresFixture postgres) : BaseRepositoryTest(po
 
         var fileStorage = Resolve<IFileStorageService>();
         LyricsSummaryDto dto = await loaded.ToLyricsSummaryDtoAsync(
-            await Resolve<IContentLookupFactory>().ResolveForLyricsAsync([loaded]),
+            await Resolve<IContentLookupService>().ResolveForLyricsAsync([loaded]),
             fileStorage
         );
 
@@ -76,7 +76,7 @@ public class LyricsMapperTests(PostgresFixture postgres) : BaseRepositoryTest(po
 
         var fileStorage = Resolve<IFileStorageService>();
         LyricsSummaryDto dto = await loaded.ToLyricsSummaryDtoAsync(
-            await Resolve<IContentLookupFactory>().ResolveForLyricsAsync([loaded]),
+            await Resolve<IContentLookupService>().ResolveForLyricsAsync([loaded]),
             fileStorage
         );
 
@@ -107,7 +107,7 @@ public class LyricsMapperTests(PostgresFixture postgres) : BaseRepositoryTest(po
         IReadOnlyList<LyricsSummaryDto> dtos = await loaded
             .AsReadOnly()
             .ToLyricsSummaryDtosAsync(
-                await Resolve<IContentLookupFactory>().ResolveForLyricsAsync(loaded),
+                await Resolve<IContentLookupService>().ResolveForLyricsAsync(loaded),
                 fileStorage
             );
 
@@ -138,7 +138,7 @@ public class LyricsMapperTests(PostgresFixture postgres) : BaseRepositoryTest(po
         var userLookup = Resolve<IUserLookupService>();
         var fileStorage = Resolve<IFileStorageService>();
         LyricsDetailDto dto = await loaded.ToLyricsDetailDtoAsync(
-            await Resolve<IContentLookupFactory>().ResolveForLyricsAsync([loaded]),
+            await Resolve<IContentLookupService>().ResolveForLyricsAsync([loaded]),
             mapper,
             userLookup,
             fileStorage
