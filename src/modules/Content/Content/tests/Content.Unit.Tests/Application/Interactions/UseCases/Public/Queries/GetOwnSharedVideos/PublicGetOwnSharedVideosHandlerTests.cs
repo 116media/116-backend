@@ -35,7 +35,7 @@ public class PublicGetOwnSharedVideosHandlerTests : BaseContentHandlerTest
         var handler = new PublicGetOwnSharedVideosHandler(
             _videoRepository.Object,
             _fileRepository.Object,
-            CreateContentLookupFactory()
+            CreateContentLookupService()
         );
 
         PublicGetOwnSharedVideosResult result = await handler.Handle(
@@ -61,7 +61,7 @@ public class PublicGetOwnSharedVideosHandlerTests : BaseContentHandlerTest
         var handler = new PublicGetOwnSharedVideosHandler(
             _videoRepository.Object,
             _fileRepository.Object,
-            CreateContentLookupFactory()
+            CreateContentLookupService()
         );
 
         PublicGetOwnSharedVideosResult result = await handler.Handle(
