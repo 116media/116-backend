@@ -4,8 +4,8 @@ using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder.Cont
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Mocks.Factories;
 using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
 using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Moq;
@@ -19,16 +19,16 @@ namespace _116.Content.Unit.Tests.Application.Commerce.UseCases.Admin.Commands.S
 public class AdminSubmitOrderHandlerTests
 {
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
-    private readonly Mock<ISubmitOrderFactory> _factoryMock;
+    private readonly Mock<ISubmitOrderService> _serviceMock;
     private readonly AdminSubmitOrderHandler _handler;
 
     public AdminSubmitOrderHandlerTests()
     {
         _orderRepositoryMock = MockContentOrderRepository.Create();
-        _factoryMock = MockSubmitOrderFactory.Create();
+        _serviceMock = MockSubmitOrderService.Create();
         _handler = new AdminSubmitOrderHandler(
             _orderRepositoryMock.Object,
-            _factoryMock.Object,
+            _serviceMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
     }
@@ -41,7 +41,7 @@ public class AdminSubmitOrderHandlerTests
         // Arrange
         ContentOrderEntity order = ContentOrderFactory.Create();
         _orderRepositoryMock.SetupGetByIdWithItems(order);
-        _factoryMock.SetupSubmitAsync();
+        _serviceMock.SetupSubmitAsync();
 
         var command = new AdminSubmitOrderCommand(OrderId: order.Id.ToString());
 
@@ -49,7 +49,7 @@ public class AdminSubmitOrderHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _factoryMock.VerifySubmitCalled();
+        _serviceMock.VerifySubmitCalled();
     }
 
     #endregion
