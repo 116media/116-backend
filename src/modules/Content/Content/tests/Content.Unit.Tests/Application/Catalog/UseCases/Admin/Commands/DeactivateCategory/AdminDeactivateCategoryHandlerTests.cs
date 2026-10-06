@@ -37,7 +37,7 @@ public class AdminDeactivateCategoryHandlerTests : BaseContentHandlerTest
         _handler = new AdminDeactivateCategoryHandler(
             _categoryRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            CreateCategoryDtoFactory(_fileStorageMock.Object),
+            CreateCategoryDtoService(_fileStorageMock.Object),
             TestErrorsFactory.CreateContentI18n()
         );
     }
