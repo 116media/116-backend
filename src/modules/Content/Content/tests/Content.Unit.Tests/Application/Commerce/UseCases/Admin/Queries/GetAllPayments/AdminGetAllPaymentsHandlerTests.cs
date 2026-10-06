@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.Pagination;
-using _116.Content.Application.Commerce.Factories;
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetAllPayments;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -7,6 +7,7 @@ using _116.Content.Domain.Enums;
 using _116.Content.TestData;
 using _116.Content.TestData.Factories;
 using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
 using _116.Identity.Contracts.Application.DTOs;
 using _116.Identity.Contracts.Application.Services;
 using _116.Identity.TestData.Mocks.Services;
@@ -34,7 +35,12 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
         _userLookupMock = MockUserLookupService.Create();
         _handler = new AdminGetAllPaymentsHandler(
             _orderRepositoryMock.Object,
-            new PaymentDtoFactory(Mapper, _userLookupMock.Object, CreateOrderDtoFactory(_customer))
+            new PaymentDtoService(
+                Mapper,
+                _userLookupMock.Object,
+                CreateOrderDtoService(_customer),
+                MockFileStorageService.Create().Object
+            )
         );
     }
 
