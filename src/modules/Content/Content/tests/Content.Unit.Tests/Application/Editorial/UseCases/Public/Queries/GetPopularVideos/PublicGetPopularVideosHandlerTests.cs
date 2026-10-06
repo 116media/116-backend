@@ -1,4 +1,4 @@
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPopularVideos;
 using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Repositories;
@@ -37,11 +37,11 @@ public class PublicGetPopularVideosHandlerTests : BaseContentHandlerTest
         _fileStorageMock.SetupResolve(thumbnailFile);
         _handler = new PublicGetPopularVideosHandler(
             _videoRepositoryMock.Object,
-            new VideoDtoFactory(
+            new VideoDtoService(
                 Mapper,
                 _fileStorageMock.Object,
                 _videoRepositoryMock.Object,
-                CreateContentLookupFactory()
+                CreateContentLookupService()
             )
         );
     }
