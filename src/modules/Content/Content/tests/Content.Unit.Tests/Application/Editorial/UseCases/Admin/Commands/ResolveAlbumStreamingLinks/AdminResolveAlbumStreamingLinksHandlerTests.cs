@@ -2,8 +2,8 @@ using _116.BuildingBlocks.Application.Exceptions;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ResolveAlbumStreamingLinks;
 using _116.Content.Application.Shared.Exceptions;
 using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Ports;
 using _116.Content.Application.Shared.Repositories;
-using _116.Content.Application.Shared.Services;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.TestData.Factories;
@@ -39,11 +39,13 @@ public class AdminResolveAlbumStreamingLinksHandlerTests
         _resolutionServiceMock = new Mock<IStreamingLinkResolutionService>();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminResolveAlbumStreamingLinksHandler(
-            _albumRepositoryMock.Object,
+            new AdminAlbumLinkResolutionService(
+                _albumRepositoryMock.Object,
+                _resolutionServiceMock.Object,
+                TestErrorsFactory.CreateContentI18n()
+            ),
             _streamingLinkRepositoryMock.Object,
-            _resolutionServiceMock.Object,
-            _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            _unitOfWorkMock.Object
         );
     }
 
