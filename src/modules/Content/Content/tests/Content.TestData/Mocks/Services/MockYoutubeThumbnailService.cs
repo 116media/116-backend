@@ -1,4 +1,4 @@
-using _116.Content.Application.Editorial.Services;
+using _116.Content.Application.Editorial.Ports;
 using _116.Tests.TestData.Constants;
 using Microsoft.AspNetCore.Http;
 using Moq;
