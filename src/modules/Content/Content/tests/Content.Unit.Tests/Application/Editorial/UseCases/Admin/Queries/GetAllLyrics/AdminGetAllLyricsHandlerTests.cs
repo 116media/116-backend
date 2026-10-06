@@ -31,7 +31,7 @@ public class AdminGetAllLyricsHandlerTests : BaseContentHandlerTest
         _handler = new AdminGetAllLyricsHandler(
             _lyricsRepositoryMock.Object,
             fileStorageMock.Object,
-            CreateContentLookupFactory()
+            CreateContentLookupService()
         );
     }
 
