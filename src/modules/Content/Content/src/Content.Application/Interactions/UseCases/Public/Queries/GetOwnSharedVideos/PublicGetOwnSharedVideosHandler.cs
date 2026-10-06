@@ -14,7 +14,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnSh
 public class PublicGetOwnSharedVideosHandler(
     IVideoRepository videoRepository,
     IFileStorageService fileStorage,
-    IContentLookupFactory contentLookupFactory
+    IContentLookupService contentLookupService
 ) : IQueryHandler<PublicGetOwnSharedVideosQuery, PublicGetOwnSharedVideosResult>
 {
     /// <inheritdoc />
@@ -47,7 +47,7 @@ public class PublicGetOwnSharedVideosHandler(
             .Select(activity => activity.Video)
             .ToList()
             .ToPublicVideoSummaryDtos(
-                await contentLookupFactory.ResolveForVideosAsync(
+                await contentLookupService.ResolveForVideosAsync(
                     [.. activities.Select(activity => activity.Video)],
                     cancellationToken
                 ),
