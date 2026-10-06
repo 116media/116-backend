@@ -33,7 +33,7 @@ public class PublicGetPublishedLyricsHandlerTests : BaseContentHandlerTest
         _handler = new PublicGetPublishedLyricsHandler(
             _lyricsRepositoryMock.Object,
             fileStorageMock.Object,
-            CreateContentLookupFactory()
+            CreateContentLookupService()
         );
     }
 
