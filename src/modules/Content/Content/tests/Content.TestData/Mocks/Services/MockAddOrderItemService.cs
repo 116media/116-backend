@@ -3,20 +3,20 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using Moq;
 
-namespace _116.Content.TestData.Mocks.Factories;
+namespace _116.Content.TestData.Mocks.Services;
 
 /// <summary>
-/// Provides mock setup helpers for <see cref="IAddOrderItemFactory"/>.
+/// Provides mock setup helpers for <see cref="IAddOrderItemService"/>.
 /// </summary>
-public static class MockAddOrderItemFactory
+public static class MockAddOrderItemService
 {
     /// <summary>
-    /// Creates a new mock instance of IAddOrderItemFactory.
+    /// Creates a new mock instance of IAddOrderItemService.
     /// </summary>
-    public static Mock<IAddOrderItemFactory> Create() => new();
+    public static Mock<IAddOrderItemService> Create() => new();
 
-    public static Mock<IAddOrderItemFactory> SetupCreateItemAsync(
-        this Mock<IAddOrderItemFactory> mock,
+    public static Mock<IAddOrderItemService> SetupCreateItemAsync(
+        this Mock<IAddOrderItemService> mock,
         (ContentOrderItemEntity Item, string CategoryName, string? PromotionLevelName) result
     )
     {
