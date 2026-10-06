@@ -19,22 +19,22 @@ using Xunit;
 namespace _116.Content.Unit.Tests.Application.Commerce.UseCases.Admin.Commands.VerifyPayment;
 
 /// <summary>
-/// Unit tests for <see cref="AdminVerifyPaymentFactory"/>.
+/// Unit tests for <see cref="AdminVerifyPaymentService"/>.
 /// </summary>
-public class AdminVerifyPaymentFactoryTests
+public class AdminVerifyPaymentServiceTests
 {
     private readonly Mock<IPromotionLevelRepository> _promotionLevelRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly AdminVerifyPaymentFactory _factory;
+    private readonly AdminVerifyPaymentService _service;
 
     private static readonly Guid AdminUserId = Guid.NewGuid();
     private const string ReceiptUrl = TestConstants.Commerce.ValidReceiptUrl;
 
-    public AdminVerifyPaymentFactoryTests()
+    public AdminVerifyPaymentServiceTests()
     {
         _promotionLevelRepositoryMock = MockPromotionLevelRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _factory = new AdminVerifyPaymentFactory(
+        _service = new AdminVerifyPaymentService(
             _promotionLevelRepositoryMock.Object,
             _unitOfWorkMock.Object,
             TimeProvider.System
@@ -49,7 +49,7 @@ public class AdminVerifyPaymentFactoryTests
         ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(order.Id, Guid.NewGuid());
 
         // Act
-        await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
+        await _service.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
 
         // Assert
         payment.Status.Should().Be(EnumPaymentStatus.Verified);
@@ -69,7 +69,7 @@ public class AdminVerifyPaymentFactoryTests
         ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(order.Id, Guid.NewGuid());
 
         // Act
-        await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
+        await _service.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
 
         // Assert
         OrderPaidEvent paidEvent = order.DomainEvents.OfType<OrderPaidEvent>().Should().ContainSingle().Which;
@@ -96,7 +96,7 @@ public class AdminVerifyPaymentFactoryTests
         _promotionLevelRepositoryMock.SetupGetPromotionLevelByIdOrThrow(promoLevel);
 
         // Act
-        await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
+        await _service.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
 
         // Assert
         payment.VerifiedAt.Should().NotBeNull();
@@ -121,7 +121,7 @@ public class AdminVerifyPaymentFactoryTests
         ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(order.Id, Guid.NewGuid());
 
         // Act
-        await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
+        await _service.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
 
         // Assert
         order.Status.Should().Be(EnumOrderStatus.Paid);
@@ -141,7 +141,7 @@ public class AdminVerifyPaymentFactoryTests
         ContentPaymentEntity payment = ContentPaymentFactory.CreateVerified(order.Id);
 
         // Act
-        Func<Task> act = () => _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
+        Func<Task> act = () => _service.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
 
         // Assert
         (await act.Should().ThrowAsync<ContentRuleException>())
@@ -162,7 +162,7 @@ public class AdminVerifyPaymentFactoryTests
         ContentPaymentEntity payment = ContentPaymentFactory.CreateRejected(order.Id);
 
         // Act
-        Func<Task> act = () => _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
+        Func<Task> act = () => _service.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
 
         // Assert
         (await act.Should().ThrowAsync<ContentRuleException>())
@@ -183,7 +183,7 @@ public class AdminVerifyPaymentFactoryTests
         ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(order.Id, Guid.NewGuid());
 
         // Act
-        Func<Task> act = () => _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
+        Func<Task> act = () => _service.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
 
         // Assert
         (await act.Should().ThrowAsync<ContentRuleException>())
