@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetVideoById;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -42,11 +42,11 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
         _handler = new AdminGetVideoByIdHandler(
             _videoRepositoryMock.Object,
             _userLookupMock.Object,
-            new VideoDtoFactory(
+            new VideoDtoService(
                 Mapper,
                 _fileStorageMock.Object,
                 _videoRepositoryMock.Object,
-                CreateContentLookupFactory()
+                CreateContentLookupService()
             ),
             _fileStorageMock.Object
         );
