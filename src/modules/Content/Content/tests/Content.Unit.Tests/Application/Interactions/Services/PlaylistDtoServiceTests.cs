@@ -1,4 +1,4 @@
-using _116.Content.Application.Interactions.Factories;
+using _116.Content.Application.Interactions.Services;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -12,13 +12,13 @@ using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Content.Unit.Tests.Application.Interactions.Factories;
+namespace _116.Content.Unit.Tests.Application.Interactions.Services;
 
 /// <summary>
-/// Unit tests for <see cref="PlaylistDtoFactory"/>, covering the <see cref="VideoInPlaylistDto"/>
+/// Unit tests for <see cref="PlaylistDtoService"/>, covering the <see cref="VideoInPlaylistDto"/>
 /// projection (field mapping, sort ordering, and batched thumbnail resolution).
 /// </summary>
-public class PlaylistDtoFactoryTests : BaseContentHandlerTest
+public class PlaylistDtoServiceTests : BaseContentHandlerTest
 {
     private static readonly Guid CategoryId = Guid.NewGuid();
     private readonly Mock<IFileStorageService> _fileStorageMock = new();
@@ -29,7 +29,7 @@ public class PlaylistDtoFactoryTests : BaseContentHandlerTest
     /// published-video lookup the projection resolves its entries through.
     /// </summary>
     /// <returns>The factory.</returns>
-    private PlaylistDtoFactory CreateFactory() =>
+    private PlaylistDtoService CreateService() =>
         new(Mapper, _fileStorageMock.Object, _videoRepositoryMock.Object, MockCategoryRepository.Create().Object);
 
     /// <summary>
@@ -58,7 +58,7 @@ public class PlaylistDtoFactoryTests : BaseContentHandlerTest
         PlaylistEntity playlist = PlaylistFactory.Create(userId);
 
         // Act
-        PlaylistDetailDto dto = await CreateFactory().CreateDetailAsync(playlist, CancellationToken.None);
+        PlaylistDetailDto dto = await CreateService().CreateDetailAsync(playlist, CancellationToken.None);
 
         // Assert
         dto.Id.Should().Be(playlist.Id);
@@ -78,7 +78,7 @@ public class PlaylistDtoFactoryTests : BaseContentHandlerTest
         LinkVideo(playlist, video, sortOrder: 1);
 
         // Act
-        PlaylistDetailDto dto = await CreateFactory().CreateDetailAsync(playlist, CancellationToken.None);
+        PlaylistDetailDto dto = await CreateService().CreateDetailAsync(playlist, CancellationToken.None);
 
         // Assert
         dto.Videos.Should().ContainSingle();
@@ -108,7 +108,7 @@ public class PlaylistDtoFactoryTests : BaseContentHandlerTest
         LinkVideo(playlist, second, sortOrder: 1);
 
         // Act
-        PlaylistDetailDto dto = await CreateFactory().CreateDetailAsync(playlist, CancellationToken.None);
+        PlaylistDetailDto dto = await CreateService().CreateDetailAsync(playlist, CancellationToken.None);
 
         // Assert — the sort-order-1 video comes first
         dto.Videos.Should().HaveCount(2);
@@ -124,7 +124,7 @@ public class PlaylistDtoFactoryTests : BaseContentHandlerTest
         PlaylistEntity playlist = PlaylistFactory.Create(userId);
 
         // Act
-        PlaylistDetailDto dto = await CreateFactory().CreateDetailAsync(playlist, CancellationToken.None);
+        PlaylistDetailDto dto = await CreateService().CreateDetailAsync(playlist, CancellationToken.None);
 
         // Assert
         dto.Videos.Should().BeEmpty();
@@ -157,7 +157,7 @@ public class PlaylistDtoFactoryTests : BaseContentHandlerTest
             )
             .ReturnsAsync(resolvedUrls);
 
-        IReadOnlyList<PlaylistDto> result = await CreateFactory().CreateManyAsync([playlist], CancellationToken.None);
+        IReadOnlyList<PlaylistDto> result = await CreateService().CreateManyAsync([playlist], CancellationToken.None);
 
         PlaylistDto dto = result.Should().ContainSingle().Subject;
         dto.VideoCount.Should().Be(videoCount);
@@ -195,7 +195,7 @@ public class PlaylistDtoFactoryTests : BaseContentHandlerTest
             )
             .ReturnsAsync(urls);
 
-        PlaylistDetailDto dto = await CreateFactory().CreateDetailAsync(playlist, CancellationToken.None);
+        PlaylistDetailDto dto = await CreateService().CreateDetailAsync(playlist, CancellationToken.None);
 
         dto.Videos.Select(video => video.ThumbnailUrl)
             .Should()
