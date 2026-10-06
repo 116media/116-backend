@@ -42,9 +42,7 @@ public class AdminUpdateArticleSeoHandlerTests : BaseContentHandlerTest
         _handler = new AdminUpdateArticleSeoHandler(
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _fileStorageMock.Object,
-            Mapper,
-            CreateContentLookupFactory()
+            CreateArticleDtoService(_fileStorageMock.Object)
         );
     }
 
