@@ -19,23 +19,23 @@ using Xunit;
 namespace _116.Content.Unit.Tests.Application.Commerce.UseCases.Admin.Commands.AddOrderItem;
 
 /// <summary>
-/// Unit tests for <see cref="AdminAddOrderItemFactory"/>.
+/// Unit tests for <see cref="AdminAddOrderItemService"/>.
 /// </summary>
-public class AdminAddOrderItemFactoryTests
+public class AdminAddOrderItemServiceTests
 {
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
     private readonly Mock<IPromotionLevelRepository> _promotionLevelRepositoryMock;
     private readonly Mock<IPackageRepository> _packageRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly AdminAddOrderItemFactory _factory;
+    private readonly AdminAddOrderItemService _service;
 
-    public AdminAddOrderItemFactoryTests()
+    public AdminAddOrderItemServiceTests()
     {
         _categoryRepositoryMock = MockCategoryRepository.Create();
         _promotionLevelRepositoryMock = MockPromotionLevelRepository.Create();
         _packageRepositoryMock = MockPackageRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _factory = new AdminAddOrderItemFactory(
+        _service = new AdminAddOrderItemService(
             _categoryRepositoryMock.Object,
             _promotionLevelRepositoryMock.Object,
             _packageRepositoryMock.Object,
@@ -56,7 +56,7 @@ public class AdminAddOrderItemFactoryTests
         _categoryRepositoryMock.SetupGetByIdAsync(category.Id, category);
 
         // Act
-        (ContentOrderItemEntity item, string categoryName, string? promoName) = await _factory.CreateItemAsync(
+        (ContentOrderItemEntity item, string categoryName, string? promoName) = await _service.CreateItemAsync(
             order,
             EnumCoreContentType.Article,
             category.Id,
@@ -86,7 +86,7 @@ public class AdminAddOrderItemFactoryTests
         _promotionLevelRepositoryMock.SetupGetPromotionLevelByIdOrThrow(promoLevel);
 
         // Act
-        (ContentOrderItemEntity item, string categoryName, string? promoName) = await _factory.CreateItemAsync(
+        (ContentOrderItemEntity item, string categoryName, string? promoName) = await _service.CreateItemAsync(
             order,
             EnumCoreContentType.Article,
             category.Id,
@@ -115,7 +115,7 @@ public class AdminAddOrderItemFactoryTests
 
         // Act
         Func<Task> act = async () =>
-            await _factory.CreateItemAsync(
+            await _service.CreateItemAsync(
                 order,
                 EnumCoreContentType.Article,
                 Guid.NewGuid(),
@@ -141,7 +141,7 @@ public class AdminAddOrderItemFactoryTests
 
         // Act
         Func<Task> act = async () =>
-            await _factory.CreateItemAsync(
+            await _service.CreateItemAsync(
                 order,
                 EnumCoreContentType.Article,
                 categoryId,
@@ -168,7 +168,7 @@ public class AdminAddOrderItemFactoryTests
 
         // Act
         Func<Task> act = async () =>
-            await _factory.CreateItemAsync(
+            await _service.CreateItemAsync(
                 order,
                 EnumCoreContentType.Article,
                 category.Id,
@@ -195,7 +195,7 @@ public class AdminAddOrderItemFactoryTests
 
         // Act
         Func<Task> act = async () =>
-            await _factory.CreateItemAsync(
+            await _service.CreateItemAsync(
                 order,
                 EnumCoreContentType.Article,
                 category.Id,
@@ -222,7 +222,7 @@ public class AdminAddOrderItemFactoryTests
 
         // Act
         Func<Task> act = async () =>
-            await _factory.CreateItemAsync(
+            await _service.CreateItemAsync(
                 order,
                 EnumCoreContentType.Article,
                 freeCategory.Id,
