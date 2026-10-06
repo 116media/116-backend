@@ -1,22 +1,22 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Content.Application.Commerce.Factories;
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Domain.Entities;
 using Moq;
 
-namespace _116.Content.TestData.Mocks.Factories;
+namespace _116.Content.TestData.Mocks.Services;
 
 /// <summary>
-/// Provides mock setup helpers for <see cref="IOrderPaymentFactory"/>.
+/// Provides mock setup helpers for <see cref="IOrderPaymentService"/>.
 /// </summary>
-public static class MockOrderPaymentFactory
+public static class MockOrderPaymentService
 {
     /// <summary>
-    /// Creates a new mock instance of IOrderPaymentFactory.
+    /// Creates a new mock instance of IOrderPaymentService.
     /// </summary>
-    public static Mock<IOrderPaymentFactory> Create() => new();
+    public static Mock<IOrderPaymentService> Create() => new();
 
-    public static Mock<IOrderPaymentFactory> SetupGetByOrderId(
-        this Mock<IOrderPaymentFactory> mock,
+    public static Mock<IOrderPaymentService> SetupGetByOrderId(
+        this Mock<IOrderPaymentService> mock,
         Guid orderId,
         ContentPaymentEntity payment
     )
@@ -25,8 +25,8 @@ public static class MockOrderPaymentFactory
         return mock;
     }
 
-    public static Mock<IOrderPaymentFactory> SetupGetByOrderIdNotFound(
-        this Mock<IOrderPaymentFactory> mock,
+    public static Mock<IOrderPaymentService> SetupGetByOrderIdNotFound(
+        this Mock<IOrderPaymentService> mock,
         Guid orderId
     )
     {
