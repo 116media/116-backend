@@ -1,5 +1,5 @@
 using _116.Content.Application.Editorial.EventHandlers;
-using _116.Content.Application.Editorial.Services;
+using _116.Content.Application.Editorial.Ports;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
