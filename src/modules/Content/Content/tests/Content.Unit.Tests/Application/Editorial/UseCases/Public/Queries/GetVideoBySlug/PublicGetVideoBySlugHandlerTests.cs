@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoBySlug;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Errors.Facade;
@@ -40,11 +40,11 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
         _handler = new PublicGetVideoBySlugHandler(
             _videoRepositoryMock.Object,
             _artistRepositoryMock.Object,
-            new VideoDtoFactory(
+            new VideoDtoService(
                 Mapper,
                 _fileStorageMock.Object,
                 _videoRepositoryMock.Object,
-                CreateContentLookupFactory()
+                CreateContentLookupService()
             ),
             _i18n
         );
