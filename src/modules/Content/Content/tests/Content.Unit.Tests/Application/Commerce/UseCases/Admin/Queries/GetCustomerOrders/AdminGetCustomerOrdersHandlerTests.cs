@@ -23,7 +23,7 @@ public class AdminGetCustomerOrdersHandlerTests : BaseContentHandlerTest
     public AdminGetCustomerOrdersHandlerTests()
     {
         _orderRepositoryMock = MockContentOrderRepository.Create();
-        _handler = new AdminGetCustomerOrdersHandler(_orderRepositoryMock.Object, CreateOrderDtoFactory(_customer));
+        _handler = new AdminGetCustomerOrdersHandler(_orderRepositoryMock.Object, CreateOrderDtoService(_customer));
     }
 
     #region Success Cases
