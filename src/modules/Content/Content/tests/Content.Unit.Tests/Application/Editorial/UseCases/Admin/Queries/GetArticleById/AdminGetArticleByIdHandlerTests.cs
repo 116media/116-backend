@@ -40,10 +40,7 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminGetArticleByIdHandler(
             _articleRepositoryMock.Object,
-            _userLookupMock.Object,
-            _fileStorageMock.Object,
-            Mapper,
-            CreateContentLookupFactory()
+            CreateArticleDtoService(_fileStorageMock.Object, _userLookupMock.Object)
         );
     }
 
