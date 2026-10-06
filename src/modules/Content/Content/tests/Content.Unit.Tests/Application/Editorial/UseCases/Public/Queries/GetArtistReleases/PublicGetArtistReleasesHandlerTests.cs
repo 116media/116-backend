@@ -1,6 +1,6 @@
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.BuildingBlocks.Application.Pagination;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistReleases;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -33,7 +33,7 @@ public class PublicGetArtistReleasesHandlerTests
         _handler = new PublicGetArtistReleasesHandler(
             _artistRepositoryMock.Object,
             _albumRepositoryMock.Object,
-            new AlbumDtoFactory(fileStorageMock.Object),
+            new AlbumDtoService(fileStorageMock.Object),
             TestErrorsFactory.CreateContentI18n()
         );
     }
