@@ -1,4 +1,4 @@
-using _116.Content.Application.Catalog.Factories;
+using _116.Content.Application.Catalog.Services;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
 using _116.Content.TestData;
@@ -11,13 +11,13 @@ using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Content.Unit.Tests.Application.Catalog.Factories;
+namespace _116.Content.Unit.Tests.Application.Catalog.Services;
 
 /// <summary>
-/// Unit tests for <see cref="CategoryDtoFactory"/>, which owns the resolve-then-map step the
+/// Unit tests for <see cref="CategoryDtoService"/>, which owns the resolve-then-map step the
 /// category projections used to perform inside the mapper.
 /// </summary>
-public class CategoryDtoFactoryTests : BaseContentHandlerTest
+public class CategoryDtoServiceTests : BaseContentHandlerTest
 {
     private readonly Mock<IFileStorageService> _fileStorageMock = MockFileStorageService.Create();
 
@@ -26,7 +26,7 @@ public class CategoryDtoFactoryTests : BaseContentHandlerTest
     /// mocked lookup repositories.
     /// </summary>
     /// <returns>The factory.</returns>
-    private ICategoryDtoFactory CreateFactory() => CreateCategoryDtoFactory(_fileStorageMock.Object);
+    private ICategoryDtoService CreateService() => CreateCategoryDtoService(_fileStorageMock.Object);
 
     [Fact]
     public async Task CreateManyAsync_WithMultipleEntities_ShouldReturnMappedList()
@@ -40,7 +40,7 @@ public class CategoryDtoFactoryTests : BaseContentHandlerTest
         }.AsReadOnly();
 
         // Act
-        IReadOnlyList<CategoryDto> result = await CreateFactory().CreateManyAsync(entities, CancellationToken.None);
+        IReadOnlyList<CategoryDto> result = await CreateService().CreateManyAsync(entities, CancellationToken.None);
 
         // Assert
         result.Should().HaveCount(2);
@@ -54,7 +54,7 @@ public class CategoryDtoFactoryTests : BaseContentHandlerTest
         IReadOnlyList<CategoryEntity> entities = new List<CategoryEntity>().AsReadOnly();
 
         // Act
-        IReadOnlyList<CategoryDto> result = await CreateFactory().CreateManyAsync(entities, CancellationToken.None);
+        IReadOnlyList<CategoryDto> result = await CreateService().CreateManyAsync(entities, CancellationToken.None);
 
         // Assert
         result.Should().BeEmpty();
@@ -72,7 +72,7 @@ public class CategoryDtoFactoryTests : BaseContentHandlerTest
         _fileStorageMock.SetupResolve(posterFile);
 
         // Act
-        CategoryDto result = await CreateFactory().CreateAsync(entity, CancellationToken.None);
+        CategoryDto result = await CreateService().CreateAsync(entity, CancellationToken.None);
 
         // Assert
         result.PosterUrl.Should().Be("https://cloudinary.com/poster.jpg");
@@ -86,7 +86,7 @@ public class CategoryDtoFactoryTests : BaseContentHandlerTest
         CategoryEntity entity = CategoryFactory.Create(contentTypeId);
 
         // Act
-        CategoryDto result = await CreateFactory().CreateAsync(entity, CancellationToken.None);
+        CategoryDto result = await CreateService().CreateAsync(entity, CancellationToken.None);
 
         // Assert
         result.PosterUrl.Should().BeNull();
@@ -101,7 +101,7 @@ public class CategoryDtoFactoryTests : BaseContentHandlerTest
         entity.SetExclusive();
 
         // Act
-        CategoryDto result = await CreateFactory().CreateAsync(entity, CancellationToken.None);
+        CategoryDto result = await CreateService().CreateAsync(entity, CancellationToken.None);
 
         // Assert
         result.IsExclusive.Should().BeTrue();
@@ -128,7 +128,7 @@ public class CategoryDtoFactoryTests : BaseContentHandlerTest
         _fileStorageMock.SetupResolve(posterFile2);
 
         // Act
-        IReadOnlyList<CategoryDto> result = await CreateFactory().CreateManyAsync(entities, CancellationToken.None);
+        IReadOnlyList<CategoryDto> result = await CreateService().CreateManyAsync(entities, CancellationToken.None);
 
         // Assert
         result.Should().HaveCount(2);
