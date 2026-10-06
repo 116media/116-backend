@@ -1,4 +1,5 @@
 using _116.BuildingBlocks.Application.Exceptions;
+using _116.Content.Application.Catalog.Services;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategoryPricing;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -35,9 +36,8 @@ public class AdminUpdateCategoryPricingHandlerTests : BaseContentHandlerTest
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminUpdateCategoryPricingHandler(
             _categoryRepositoryMock.Object,
-            _pricingTierRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            Mapper,
+            new CategoryPricingDtoService(Mapper, _pricingTierRepositoryMock.Object),
             TestErrorsFactory.CreateContentI18n()
         );
     }
