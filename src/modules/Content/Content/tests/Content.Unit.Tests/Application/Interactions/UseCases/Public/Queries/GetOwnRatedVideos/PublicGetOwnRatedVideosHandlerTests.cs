@@ -34,7 +34,7 @@ public class PublicGetOwnRatedVideosHandlerTests : BaseContentHandlerTest
         var handler = new PublicGetOwnRatedVideosHandler(
             _videoRepository.Object,
             _fileRepository.Object,
-            CreateContentLookupFactory()
+            CreateContentLookupService()
         );
 
         PublicGetOwnRatedVideosResult result = await handler.Handle(
@@ -63,7 +63,7 @@ public class PublicGetOwnRatedVideosHandlerTests : BaseContentHandlerTest
         var handler = new PublicGetOwnRatedVideosHandler(
             _videoRepository.Object,
             _fileRepository.Object,
-            CreateContentLookupFactory()
+            CreateContentLookupService()
         );
 
         PublicGetOwnRatedVideosResult result = await handler.Handle(
