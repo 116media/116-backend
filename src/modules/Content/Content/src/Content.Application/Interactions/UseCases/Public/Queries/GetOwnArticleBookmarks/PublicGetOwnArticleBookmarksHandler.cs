@@ -15,7 +15,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnAr
 public class PublicGetOwnArticleBookmarksHandler(
     IArticleInteractionRepository articleInteractionRepository,
     IFileStorageService fileStorage,
-    IContentLookupFactory contentLookupFactory
+    IContentLookupService contentLookupService
 ) : IQueryHandler<PublicGetOwnArticleBookmarksQuery, PublicGetOwnArticleBookmarksResult>
 {
     /// <inheritdoc />
@@ -47,7 +47,7 @@ public class PublicGetOwnArticleBookmarksHandler(
         foreach (BookmarkedArticleActivity activity in activities)
         {
             PublicArticleSummaryDto article = await activity.Article.ToPublicArticleSummaryDtoAsync(
-                await contentLookupFactory.ResolveForArticlesAsync([activity.Article], cancellationToken),
+                await contentLookupService.ResolveForArticlesAsync([activity.Article], cancellationToken),
                 fileStorage,
                 cancellationToken
             );
