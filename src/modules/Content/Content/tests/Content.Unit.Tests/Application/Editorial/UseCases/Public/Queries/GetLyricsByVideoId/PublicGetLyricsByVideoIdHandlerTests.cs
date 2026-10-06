@@ -34,11 +34,8 @@ public class PublicGetLyricsByVideoIdHandlerTests : BaseContentHandlerTest
         Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
         _handler = new PublicGetLyricsByVideoIdHandler(
             _lyricsRepositoryMock.Object,
-            Mapper,
-            userLookupMock.Object,
-            fileStorageMock.Object,
-            TestErrorsFactory.CreateContentI18n(),
-            CreateContentLookupFactory()
+            CreateLyricsDtoService(fileStorageMock.Object, userLookupMock.Object),
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
