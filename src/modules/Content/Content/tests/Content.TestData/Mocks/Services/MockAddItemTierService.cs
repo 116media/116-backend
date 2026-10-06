@@ -2,20 +2,20 @@ using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier.Cont
 using _116.Content.Domain.Entities;
 using Moq;
 
-namespace _116.Content.TestData.Mocks.Factories;
+namespace _116.Content.TestData.Mocks.Services;
 
 /// <summary>
-/// Provides mock setup helpers for <see cref="IAddItemTierFactory"/>.
+/// Provides mock setup helpers for <see cref="IAddItemTierService"/>.
 /// </summary>
-public static class MockAddItemTierFactory
+public static class MockAddItemTierService
 {
     /// <summary>
-    /// Creates a new mock instance of IAddItemTierFactory.
+    /// Creates a new mock instance of IAddItemTierService.
     /// </summary>
-    public static Mock<IAddItemTierFactory> Create() => new();
+    public static Mock<IAddItemTierService> Create() => new();
 
-    public static Mock<IAddItemTierFactory> SetupAttachTierAsync(
-        this Mock<IAddItemTierFactory> mock,
+    public static Mock<IAddItemTierService> SetupAttachTierAsync(
+        this Mock<IAddItemTierService> mock,
         (ContentItemTierEntity Tier, string TierName) result
     )
     {
@@ -26,8 +26,8 @@ public static class MockAddItemTierFactory
         return mock;
     }
 
-    public static Mock<IAddItemTierFactory> SetupAttachTierAsyncThrows(
-        this Mock<IAddItemTierFactory> mock,
+    public static Mock<IAddItemTierService> SetupAttachTierAsyncThrows(
+        this Mock<IAddItemTierService> mock,
         Exception exception
     )
     {
