@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtist;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -35,7 +35,7 @@ public class AdminUpdateArtistHandlerTests
         _handler = new AdminUpdateArtistHandler(
             _artistRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            new ArtistDtoFactory(fileStorageMock.Object),
+            new ArtistDtoService(fileStorageMock.Object),
             TimeProvider.System
         );
     }
