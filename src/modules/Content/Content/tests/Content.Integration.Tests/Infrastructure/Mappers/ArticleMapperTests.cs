@@ -40,7 +40,7 @@ public class ArticleMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         var fileStorage = Resolve<IFileStorageService>();
         ArticleSummaryDto dto = await loaded.ToArticleSummaryDtoAsync(
             _mapper,
-            await Resolve<IContentLookupFactory>().ResolveForArticlesAsync([loaded]),
+            await Resolve<IContentLookupService>().ResolveForArticlesAsync([loaded]),
             fileStorage
         );
 
@@ -74,7 +74,7 @@ public class ArticleMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         var fileStorage = Resolve<IFileStorageService>();
         ArticleSummaryDto dto = await loaded.ToArticleSummaryDtoAsync(
             _mapper,
-            await Resolve<IContentLookupFactory>().ResolveForArticlesAsync([loaded]),
+            await Resolve<IContentLookupService>().ResolveForArticlesAsync([loaded]),
             fileStorage
         );
 
@@ -107,7 +107,7 @@ public class ArticleMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         var fileStorage = Resolve<IFileStorageService>();
         ArticleDetailDto dto = await loaded.ToArticleDetailDtoAsync(
             _mapper,
-            await Resolve<IContentLookupFactory>().ResolveForArticlesAsync([loaded]),
+            await Resolve<IContentLookupService>().ResolveForArticlesAsync([loaded]),
             fileStorage
         );
 
@@ -141,7 +141,7 @@ public class ArticleMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
         var fileStorage = Resolve<IFileStorageService>();
         IReadOnlyList<ArticleSummaryDto> dtos = await loaded.ToArticleSummaryDtosAsync(
             _mapper,
-            await Resolve<IContentLookupFactory>().ResolveForArticlesAsync(loaded),
+            await Resolve<IContentLookupService>().ResolveForArticlesAsync(loaded),
             fileStorage
         );
 
