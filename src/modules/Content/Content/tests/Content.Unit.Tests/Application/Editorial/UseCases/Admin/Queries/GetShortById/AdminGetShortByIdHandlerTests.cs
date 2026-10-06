@@ -38,10 +38,7 @@ public class AdminGetShortByIdHandlerTests : BaseContentHandlerTest
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminGetShortByIdHandler(
             _shortVideoRepositoryMock.Object,
-            _userLookupMock.Object,
-            _fileStorageMock.Object,
-            Mapper,
-            MockVideoRepository.Create().Object
+            CreateShortVideoDtoService(_fileStorageMock.Object, _userLookupMock.Object)
         );
     }
 
