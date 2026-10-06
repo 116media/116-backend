@@ -1,12 +1,12 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Content.Application.Commerce.Factories;
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment.Contracts;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.TestData.Factories;
-using _116.Content.TestData.Mocks.Factories;
 using _116.Content.TestData.Mocks.Repositories;
+using _116.Content.TestData.Mocks.Services;
 using _116.Tests.TestData.Constants;
 using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
@@ -21,19 +21,19 @@ namespace _116.Content.Unit.Tests.Application.Commerce.UseCases.Admin.Commands.V
 public class AdminVerifyPaymentHandlerTests
 {
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
-    private readonly Mock<IOrderPaymentFactory> _orderPaymentFactoryMock;
-    private readonly Mock<IVerifyPaymentFactory> _verifyPaymentFactoryMock;
+    private readonly Mock<IOrderPaymentService> _orderPaymentServiceMock;
+    private readonly Mock<IVerifyPaymentService> _verifyPaymentServiceMock;
     private readonly AdminVerifyPaymentHandler _handler;
 
     public AdminVerifyPaymentHandlerTests()
     {
         _orderRepositoryMock = MockContentOrderRepository.Create();
-        _orderPaymentFactoryMock = MockOrderPaymentFactory.Create();
-        _verifyPaymentFactoryMock = MockVerifyPaymentFactory.Create();
+        _orderPaymentServiceMock = MockOrderPaymentService.Create();
+        _verifyPaymentServiceMock = MockVerifyPaymentService.Create();
         _handler = new AdminVerifyPaymentHandler(
             _orderRepositoryMock.Object,
-            _orderPaymentFactoryMock.Object,
-            _verifyPaymentFactoryMock.Object,
+            _orderPaymentServiceMock.Object,
+            _verifyPaymentServiceMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
     }
@@ -49,8 +49,8 @@ public class AdminVerifyPaymentHandlerTests
         Guid adminUserId = Guid.NewGuid();
 
         _orderRepositoryMock.SetupGetByIdWithItems(order);
-        _orderPaymentFactoryMock.SetupGetByOrderId(order.Id, payment);
-        _verifyPaymentFactoryMock.SetupVerifyAsync();
+        _orderPaymentServiceMock.SetupGetByOrderId(order.Id, payment);
+        _verifyPaymentServiceMock.SetupVerifyAsync();
 
         var command = new AdminVerifyPaymentCommand(
             OrderId: order.Id.ToString(),
@@ -62,7 +62,7 @@ public class AdminVerifyPaymentHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _verifyPaymentFactoryMock.Verify(
+        _verifyPaymentServiceMock.Verify(
             x =>
                 x.VerifyAsync(
                     order,
@@ -96,7 +96,7 @@ public class AdminVerifyPaymentHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _verifyPaymentFactoryMock.Verify(
+        _verifyPaymentServiceMock.Verify(
             x =>
                 x.VerifyAsync(
                     It.IsAny<ContentOrderEntity>(),
@@ -115,7 +115,7 @@ public class AdminVerifyPaymentHandlerTests
         // Arrange
         ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
         _orderRepositoryMock.SetupGetByIdWithItems(order);
-        _orderPaymentFactoryMock.SetupGetByOrderIdNotFound(order.Id);
+        _orderPaymentServiceMock.SetupGetByOrderIdNotFound(order.Id);
 
         var command = new AdminVerifyPaymentCommand(
             OrderId: order.Id.ToString(),
@@ -128,7 +128,7 @@ public class AdminVerifyPaymentHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-        _verifyPaymentFactoryMock.Verify(
+        _verifyPaymentServiceMock.Verify(
             x =>
                 x.VerifyAsync(
                     It.IsAny<ContentOrderEntity>(),
