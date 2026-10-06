@@ -35,10 +35,7 @@ public class AdminGetAllShortsHandlerTests : BaseContentHandlerTest
 
         _handler = new AdminGetAllShortsHandler(
             _shortVideoRepositoryMock.Object,
-            _userLookupMock.Object,
-            _fileStorageMock.Object,
-            Mapper,
-            MockVideoRepository.Create().Object
+            CreateShortVideoDtoService(_fileStorageMock.Object, _userLookupMock.Object)
         );
     }
 
