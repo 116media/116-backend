@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.Pagination;
-using _116.Content.Application.Editorial.Factories;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllVideos;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -32,11 +32,11 @@ public class AdminGetAllVideosHandlerTests : BaseContentHandlerTest
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminGetAllVideosHandler(
             _videoRepositoryMock.Object,
-            new VideoDtoFactory(
+            new VideoDtoService(
                 Mapper,
                 _fileStorageMock.Object,
                 _videoRepositoryMock.Object,
-                CreateContentLookupFactory()
+                CreateContentLookupService()
             )
         );
     }
