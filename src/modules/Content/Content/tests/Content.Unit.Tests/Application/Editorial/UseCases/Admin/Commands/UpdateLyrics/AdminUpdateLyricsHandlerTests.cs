@@ -48,15 +48,15 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
         FileReferenceDto coverFile = FileReferenceDtoFactory.CreateImage();
         fileStorageMock.SetupResolve(coverFile);
         _handler = new AdminUpdateLyricsHandler(
-            _categoryRepositoryMock.Object,
+            new AdminUpdateLyricsService(
+                _categoryRepositoryMock.Object,
+                _lyricsRepositoryMock.Object,
+                _videoRepositoryMock.Object,
+                TestErrorsFactory.CreateContentI18n()
+            ),
             _lyricsRepositoryMock.Object,
-            _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            Mapper,
-            userLookupMock.Object,
-            fileStorageMock.Object,
-            TestErrorsFactory.CreateContentI18n(),
-            CreateContentLookupFactory()
+            CreateLyricsDtoService(fileStorageMock.Object, userLookupMock.Object)
         );
     }
 
