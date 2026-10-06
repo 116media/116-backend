@@ -18,17 +18,17 @@ using Xunit;
 namespace _116.Content.Unit.Tests.Application.Commerce.UseCases.Admin.Commands.SubmitOrder;
 
 /// <summary>
-/// Unit tests for <see cref="AdminSubmitOrderFactory"/>.
+/// Unit tests for <see cref="AdminSubmitOrderService"/>.
 /// </summary>
-public class AdminSubmitOrderFactoryTests
+public class AdminSubmitOrderServiceTests
 {
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly AdminSubmitOrderFactory _factory;
+    private readonly AdminSubmitOrderService _service;
 
-    public AdminSubmitOrderFactoryTests()
+    public AdminSubmitOrderServiceTests()
     {
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _factory = new AdminSubmitOrderFactory(_unitOfWorkMock.Object, TestErrorsFactory.CreateContentOrderErrors());
+        _service = new AdminSubmitOrderService(_unitOfWorkMock.Object, TestErrorsFactory.CreateContentOrderErrors());
     }
 
     #region Success Cases
@@ -46,7 +46,7 @@ public class AdminSubmitOrderFactoryTests
         order.RecalculateTotalFromItems();
 
         // Act
-        await _factory.SubmitAsync(order, CancellationToken.None);
+        await _service.SubmitAsync(order, CancellationToken.None);
 
         // Assert
         order.Status.Should().Be(EnumOrderStatus.PendingPayment);
@@ -66,7 +66,7 @@ public class AdminSubmitOrderFactoryTests
         order.Items.Add(item);
 
         // Act
-        await _factory.SubmitAsync(order, CancellationToken.None);
+        await _service.SubmitAsync(order, CancellationToken.None);
 
         // Assert
         order
@@ -92,7 +92,7 @@ public class AdminSubmitOrderFactoryTests
         order.Items.Add(item);
 
         // Act
-        Func<Task> act = async () => await _factory.SubmitAsync(order, CancellationToken.None);
+        Func<Task> act = async () => await _service.SubmitAsync(order, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
@@ -109,7 +109,7 @@ public class AdminSubmitOrderFactoryTests
         order.ClearDomainEvents();
 
         // Act
-        Func<Task> act = async () => await _factory.SubmitAsync(order, CancellationToken.None);
+        Func<Task> act = async () => await _service.SubmitAsync(order, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
@@ -131,7 +131,7 @@ public class AdminSubmitOrderFactoryTests
         order.Items.Add(item);
 
         // Act
-        Func<Task> act = async () => await _factory.SubmitAsync(order, CancellationToken.None);
+        Func<Task> act = async () => await _service.SubmitAsync(order, CancellationToken.None);
 
         // Assert
         (await act.Should().ThrowAsync<ContentRuleException>())
