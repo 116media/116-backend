@@ -1,10 +1,10 @@
 using System.Reflection;
-using _116.Storage.Application.Shared.Exceptions.Handlers;
+using _116.Storage.Application.Exceptions.Handlers;
 using _116.Storage.Domain.StateMachines;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Storage.Unit.Tests.Application.Shared.Exceptions.Handlers;
+namespace _116.Storage.Unit.Tests.Application.Exceptions.Handlers;
 
 /// <summary>
 /// Guards that every rule code declared on <see cref="StorageRuleCodes"/> has a response in the
