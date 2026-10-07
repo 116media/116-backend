@@ -35,9 +35,12 @@ shippable work. **Rules of engagement:**
 - [ ] **Stage 18 — Project restructure (shared foundation, layer projects, per-module tests)** → [`stage-18-project-restructure.md`](stage-18-project-restructure.md)
 - [ ] **Stage 19 — Documentation restructure** → [`stage-19-documentation-restructure.md`](stage-19-documentation-restructure.md)
 - [ ] **Stage 20 — Layer boundary hardening (Npgsql out of Application, web stack out of Mailer.Domain)** → [`stage-20-layer-boundary-hardening.md`](stage-20-layer-boundary-hardening.md)
+- [x] **Stage 21 — Application services (service taxonomy, folder structure, handler dependency budget)** → [`stage-21-application-services.md`](stage-21-application-services.md)
 
 Stage 20 was added after Stage 9 shipped, from the [15] re-verification — it is numbered last but
-runs early: 20.1 must precede Stage 18, and 20.3 folds into Stage 11.
+runs early: 20.1 must precede Stage 18, and 20.3 folds into Stage 11. Stage 21 was added after
+Stage 20 shipped: it names the two kinds of service, fixes where their interfaces and
+implementations live, and caps handler dependencies.
 
 Stages 15–17 were added after Stage 8 shipped: the original plan left ~35 findings unassigned
 (the domain-model structure findings, the API-surface hygiene, and doc 14's notification model).
