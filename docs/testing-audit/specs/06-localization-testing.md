@@ -108,7 +108,7 @@ The 33 resource families live in five assemblies:
 | `Core` | `src/Modules/Core/Core/Application/Shared/Errors/Messages` | `InternalServerErrorMessage`, `ValidationErrorMessage` |
 | `Identity` | `src/Modules/Identity/Identity/Application/Shared/Errors/Messages` | `AuthenticationErrorMessage`, `AuthorizationErrorMessage`, `ConflictErrorMessage`, `ValidationErrorMessage`, and the rest |
 | `Content` | `src/Modules/Content/Content/Application/Shared/Errors/Messages` | `ArticleErrorMessage`, `VideoErrorMessage`, `LyricsErrorMessage`, and 15 more |
-| `Mailer` | `.../Application/Shared/Errors/Messages`, `.../Application/Notifications/Messages`, `.../Application/Templates/Messages` | `NewsletterErrorMessage`, `NotificationErrorMessage`, `NotificationMessage`, `EmailTemplateMessage` |
+| `Mailer` | `.../Application/Shared/Errors/Messages`, `.../Application/Shared/Templates/Notifications/Messages`, `.../Application/Shared/Templates/Emails/Messages` | `NewsletterErrorMessage`, `NotificationErrorMessage`, `NotificationMessage`, `EmailTemplateMessage` |
 
 Two families share the base name `ValidationErrorMessage` in different assemblies,
 so the discovery key must be assembly-qualified, never the short name.
