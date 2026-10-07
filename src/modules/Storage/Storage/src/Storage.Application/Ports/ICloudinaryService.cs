@@ -2,7 +2,7 @@ using _116.BuildingBlocks.Application.Exceptions;
 using _116.Storage.Contracts.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 
-namespace _116.Storage.Application.Shared.Ports;
+namespace _116.Storage.Application.Ports;
 
 /// <summary>
 /// Service for managing file uploads and deletions in Cloudinary cloud storage.
