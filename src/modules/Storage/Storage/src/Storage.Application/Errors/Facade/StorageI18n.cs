@@ -1,4 +1,4 @@
-namespace _116.Storage.Application.Shared.Errors.Facade;
+namespace _116.Storage.Application.Errors.Facade;
 
 /// <summary>
 /// Single i18n entry point for the Storage module.
