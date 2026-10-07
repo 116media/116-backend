@@ -1,5 +1,5 @@
-using _116.Storage.Application.Shared.Helpers;
-using _116.Storage.Application.Shared.Ports;
+using _116.Storage.Application.Helpers;
+using _116.Storage.Application.Ports;
 using Microsoft.AspNetCore.Http;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
