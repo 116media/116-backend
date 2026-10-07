@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace _116.Storage.Application.Shared.Ports;
+namespace _116.Storage.Application.Ports;
 
 /// <summary>
 /// The pair of colors derived from an image: the dominant color (used as a
