@@ -1,11 +1,11 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Storage.Application.Shared.Errors;
-using _116.Storage.Application.Shared.Errors.Messages;
+using _116.Storage.Application.Errors;
+using _116.Storage.Application.Errors.Messages;
 using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Storage.Unit.Tests.Application.Shared.Errors;
+namespace _116.Storage.Unit.Tests.Application.Errors;
 
 /// <summary>
 /// Unit tests for <see cref="FileErrors"/>.
