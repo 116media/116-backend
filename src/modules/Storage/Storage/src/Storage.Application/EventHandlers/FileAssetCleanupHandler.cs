@@ -1,8 +1,8 @@
 using _116.BuildingBlocks.Application.Services;
-using _116.Storage.Application.Shared.Ports;
+using _116.Storage.Application.Ports;
 using _116.Storage.Domain.Events;
 
-namespace _116.Storage.Application.Shared.EventHandlers;
+namespace _116.Storage.Application.EventHandlers;
 
 /// <summary>
 /// Deletes the remote asset behind a replaced or soft-deleted file row.
