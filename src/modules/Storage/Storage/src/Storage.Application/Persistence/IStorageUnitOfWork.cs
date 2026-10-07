@@ -1,6 +1,6 @@
 using _116.BuildingBlocks.Application.Persistence;
 
-namespace _116.Storage.Application.Shared.Persistence;
+namespace _116.Storage.Application.Persistence;
 
 /// <summary>
 /// Unit of Work interface specific to the Storage module.
