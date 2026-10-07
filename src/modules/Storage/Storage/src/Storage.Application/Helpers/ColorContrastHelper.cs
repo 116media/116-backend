@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace _116.Storage.Application.Shared.Helpers;
+namespace _116.Storage.Application.Helpers;
 
 /// <summary>
 /// Pure helpers for working with <c>#RRGGBB</c> colors: validating/normalizing a
