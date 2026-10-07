@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Storage.Application.Shared.Errors.Messages;
+using _116.Storage.Application.Errors.Messages;
 
-namespace _116.Storage.Application.Shared.Errors;
+namespace _116.Storage.Application.Errors;
 
 /// <summary>
 /// File domain error factory providing simple, readable exception creation.
