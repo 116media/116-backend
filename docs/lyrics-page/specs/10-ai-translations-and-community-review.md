@@ -165,7 +165,7 @@ public class RequestLyricsTranslationHandler(
 }
 ```
 
-`ITranslationService` is a new port (`Application/Shared/Services/ITranslationService.cs`), kept
+`ITranslationService` is a new port (`Application/Shared/Ports/ITranslationService.cs`), kept
 behind an interface so the concrete LLM provider is swappable and mockable in tests — same
 dependency-inversion shape as `IUserLookupService`/`IFileRepository` elsewhere in this module. The
 concrete implementation (which provider, API key config) is an infrastructure concern outside this
