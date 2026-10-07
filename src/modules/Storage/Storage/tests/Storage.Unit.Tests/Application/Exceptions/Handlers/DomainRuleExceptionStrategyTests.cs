@@ -1,7 +1,7 @@
 using System.Reflection;
 using _116.BuildingBlocks.Application.Exceptions;
-using _116.Storage.Application.Shared.Errors.Messages;
-using _116.Storage.Application.Shared.Exceptions.Handlers;
+using _116.Storage.Application.Errors.Messages;
+using _116.Storage.Application.Exceptions.Handlers;
 using _116.Storage.Domain.Exceptions;
 using _116.Storage.Domain.StateMachines;
 using AwesomeAssertions;
@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace _116.Storage.Unit.Tests.Application.Shared.Exceptions.Handlers;
+namespace _116.Storage.Unit.Tests.Application.Exceptions.Handlers;
 
 /// <summary>
 /// Unit tests for <see cref="DomainRuleExceptionStrategy"/>: the domain's culture-free codes come
