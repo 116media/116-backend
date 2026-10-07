@@ -3,7 +3,7 @@ using _116.BuildingBlocks.Domain.Specifications;
 using _116.Storage.Domain.Entities;
 using _116.Storage.Domain.Enums;
 
-namespace _116.Storage.Application.Shared.Specifications;
+namespace _116.Storage.Application.Specifications;
 
 /// <summary>
 /// Specification that matches files that have not been soft-deleted.
