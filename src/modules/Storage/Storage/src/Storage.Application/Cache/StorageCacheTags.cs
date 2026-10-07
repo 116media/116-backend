@@ -1,4 +1,4 @@
-namespace _116.Storage.Application.Shared.Cache;
+namespace _116.Storage.Application.Cache;
 
 /// <summary>
 /// Tag names shared by the file projections that cache a result and the event handlers that
