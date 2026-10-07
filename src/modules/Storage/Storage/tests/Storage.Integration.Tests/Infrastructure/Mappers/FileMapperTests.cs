@@ -1,10 +1,10 @@
-using _116.Storage.Application.Shared.Mappers;
+using _116.Storage.Application.Mappers;
 using _116.Storage.Contracts.Application.DTOs;
 using _116.Storage.Domain.Entities;
 using _116.Storage.Infrastructure.Persistence;
 using _116.Storage.TestData.Factories;
 using MapsterMapper;
-using StorageMappingRegistration = _116.Storage.Application.Shared.Mappers.MappingRegistration;
+using StorageMappingRegistration = _116.Storage.Application.Mappers.MappingRegistration;
 
 namespace _116.Storage.Integration.Tests.Infrastructure.Mappers;
 
