@@ -1,7 +1,7 @@
 using _116.Storage.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 
-namespace _116.Storage.Application.Shared.Repositories;
+namespace _116.Storage.Application.Repositories;
 
 /// <summary>
 /// Repository interface for managing file entities and their metadata.
