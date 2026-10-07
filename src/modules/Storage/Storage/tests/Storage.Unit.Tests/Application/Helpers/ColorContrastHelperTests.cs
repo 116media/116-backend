@@ -1,8 +1,8 @@
-using _116.Storage.Application.Shared.Helpers;
+using _116.Storage.Application.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Storage.Unit.Tests.Application.Shared.Helpers;
+namespace _116.Storage.Unit.Tests.Application.Helpers;
 
 /// <summary>
 /// Unit tests for <see cref="ColorContrastHelper"/> covering hex normalization and
