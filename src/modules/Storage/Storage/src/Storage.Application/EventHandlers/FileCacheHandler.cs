@@ -1,9 +1,9 @@
 using _116.BuildingBlocks.Application.Services;
-using _116.Storage.Application.Shared.Cache;
+using _116.Storage.Application.Cache;
 using _116.Storage.Domain.Events;
 using Microsoft.Extensions.Caching.Hybrid;
 
-namespace _116.Storage.Application.Shared.EventHandlers;
+namespace _116.Storage.Application.EventHandlers;
 
 /// <summary>
 /// Evicts cached file projections whenever a file is soft-deleted or superseded, so no consumer
