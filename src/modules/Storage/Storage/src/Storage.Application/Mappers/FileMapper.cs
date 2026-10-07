@@ -3,7 +3,7 @@ using _116.Storage.Domain.Entities;
 using Mapster;
 using MapsterMapper;
 
-namespace _116.Storage.Application.Shared.Mappers;
+namespace _116.Storage.Application.Mappers;
 
 /// <summary>
 /// Mapster configuration for file mappings: the aggregate to the reference other modules hold,
