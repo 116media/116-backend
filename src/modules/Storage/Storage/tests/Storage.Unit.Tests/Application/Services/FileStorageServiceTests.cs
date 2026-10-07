@@ -1,7 +1,7 @@
-using _116.Storage.Application.Shared.Mappers;
-using _116.Storage.Application.Shared.Ports;
-using _116.Storage.Application.Shared.Repositories;
-using _116.Storage.Application.Shared.Services;
+using _116.Storage.Application.Mappers;
+using _116.Storage.Application.Ports;
+using _116.Storage.Application.Repositories;
+using _116.Storage.Application.Services;
 using _116.Storage.Contracts.Application.DTOs;
 using _116.Storage.Contracts.Application.Services;
 using _116.Storage.Contracts.Domain.Enums;
@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Moq;
 using Xunit;
 
-namespace _116.Storage.Unit.Tests.Application.Shared.Services;
+namespace _116.Storage.Unit.Tests.Application.Services;
 
 /// <summary>
 /// Unit tests for <see cref="FileStorageService"/>, Storage's implementation of the cross-module
