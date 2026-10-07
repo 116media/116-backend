@@ -12,7 +12,7 @@ using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Mailer.Application.Shared.Ports;
 using _116.Mailer.Infrastructure.Persistence;
-using _116.Storage.Application.Shared.Ports;
+using _116.Storage.Application.Ports;
 using _116.Storage.Infrastructure.Persistence;
 using _116.Storage.Infrastructure.Services;
 using _116.Tests.Fixtures.Seeders;
