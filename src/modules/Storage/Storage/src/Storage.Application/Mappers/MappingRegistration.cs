@@ -1,6 +1,6 @@
 using Mapster;
 
-namespace _116.Storage.Application.Shared.Mappers;
+namespace _116.Storage.Application.Mappers;
 
 /// <summary>
 /// The Storage module's Mapster registrations, contributed to the shared cross-module config
