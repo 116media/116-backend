@@ -113,7 +113,6 @@ internal class PublicRefreshTokenEndpointV1 : ICarterModule
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()
             .Produces<PublicRefreshTokenMobileResponse>()
-            .Produces<PublicRefreshTokenWebResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
             .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
