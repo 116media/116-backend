@@ -39,9 +39,9 @@ registration, own PostgreSQL schema `mailer`). It owns:
 
 | Concern | Where |
 | --- | --- |
-| `EmailMessage` model + `IEmailSender` transport port | `Application/Shared` |
-| `IMailer` high-level port consumed by other modules | `Application/Shared` |
-| Localized templates (subject/html/text per event) | `Application/Templates` |
+| `EmailMessage` model + `IEmailSenderService` transport port | `Application/Shared/Ports` |
+| `IEmailService` high-level contract consumed by other modules | `Mailer.Contracts`, implemented by `Application/Notifications/Services/OutboxEmailService` |
+| Localized templates (subject/html/text per event) and their renderer | `Application/Shared/Templates/Emails` |
 | Outbox persistence + background dispatch with retry | `Domain` + `Infrastructure` |
 | Provider adapters (SMTP first, HTTP APIs later) | `Infrastructure/Services` |
 | Newsletter subscribers + subscribe/confirm/unsubscribe endpoints | `Domain` + `Application/Newsletter` |
