@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Infrastructure.Persistence;
-using _116.Storage.Application.Shared.Persistence;
+using _116.Storage.Application.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Storage.Infrastructure.Persistence;
