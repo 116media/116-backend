@@ -1,12 +1,12 @@
 using _116.BuildingBlocks.Application.Exceptions.Problems;
 using _116.BuildingBlocks.Presentation.Exceptions.Handlers.Contracts;
 using _116.Shared.Domain.Exceptions;
-using _116.Storage.Application.Shared.Exceptions.Problems;
+using _116.Storage.Application.Exceptions.Problems;
 using _116.Storage.Domain.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace _116.Storage.Application.Shared.Exceptions.Handlers;
+namespace _116.Storage.Application.Exceptions.Handlers;
 
 /// <summary>
 /// Strategy translating <see cref="StorageRuleException" /> for the client: the domain throws a
