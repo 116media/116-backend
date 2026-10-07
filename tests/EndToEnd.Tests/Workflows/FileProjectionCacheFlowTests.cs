@@ -3,8 +3,8 @@ using _116.Content.Application.Catalog.UseCases.Public.Queries.GetActiveCategori
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
-using _116.Storage.Application.Shared.Cache;
-using _116.Storage.Application.Shared.EventHandlers;
+using _116.Storage.Application.Cache;
+using _116.Storage.Application.EventHandlers;
 using _116.Storage.Domain.Entities;
 using _116.Storage.Domain.Events;
 using _116.Storage.Infrastructure.Persistence;
