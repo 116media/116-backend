@@ -1,12 +1,12 @@
-using _116.Storage.Application.Shared.EventHandlers;
-using _116.Storage.Application.Shared.Ports;
+using _116.Storage.Application.EventHandlers;
+using _116.Storage.Application.Ports;
 using _116.Storage.Contracts.Domain.Enums;
 using _116.Storage.Domain.Events;
 using _116.Storage.TestData.Mocks.Services;
 using Moq;
 using Xunit;
 
-namespace _116.Storage.Unit.Tests.Application.Shared.EventHandlers;
+namespace _116.Storage.Unit.Tests.Application.EventHandlers;
 
 /// <summary>
 /// Unit tests for <see cref="FileAssetCleanupHandler"/>.
