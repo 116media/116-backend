@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Application.Services;
 using _116.BuildingBlocks.Infrastructure.interceptors;
-using _116.Storage.Application.Shared.Ports;
-using _116.Storage.Application.Shared.Services;
+using _116.Storage.Application.Ports;
+using _116.Storage.Application.Services;
 using _116.Storage.Domain.Entities;
 using _116.Storage.Domain.Enums;
 using _116.Storage.Domain.Exceptions;
@@ -16,7 +16,7 @@ using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
 
-namespace _116.Storage.Unit.Tests.Application.Shared.Services;
+namespace _116.Storage.Unit.Tests.Application.Services;
 
 /// <summary>
 /// Unit tests for <see cref="FileUploadService" />: uploads describe what reached storage without
