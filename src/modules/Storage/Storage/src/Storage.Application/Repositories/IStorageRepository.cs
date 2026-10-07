@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Domain;
 using _116.Shared.Domain;
 
-namespace _116.Storage.Application.Shared.Repositories;
+namespace _116.Storage.Application.Repositories;
 
 /// <summary>
 /// Generic repository contract for Storage aggregates keyed by <see cref="Guid" />. A consumer
