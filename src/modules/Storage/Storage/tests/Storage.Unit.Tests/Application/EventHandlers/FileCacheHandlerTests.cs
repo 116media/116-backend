@@ -1,5 +1,5 @@
-using _116.Storage.Application.Shared.Cache;
-using _116.Storage.Application.Shared.EventHandlers;
+using _116.Storage.Application.Cache;
+using _116.Storage.Application.EventHandlers;
 using _116.Storage.Contracts.Domain.Enums;
 using _116.Storage.Domain.Events;
 using _116.Tests.TestData.Mocks;
@@ -7,7 +7,7 @@ using Microsoft.Extensions.Caching.Hybrid;
 using Moq;
 using Xunit;
 
-namespace _116.Storage.Unit.Tests.Application.Shared.EventHandlers;
+namespace _116.Storage.Unit.Tests.Application.EventHandlers;
 
 /// <summary>
 /// Unit tests for <see cref="FileCacheHandler"/>. A file whose row is gone must stop resolving
