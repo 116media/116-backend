@@ -1,7 +1,7 @@
 using _116.Storage.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 
-namespace _116.Storage.Application.Shared.Services;
+namespace _116.Storage.Application.Services;
 
 /// <summary>
 /// Puts assets into cloud storage and records them. The two halves are separate so the network
