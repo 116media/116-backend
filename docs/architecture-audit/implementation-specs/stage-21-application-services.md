@@ -253,8 +253,8 @@ application service living one layer too low:
 | `NotificationService` | `Mailer.Infrastructure/Services` | `Mailer.Application/Notifications/Services` |
 | `OutboxEmailService` | `Mailer.Infrastructure/Services` | `Mailer.Application/Notifications/Services` |
 | `EmailDispatcher` | `Mailer.Infrastructure/Services` | `Mailer.Application/Newsletter/Services` |
-| `FileUploadService` | `Storage.Infrastructure/Services` | `Storage.Application/Shared/Services` |
-| `FileStorageService` | `Storage.Infrastructure/Services` | `Storage.Application/Shared/Services` |
+| `FileUploadService` | `Storage.Infrastructure/Services` | `Storage.Application/Services` |
+| `FileStorageService` | `Storage.Infrastructure/Services` | `Storage.Application/Services` |
 
 `FileStorageService` is the one to check before moving: it implements `IFileStorageService`, which
 `Storage.Contracts` publishes to other modules, so the move must keep that contract intact.
