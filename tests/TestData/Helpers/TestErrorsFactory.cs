@@ -4,12 +4,12 @@ using _116.Content.Application.Shared.Errors.Messages;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Messages;
-using _116.Storage.Application.Shared.Errors;
-using _116.Storage.Application.Shared.Errors.Facade;
+using _116.Storage.Application.Errors;
+using _116.Storage.Application.Errors.Facade;
 using IdentityConflictMsg = _116.Identity.Application.Shared.Errors.Messages.ConflictErrorMessage;
 using IdentityValidationMsg = _116.Identity.Application.Shared.Errors.Messages.ValidationErrorMessage;
-using StorageInternalServerMsg = _116.Storage.Application.Shared.Errors.Messages.InternalServerErrorMessage;
-using StorageValidationMsg = _116.Storage.Application.Shared.Errors.Messages.ValidationErrorMessage;
+using StorageInternalServerMsg = _116.Storage.Application.Errors.Messages.InternalServerErrorMessage;
+using StorageValidationMsg = _116.Storage.Application.Errors.Messages.ValidationErrorMessage;
 
 namespace _116.Tests.TestData.Helpers;
 
