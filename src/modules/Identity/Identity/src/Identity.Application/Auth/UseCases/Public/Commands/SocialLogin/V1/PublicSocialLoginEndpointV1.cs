@@ -107,7 +107,6 @@ internal class PublicSocialLoginEndpointV1 : ICarterModule
             .RequireRateLimiting(policyName: RateLimitPolicies.Authentication)
             .ProducesValidationProblem()
             .Produces<PublicSocialLoginMobileResponse>()
-            .Produces<PublicSocialLoginWebResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status409Conflict)
             .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
