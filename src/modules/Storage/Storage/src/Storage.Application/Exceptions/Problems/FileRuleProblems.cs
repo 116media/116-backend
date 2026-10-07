@@ -1,11 +1,11 @@
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.BuildingBlocks.Application.Exceptions.Problems;
 using _116.BuildingBlocks.Presentation.Extensions;
-using _116.Storage.Application.Shared.Errors.Messages;
+using _116.Storage.Application.Errors.Messages;
 using _116.Storage.Domain.StateMachines;
 using Microsoft.AspNetCore.Http;
 
-namespace _116.Storage.Application.Shared.Exceptions.Problems;
+namespace _116.Storage.Application.Exceptions.Problems;
 
 /// <summary>
 /// Rule problems owned by the file aggregate.
