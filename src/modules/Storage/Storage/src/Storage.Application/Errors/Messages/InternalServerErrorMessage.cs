@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Localization;
 
-namespace _116.Storage.Application.Shared.Errors.Messages;
+namespace _116.Storage.Application.Errors.Messages;
 
 /// <summary>
 /// Provides internal server error messages for the <c>Storage</c> domain.
