@@ -2,8 +2,6 @@ using _116.BuildingBlocks.Application.CQRS;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
-using _116.Content.Domain.Entities;
-using MapsterMapper;
 
 namespace _116.Content.Application.Lookup.UseCases.Public.Queries.GetPopularTags;
 
@@ -11,8 +9,7 @@ namespace _116.Content.Application.Lookup.UseCases.Public.Queries.GetPopularTags
 /// Handles the <see cref="PublicGetPopularTagsQuery" /> to retrieve the most-used tags.
 /// </summary>
 /// <param name="tagRepository">Repository for tag data access operations.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class PublicGetPopularTagsHandler(ITagRepository tagRepository, IMapper mapper)
+public class PublicGetPopularTagsHandler(ITagRepository tagRepository)
     : IQueryHandler<PublicGetPopularTagsQuery, PublicGetPopularTagsResult>
 {
     /// <inheritdoc />
@@ -21,12 +18,13 @@ public class PublicGetPopularTagsHandler(ITagRepository tagRepository, IMapper m
         CancellationToken cancellationToken
     )
     {
-        IReadOnlyList<TagEntity> tags = await tagRepository.GetPopularAsync(
+        IReadOnlyList<TagCountRow> rows = await tagRepository.GetPopularAsync(
             limit: query.Limit,
             contentType: query.ContentType,
+            publishedOnly: true,
             cancellationToken: cancellationToken
         );
 
-        return new PublicGetPopularTagsResult(Tags: tags.ToTagDtos(mapper));
+        return new PublicGetPopularTagsResult(Tags: rows.ToTagWithCountDtos());
     }
 }
