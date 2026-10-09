@@ -27,7 +27,7 @@ public class PublicGetVideoFeedEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.ReadAsAsync<PublicGetVideoFeedResponse>();
-        body.Sections.Should().BeEmpty();
+        body.Items.Should().BeEmpty();
     }
 
     [Fact]
@@ -49,8 +49,8 @@ public class PublicGetVideoFeedEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.ReadAsAsync<PublicGetVideoFeedResponse>();
-        body.Sections.Should().ContainSingle(s => s.Category.Id == category.Id);
-        body.Sections[0].Videos.Should().HaveCount(5);
+        body.Items.Should().ContainSingle(s => s.Category.Id == category.Id);
+        body.Items[0].Videos.Should().HaveCount(5);
     }
 
     [Fact]
@@ -71,8 +71,8 @@ public class PublicGetVideoFeedEndpointV1Tests(PostgresFixture db) : BaseApiTest
         var response = await Client.GetAsync(FeedUrl);
 
         var body = await response.ReadAsAsync<PublicGetVideoFeedResponse>();
-        body.Sections.Should().ContainSingle();
-        body.Sections[0].Videos.Should().HaveCount(EditorialFeedConstants.MaxVideosPerFeedSection);
+        body.Items.Should().ContainSingle();
+        body.Items[0].Videos.Should().HaveCount(EditorialFeedConstants.MaxVideosPerFeed);
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public class PublicGetVideoFeedEndpointV1Tests(PostgresFixture db) : BaseApiTest
         var response = await Client.GetAsync(FeedUrl);
 
         var body = await response.ReadAsAsync<PublicGetVideoFeedResponse>();
-        body.Sections.Should().BeEmpty();
+        body.Items.Should().BeEmpty();
     }
 
     [Fact]
@@ -118,7 +118,7 @@ public class PublicGetVideoFeedEndpointV1Tests(PostgresFixture db) : BaseApiTest
         var response = await Client.GetAsync(FeedUrl);
 
         var body = await response.ReadAsAsync<PublicGetVideoFeedResponse>();
-        body.Sections.Should().ContainSingle(s => s.Category.Id == videoCategory.Id);
+        body.Items.Should().ContainSingle(s => s.Category.Id == videoCategory.Id);
     }
 
     [Fact]
@@ -149,8 +149,8 @@ public class PublicGetVideoFeedEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.ReadAsAsync<PublicGetVideoFeedResponse>();
-        VideoFeedSectionDto section = body.Sections.Single(s => s.Category.Id == category.Id);
-        section.Category.PosterUrl.Should().Be(posterUrl);
+        VideoFeedDto feed = body.Items.Single(s => s.Category.Id == category.Id);
+        feed.Category.PosterUrl.Should().Be(posterUrl);
     }
 
     [Fact]
@@ -175,8 +175,8 @@ public class PublicGetVideoFeedEndpointV1Tests(PostgresFixture db) : BaseApiTest
         var response = await Client.GetAsync(FeedUrl);
 
         var body = await response.ReadAsAsync<PublicGetVideoFeedResponse>();
-        body.Sections.Should().HaveCount(2);
-        body.Sections[0].Category.Id.Should().Be(newer.Id);
-        body.Sections[1].Category.Id.Should().Be(older.Id);
+        body.Items.Should().HaveCount(2);
+        body.Items[0].Category.Id.Should().Be(newer.Id);
+        body.Items[1].Category.Id.Should().Be(older.Id);
     }
 }
