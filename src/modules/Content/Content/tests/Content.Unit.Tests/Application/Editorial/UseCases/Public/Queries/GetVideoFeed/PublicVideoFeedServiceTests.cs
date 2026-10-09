@@ -14,7 +14,7 @@ namespace _116.Content.Unit.Tests.Application.Editorial.UseCases.Public.Queries.
 
 /// <summary>
 /// Unit tests for <see cref="PublicVideoFeedService"/>: the video-only filter over the pinned
-/// categories and the per-section video load.
+/// categories and the per-feed video load.
 /// </summary>
 public class PublicVideoFeedServiceTests
 {
@@ -33,7 +33,7 @@ public class PublicVideoFeedServiceTests
     }
 
     [Fact]
-    public async Task GetPinnedSectionsAsync_ShouldKeepOnlyVideoCategoriesWithTheirLatestVideos()
+    public async Task GetPinnedFeedsAsync_ShouldKeepOnlyVideoCategoriesWithTheirLatestVideos()
     {
         // Arrange
         ContentTypeEntity videoType = ContentTypeFactory.Create("Video");
@@ -46,26 +46,26 @@ public class PublicVideoFeedServiceTests
         _videoRepositoryMock.SetupGetLatestPublishedByCategory(videoCategory.Id, [video]);
 
         // Act
-        IReadOnlyList<VideoFeedSection> sections = await _service.GetPinnedSectionsAsync(CancellationToken.None);
+        IReadOnlyList<VideoFeed> feeds = await _service.GetPinnedFeedsAsync(CancellationToken.None);
 
         // Assert
-        sections.Should().ContainSingle();
-        sections[0].Category.Should().BeSameAs(videoCategory);
-        sections[0].Videos.Should().ContainSingle(v => v.Id == video.Id);
+        feeds.Should().ContainSingle();
+        feeds[0].Category.Should().BeSameAs(videoCategory);
+        feeds[0].Videos.Should().ContainSingle(v => v.Id == video.Id);
     }
 
     [Fact]
-    public async Task GetPinnedSectionsAsync_WithNoPinnedVideoCategory_ShouldReturnNothingWithoutLoadingVideos()
+    public async Task GetPinnedFeedsAsync_WithNoPinnedVideoCategory_ShouldReturnNothingWithoutLoadingVideos()
     {
         // Arrange
         _categoryRepositoryMock.SetupGetPinnedToFeedCategories([]);
         _contentTypeRepositoryMock.SetupGetByIds();
 
         // Act
-        IReadOnlyList<VideoFeedSection> sections = await _service.GetPinnedSectionsAsync(CancellationToken.None);
+        IReadOnlyList<VideoFeed> feeds = await _service.GetPinnedFeedsAsync(CancellationToken.None);
 
         // Assert
-        sections.Should().BeEmpty();
+        feeds.Should().BeEmpty();
         _videoRepositoryMock.Verify(
             x => x.GetLatestPublishedByCategoryAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
             Times.Never
