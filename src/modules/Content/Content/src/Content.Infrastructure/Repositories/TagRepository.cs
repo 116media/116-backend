@@ -4,6 +4,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Builders;
+using _116.Content.Infrastructure.Builders.Contracts;
 using _116.Content.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -51,32 +52,38 @@ public class TagRepository(ContentDbContext context) : ContentRepository<TagEnti
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<TagEntity>> GetAllAsync(
+    public async Task<IReadOnlyList<TagCountRow>> GetAllAsync(
         string? search = null,
         EnumCoreContentType? contentType = null,
         int? limit = null,
+        bool publishedOnly = false,
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<TagEntity> query = new AllTagsQueryBuilder()
+        IQueryable<TagCountRow> query = new TagsQueryBuilder()
             .WithSearch(search)
             .WithContentType(contentType)
             .WithLimit(limit)
+            .WithPublishedOnly(publishedOnly)
+            .WithOrder(EnumTagOrder.Name)
             .Build(Context);
 
         return await query.ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<TagEntity>> GetPopularAsync(
+    public async Task<IReadOnlyList<TagCountRow>> GetPopularAsync(
         int? limit,
         EnumCoreContentType? contentType = null,
+        bool publishedOnly = false,
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<TagEntity> query = new PopularTagsQueryBuilder()
+        IQueryable<TagCountRow> query = new TagsQueryBuilder()
             .WithContentType(contentType)
             .WithLimit(limit)
+            .WithPublishedOnly(publishedOnly)
+            .WithOrder(EnumTagOrder.Usage)
             .Build(Context);
 
         return await query.ToListAsync(cancellationToken);
