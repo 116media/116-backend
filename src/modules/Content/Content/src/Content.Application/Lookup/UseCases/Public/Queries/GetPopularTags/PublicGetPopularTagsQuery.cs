@@ -37,4 +37,4 @@ public record PublicGetPopularTagsQuery(int? Limit = null, EnumCoreContentType? 
 /// Result of the <see cref="PublicGetPopularTagsQuery" /> containing the most popular tags.
 /// </summary>
 /// <param name="Tags">The list of popular tags ordered by usage count descending.</param>
-public record PublicGetPopularTagsResult(IReadOnlyList<TagDto> Tags);
+public record PublicGetPopularTagsResult(IReadOnlyList<TagWithCountDto> Tags);
