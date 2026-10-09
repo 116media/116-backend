@@ -16,7 +16,7 @@ namespace _116.Content.Application.Lookup.UseCases.Public.Queries.GetPopularTags
 /// Response model for listing popular tags.
 /// </summary>
 /// <param name="Tags">The list of popular tags ordered by usage count descending.</param>
-public record PublicGetPopularTagsResponse(IReadOnlyList<TagDto> Tags);
+public record PublicGetPopularTagsResponse(IReadOnlyList<TagWithCountDto> Tags);
 
 /// <summary>
 /// Defines the public get popular tags endpoint.
