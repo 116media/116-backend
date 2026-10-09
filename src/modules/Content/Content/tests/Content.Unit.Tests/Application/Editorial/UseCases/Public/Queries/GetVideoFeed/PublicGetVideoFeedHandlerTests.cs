@@ -53,7 +53,7 @@ public class PublicGetVideoFeedHandlerTests : BaseContentHandlerTest
     {
         PublicGetVideoFeedResult result = await _handler.Handle(new PublicGetVideoFeedQuery(), CancellationToken.None);
 
-        result.Sections.Should().BeEmpty();
+        result.Items.Should().BeEmpty();
     }
 
     [Fact]
@@ -72,9 +72,9 @@ public class PublicGetVideoFeedHandlerTests : BaseContentHandlerTest
 
         PublicGetVideoFeedResult result = await _handler.Handle(new PublicGetVideoFeedQuery(), CancellationToken.None);
 
-        result.Sections.Should().ContainSingle();
-        result.Sections[0].Category.Id.Should().Be(withVideos.Id);
-        result.Sections[0].Videos.Should().HaveCount(3);
+        result.Items.Should().ContainSingle();
+        result.Items[0].Category.Id.Should().Be(withVideos.Id);
+        result.Items[0].Videos.Should().HaveCount(3);
         // One batch for the video thumbnails, one for the category posters — never per card.
         _fileStorageMock.VerifyResolveManyCalledTimes(2);
     }
@@ -93,7 +93,7 @@ public class PublicGetVideoFeedHandlerTests : BaseContentHandlerTest
 
         PublicGetVideoFeedResult result = await _handler.Handle(new PublicGetVideoFeedQuery(), CancellationToken.None);
 
-        result.Sections.Should().ContainSingle(s => s.Category.Id == video.Id);
+        result.Items.Should().ContainSingle(s => s.Category.Id == video.Id);
     }
 
     [Fact]
@@ -115,7 +115,7 @@ public class PublicGetVideoFeedHandlerTests : BaseContentHandlerTest
             x =>
                 x.GetLatestPublishedByCategoryAsync(
                     category.Id,
-                    EditorialFeedConstants.MaxVideosPerFeedSection,
+                    EditorialFeedConstants.MaxVideosPerFeed,
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
