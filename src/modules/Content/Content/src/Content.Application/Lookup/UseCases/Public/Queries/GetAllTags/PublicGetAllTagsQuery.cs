@@ -44,4 +44,4 @@ public record PublicGetAllTagsQuery(string? Search = null, EnumCoreContentType? 
 /// Result of the <see cref="PublicGetAllTagsQuery" /> containing all tags.
 /// </summary>
 /// <param name="Tags">The list of all tags.</param>
-public record PublicGetAllTagsResult(IReadOnlyList<TagDto> Tags);
+public record PublicGetAllTagsResult(IReadOnlyList<TagWithCountDto> Tags);
