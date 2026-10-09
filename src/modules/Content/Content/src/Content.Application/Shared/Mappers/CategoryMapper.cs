@@ -69,6 +69,7 @@ public static class CategoryMapper
                 : string.Empty,
             PosterUrl = posterUrl,
             Colors = colors,
+            PublishedCount = lookups.PublishedCounts.GetValueOrDefault(entity.Id),
             Pricing =
             [
                 .. entity.Pricing.Select(pricing =>
