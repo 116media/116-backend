@@ -7,11 +7,11 @@ using _116.Content.Domain.Enums;
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoFeed;
 
 /// <summary>
-/// Resolves the video feed's sections for the public video-feed query.
+/// Resolves the entries of the video feed for the public video-feed query.
 /// </summary>
 /// <param name="categoryRepository">Repository resolving the pinned categories.</param>
 /// <param name="contentTypeRepository">Repository resolving their content types.</param>
-/// <param name="videoRepository">Repository loading each section's latest videos.</param>
+/// <param name="videoRepository">Repository loading each entry's latest videos.</param>
 public class PublicVideoFeedService(
     ICategoryRepository categoryRepository,
     IContentTypeRepository contentTypeRepository,
@@ -19,7 +19,7 @@ public class PublicVideoFeedService(
 ) : IPublicVideoFeedService
 {
     /// <inheritdoc />
-    public async Task<IReadOnlyList<VideoFeedSection>> GetPinnedSectionsAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<VideoFeed>> GetPinnedFeedsAsync(CancellationToken cancellationToken)
     {
         // The pinned set is capped per content type, so one lookup and an in-memory filter suffice.
         IReadOnlyList<CategoryEntity> pinned = await categoryRepository.GetPinnedToFeedCategoriesAsync(
@@ -39,18 +39,18 @@ public class PublicVideoFeedService(
         ];
 
         // Bounded by the pin cap, so a small fixed number of indexed lookups rather than an unbounded N+1.
-        var sections = new List<VideoFeedSection>(videoCategories.Count);
+        var feeds = new List<VideoFeed>(videoCategories.Count);
 
         foreach (CategoryEntity category in videoCategories)
         {
             IReadOnlyList<VideoEntity> videos = await videoRepository.GetLatestPublishedByCategoryAsync(
                 categoryId: category.Id,
-                limit: EditorialFeedConstants.MaxVideosPerFeedSection,
+                limit: EditorialFeedConstants.MaxVideosPerFeed,
                 cancellationToken: cancellationToken
             );
-            sections.Add(new VideoFeedSection(Category: category, Videos: videos));
+            feeds.Add(new VideoFeed(Category: category, Videos: videos));
         }
 
-        return sections;
+        return feeds;
     }
 }
