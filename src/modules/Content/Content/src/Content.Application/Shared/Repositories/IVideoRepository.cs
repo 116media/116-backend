@@ -318,4 +318,15 @@ public interface IVideoRepository
         IReadOnlyCollection<Guid> ids,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Counts the published videos in each of the supplied categories.
+    /// </summary>
+    /// <param name="categoryIds">The categories to count.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>Published counts keyed by category id; a category with none is absent.</returns>
+    Task<IReadOnlyDictionary<Guid, int>> CountPublishedByCategoriesAsync(
+        IReadOnlyCollection<Guid> categoryIds,
+        CancellationToken cancellationToken = default
+    );
 }
