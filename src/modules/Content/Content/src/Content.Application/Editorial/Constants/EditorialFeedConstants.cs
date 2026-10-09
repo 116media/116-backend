@@ -28,15 +28,15 @@ public static class EditorialFeedConstants
     public const int DefaultStripSize = 3;
 
     /// <summary>
-    /// Maximum number of latest published videos shown in a single feed section
+    /// Maximum number of latest published videos shown in a single feed entry
     /// (one pinned category) in the video feed.
     /// </summary>
-    public const int MaxVideosPerFeedSection = 8;
+    public const int MaxVideosPerFeed = 8;
 
     /// <summary>
     /// Minimum number of published videos a category must have before it can be
     /// pinned to the video feed. A category below this threshold cannot be pinned,
-    /// so no section ever renders with too few videos to look intentional.
+    /// so no entry ever renders with too few videos to look intentional.
     /// </summary>
     public const int MinVideosToPinToFeed = 4;
 
