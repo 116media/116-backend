@@ -10,8 +10,10 @@ namespace _116.Content.Application.Shared.Mappers;
 /// <param name="Posters">Category poster files, keyed by file id.</param>
 /// <param name="ContentTypes">The content types categories are classified under, keyed by id.</param>
 /// <param name="PricingTiers">The tiers category pricing rows price, keyed by id.</param>
+/// <param name="PublishedCounts">Published item count per category id.</param>
 public record CategoryLookups(
     IReadOnlyDictionary<Guid, FileReferenceDto> Posters,
     IReadOnlyDictionary<Guid, ContentTypeEntity> ContentTypes,
-    IReadOnlyDictionary<Guid, PricingTierEntity> PricingTiers
+    IReadOnlyDictionary<Guid, PricingTierEntity> PricingTiers,
+    IReadOnlyDictionary<Guid, int> PublishedCounts
 );
