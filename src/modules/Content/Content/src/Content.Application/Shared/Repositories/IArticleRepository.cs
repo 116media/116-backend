@@ -192,4 +192,15 @@ public interface IArticleRepository
     /// <param name="articleId">The article identifier.</param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
     Task ExistsOrThrowAsync(Guid articleId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Counts the published articles in each of the supplied categories.
+    /// </summary>
+    /// <param name="categoryIds">The categories to count.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>Published counts keyed by category id; a category with none is absent.</returns>
+    Task<IReadOnlyDictionary<Guid, int>> CountPublishedByCategoriesAsync(
+        IReadOnlyCollection<Guid> categoryIds,
+        CancellationToken cancellationToken = default
+    );
 }
