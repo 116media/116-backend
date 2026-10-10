@@ -80,16 +80,53 @@ public class TagsQueryBuilder : ITagsQueryBuilder
 
         tags = UsedBy(tags: tags, context: context);
 
-        // Ordering runs on the tag, before the counts are projected: a database cannot order by
-        // a member of a constructed row.
-        tags =
-            _order == EnumTagOrder.Usage
-                ? tags.OrderByDescending(Usage(context: context)).ThenBy(tag => tag.Name)
-                : tags.OrderBy(tag => tag.Name);
-
         int limit = Math.Min(_limit ?? ContentConstants.MaxReferenceListSize, ContentConstants.MaxReferenceListSize);
 
-        return WithCounts(tags: tags.Take(limit), context: context);
+        if (_order == EnumTagOrder.Name)
+        {
+            return WithCounts(tags: tags.OrderBy(tag => tag.Name).Take(limit), context: context);
+        }
+
+        // The carrier is anonymous and declared here because an anonymous type cannot cross a
+        // method boundary; `Distinct` is an optimiser fence rather than a de-duplicator, since one
+        // row per tag is unique already. Without the fence the counts are inlined into ORDER BY and
+        // run a second time, six correlated subqueries per tag instead of three; with it they stay
+        // in a derived table whose columns the ordering reads.
+        var counted = (
+            _publishedOnly
+                ? tags.Select(tag => new
+                {
+                    tag,
+                    name = tag.Name,
+                    articles = context.Articles.Count(article =>
+                        article.Status == EnumContentStatus.Published && article.Tags.Any(at => at.TagId == tag.Id)
+                    ),
+                    videos = context.Videos.Count(video =>
+                        video.Status == EnumContentStatus.Published && video.Tags.Any(vt => vt.TagId == tag.Id)
+                    ),
+                    lyrics = context.Lyrics.Count(lyrics =>
+                        lyrics.Status == EnumContentStatus.Published && lyrics.Tags.Any(lt => lt.TagId == tag.Id)
+                    ),
+                })
+                : tags.Select(tag => new
+                {
+                    tag,
+                    name = tag.Name,
+                    articles = context.ArticleTags.Count(at => at.TagId == tag.Id),
+                    videos = context.VideoTags.Count(vt => vt.TagId == tag.Id),
+                    lyrics = context.LyricsTags.Count(lt => lt.TagId == tag.Id),
+                })
+        ).Distinct();
+
+        var ranked = _contentType switch
+        {
+            EnumCoreContentType.Article => counted.OrderByDescending(row => row.articles).ThenBy(row => row.name),
+            EnumCoreContentType.Video => counted.OrderByDescending(row => row.videos).ThenBy(row => row.name),
+            EnumCoreContentType.Lyrics => counted.OrderByDescending(row => row.lyrics).ThenBy(row => row.name),
+            _ => counted.OrderByDescending(row => row.articles + row.videos + row.lyrics).ThenBy(row => row.name),
+        };
+
+        return ranked.Take(limit).Select(row => new TagCountRow(row.tag, row.articles, row.videos, row.lyrics));
     }
 
     /// <summary>
