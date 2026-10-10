@@ -205,6 +205,42 @@ public class TagsQueryBuilderTests : IDisposable
 
     #endregion
 
+    private async Task<Guid> SeedCategoryAsync()
+    {
+        ContentTypeEntity contentType = ContentTypeFactory.Create();
+        CategoryEntity category = CategoryFactory.Create(contentType.Id);
+        _context.ContentTypes.Add(contentType);
+        _context.Categories.Add(category);
+        await _context.SaveChangesAsync();
+        return category.Id;
+    }
+
+    private async Task SeedArticleAsync(Guid categoryId, Guid tagId, bool published)
+    {
+        ArticleEntity article = published
+            ? ArticleFactory.CreatePublished(categoryId)
+            : ArticleFactory.Create(categoryId);
+        article.ReplaceTags([tagId]);
+        _context.Articles.Add(article);
+        await _context.SaveChangesAsync();
+    }
+
+    private async Task SeedVideoAsync(Guid categoryId, Guid tagId, bool published)
+    {
+        VideoEntity video = published ? VideoFactory.CreatePublished(categoryId) : VideoFactory.Create(categoryId);
+        video.ReplaceTags([tagId]);
+        _context.Videos.Add(video);
+        await _context.SaveChangesAsync();
+    }
+
+    private async Task SeedLyricsAsync(Guid categoryId, Guid tagId, bool published)
+    {
+        LyricsEntity lyrics = published ? LyricsFactory.CreatePublished(categoryId) : LyricsFactory.Create(categoryId);
+        lyrics.ReplaceTags([tagId]);
+        _context.Lyrics.Add(lyrics);
+        await _context.SaveChangesAsync();
+    }
+
     #region Counts
 
     [Fact]
@@ -250,6 +286,151 @@ public class TagsQueryBuilderTests : IDisposable
         result[0].Articles.Should().Be(0);
         result[0].Videos.Should().Be(0);
         result[0].Lyrics.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Build_WithPublishedOnly_ShouldCountPublishedArticlesAndSkipDrafts()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+        TagEntity tag = await SeedTagAsync("alpha");
+        await SeedArticleAsync(categoryId: categoryId, tagId: tag.Id, published: true);
+        await SeedArticleAsync(categoryId: categoryId, tagId: tag.Id, published: false);
+
+        List<TagCountRow> published = await new TagsQueryBuilder()
+            .WithPublishedOnly(true)
+            .Build(_context)
+            .ToListAsync();
+
+        List<TagCountRow> all = await new TagsQueryBuilder().Build(_context).ToListAsync();
+
+        published[0].Articles.Should().Be(1);
+        all[0].Articles.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task Build_WithPublishedOnly_ShouldCountPublishedVideosAndSkipDrafts()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+        TagEntity tag = await SeedTagAsync("alpha");
+        await SeedVideoAsync(categoryId: categoryId, tagId: tag.Id, published: true);
+        await SeedVideoAsync(categoryId: categoryId, tagId: tag.Id, published: false);
+
+        List<TagCountRow> published = await new TagsQueryBuilder()
+            .WithPublishedOnly(true)
+            .Build(_context)
+            .ToListAsync();
+
+        List<TagCountRow> all = await new TagsQueryBuilder().Build(_context).ToListAsync();
+
+        published[0].Videos.Should().Be(1);
+        all[0].Videos.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task Build_WithPublishedOnly_ShouldCountPublishedLyricsAndSkipDrafts()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+        TagEntity tag = await SeedTagAsync("alpha");
+        await SeedLyricsAsync(categoryId: categoryId, tagId: tag.Id, published: true);
+        await SeedLyricsAsync(categoryId: categoryId, tagId: tag.Id, published: false);
+
+        List<TagCountRow> published = await new TagsQueryBuilder()
+            .WithPublishedOnly(true)
+            .Build(_context)
+            .ToListAsync();
+
+        List<TagCountRow> all = await new TagsQueryBuilder().Build(_context).ToListAsync();
+
+        published[0].Lyrics.Should().Be(1);
+        all[0].Lyrics.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task Build_WithPublishedOnly_ShouldCountEachKindOfPublishedContent()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+        TagEntity tag = await SeedTagAsync("alpha");
+        await SeedArticleAsync(categoryId: categoryId, tagId: tag.Id, published: true);
+        await SeedArticleAsync(categoryId: categoryId, tagId: tag.Id, published: true);
+        await SeedVideoAsync(categoryId: categoryId, tagId: tag.Id, published: true);
+        await SeedLyricsAsync(categoryId: categoryId, tagId: tag.Id, published: true);
+
+        List<TagCountRow> result = await new TagsQueryBuilder().WithPublishedOnly(true).Build(_context).ToListAsync();
+
+        result.Should().ContainSingle();
+        result[0].Articles.Should().Be(2);
+        result[0].Videos.Should().Be(1);
+        result[0].Lyrics.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Build_WithPublishedOnlyAndUsageOrder_ShouldRankOnPublishedContentNotDrafts()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+        TagEntity drafted = await SeedTagAsync("Alpha");
+        TagEntity live = await SeedTagAsync("Zebra");
+
+        await SeedArticleAsync(categoryId: categoryId, tagId: drafted.Id, published: false);
+        await SeedArticleAsync(categoryId: categoryId, tagId: drafted.Id, published: false);
+        await SeedArticleAsync(categoryId: categoryId, tagId: drafted.Id, published: false);
+        await SeedArticleAsync(categoryId: categoryId, tagId: live.Id, published: true);
+
+        List<TagCountRow> result = await new TagsQueryBuilder()
+            .WithPublishedOnly(true)
+            .WithOrder(EnumTagOrder.Usage)
+            .Build(_context)
+            .ToListAsync();
+
+        result[0].Tag.Id.Should().Be(live.Id);
+        result[0].Articles.Should().Be(1);
+        result[1].Tag.Id.Should().Be(drafted.Id);
+        result[1].Articles.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Build_WithUsageOrder_ShouldCarryEachKindIntoItsOwnCount()
+    {
+        TagEntity tag = await SeedTagAsync("alpha");
+        await SeedArticleTagAsync(tag.Id);
+        await SeedArticleTagAsync(tag.Id);
+        await SeedVideoTagAsync(tag.Id);
+        await SeedLyricsTagAsync(tag.Id);
+        await SeedLyricsTagAsync(tag.Id);
+        await SeedLyricsTagAsync(tag.Id);
+
+        List<TagCountRow> result = await new TagsQueryBuilder()
+            .WithOrder(EnumTagOrder.Usage)
+            .Build(_context)
+            .ToListAsync();
+
+        result.Should().ContainSingle();
+        result[0].Articles.Should().Be(2);
+        result[0].Videos.Should().Be(1);
+        result[0].Lyrics.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task Build_WithUsageOrderAndPublishedOnly_ShouldCarryEachKindIntoItsOwnCount()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+        TagEntity tag = await SeedTagAsync("alpha");
+        await SeedArticleAsync(categoryId: categoryId, tagId: tag.Id, published: true);
+        await SeedArticleAsync(categoryId: categoryId, tagId: tag.Id, published: true);
+        await SeedVideoAsync(categoryId: categoryId, tagId: tag.Id, published: true);
+        await SeedLyricsAsync(categoryId: categoryId, tagId: tag.Id, published: true);
+        await SeedLyricsAsync(categoryId: categoryId, tagId: tag.Id, published: true);
+        await SeedLyricsAsync(categoryId: categoryId, tagId: tag.Id, published: true);
+
+        List<TagCountRow> result = await new TagsQueryBuilder()
+            .WithOrder(EnumTagOrder.Usage)
+            .WithPublishedOnly(true)
+            .Build(_context)
+            .ToListAsync();
+
+        result.Should().ContainSingle();
+        result[0].Articles.Should().Be(2);
+        result[0].Videos.Should().Be(1);
+        result[0].Lyrics.Should().Be(3);
     }
 
     #endregion
