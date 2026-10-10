@@ -23,7 +23,7 @@ public class AdminGetAllTagsHandlerTests : BaseContentHandlerTest
     public AdminGetAllTagsHandlerTests()
     {
         _tagRepositoryMock = MockTagRepository.Create();
-        _handler = new AdminGetAllTagsHandler(_tagRepositoryMock.Object, Mapper);
+        _handler = new AdminGetAllTagsHandler(_tagRepositoryMock.Object);
     }
 
     #region Success Cases
@@ -65,6 +65,7 @@ public class AdminGetAllTagsHandlerTests : BaseContentHandlerTest
                     searchTerm,
                     It.IsAny<EnumCoreContentType?>(),
                     It.IsAny<int?>(),
+                    It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
