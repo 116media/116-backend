@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
@@ -80,12 +81,12 @@ public class TagRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        IReadOnlyList<TagEntity> result = await _repository.GetAllAsync(search: null);
+        IReadOnlyList<TagCountRow> result = await _repository.GetAllAsync(search: null);
 
         // Assert
         result.Should().HaveCount(2);
-        result[0].Name.Should().Be("Fally Ipupa");
-        result[1].Name.Should().Be("Kinshasa");
+        result[0].Tag.Name.Should().Be("Fally Ipupa");
+        result[1].Tag.Name.Should().Be("Kinshasa");
     }
 
     [Fact]
@@ -101,14 +102,14 @@ public class TagRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        IReadOnlyList<TagEntity> result = await _repository.GetAllAsync(
+        IReadOnlyList<TagCountRow> result = await _repository.GetAllAsync(
             search: null,
             contentType: EnumCoreContentType.Article
         );
 
         // Assert
         result.Should().ContainSingle();
-        result[0].Id.Should().Be(articleTag.Id);
+        result[0].Tag.Id.Should().Be(articleTag.Id);
     }
 
     [Fact]
@@ -124,14 +125,14 @@ public class TagRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        IReadOnlyList<TagEntity> result = await _repository.GetAllAsync(
+        IReadOnlyList<TagCountRow> result = await _repository.GetAllAsync(
             search: null,
             contentType: EnumCoreContentType.Video
         );
 
         // Assert
         result.Should().ContainSingle();
-        result[0].Id.Should().Be(videoTag.Id);
+        result[0].Tag.Id.Should().Be(videoTag.Id);
     }
 
     [Fact]
@@ -145,12 +146,12 @@ public class TagRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        IReadOnlyList<TagEntity> result = await _repository.GetAllAsync(search: null, contentType: null);
+        IReadOnlyList<TagCountRow> result = await _repository.GetAllAsync(search: null, contentType: null);
 
         // Assert
         result.Should().HaveCount(2);
-        result[0].Name.Should().Be("Afrobeats");
-        result[1].Name.Should().Be("Kinshasa");
+        result[0].Tag.Name.Should().Be("Afrobeats");
+        result[1].Tag.Name.Should().Be("Kinshasa");
     }
 
     [Fact]
@@ -165,15 +166,15 @@ public class TagRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        IReadOnlyList<TagEntity> result = await _repository.GetAllAsync(
+        IReadOnlyList<TagCountRow> result = await _repository.GetAllAsync(
             search: null,
             contentType: EnumCoreContentType.Article
         );
 
         // Assert
         result.Should().HaveCount(2);
-        result[0].Id.Should().Be(alpha.Id);
-        result[1].Id.Should().Be(zebra.Id);
+        result[0].Tag.Id.Should().Be(alpha.Id);
+        result[1].Tag.Id.Should().Be(zebra.Id);
     }
 
     [Fact]
@@ -187,12 +188,12 @@ public class TagRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        IReadOnlyList<TagEntity> result = await _repository.GetAllAsync(search: null, contentType: null, limit: 2);
+        IReadOnlyList<TagCountRow> result = await _repository.GetAllAsync(search: null, contentType: null, limit: 2);
 
         // Assert
         result.Should().HaveCount(2);
-        result[0].Name.Should().Be("Alpha");
-        result[1].Name.Should().Be("Bravo");
+        result[0].Tag.Name.Should().Be("Alpha");
+        result[1].Tag.Name.Should().Be("Bravo");
     }
 
     [Fact]
