@@ -26,7 +26,7 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
     public PublicGetAllTagsHandlerTests()
     {
         _tagRepositoryMock = MockTagRepository.Create();
-        _handler = new PublicGetAllTagsHandler(_tagRepositoryMock.Object, Mapper);
+        _handler = new PublicGetAllTagsHandler(_tagRepositoryMock.Object);
     }
 
     #region Success Cases
@@ -68,6 +68,7 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
                     searchTerm,
                     It.IsAny<EnumCoreContentType?>(),
                     It.IsAny<int?>(),
+                    It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -92,6 +93,7 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
                     It.IsAny<string?>(),
                     EnumCoreContentType.Article,
                     It.IsAny<int?>(),
+                    It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -116,6 +118,7 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
                     It.IsAny<string?>(),
                     EnumCoreContentType.Video,
                     It.IsAny<int?>(),
+                    It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -140,6 +143,7 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
                     It.IsAny<string?>(),
                     (EnumCoreContentType?)null,
                     It.IsAny<int?>(),
+                    It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -164,6 +168,7 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
                     It.IsAny<string?>(),
                     It.IsAny<EnumCoreContentType?>(),
                     (int?)5,
+                    It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
