@@ -52,7 +52,7 @@ is why that layer reaches the outermost shared project rather than stopping at
 the encapsulation unit, so splitting it into three assemblies must not turn `internal` into layer-
 private.
 
-Inside `Storage.Application`, an interface under `<Area>/Ports/` is implemented in
+Inside `Storage.Application`, an interface under `Ports/` is implemented in
 `Storage.Infrastructure/Services/`; every other interface in the layer is implemented in the layer,
 beside its declaration. Both kinds end in `Service`, so the folder, not the name, says who
 implements it. See [`docs/application-services.md`](../../../docs/application-services.md).

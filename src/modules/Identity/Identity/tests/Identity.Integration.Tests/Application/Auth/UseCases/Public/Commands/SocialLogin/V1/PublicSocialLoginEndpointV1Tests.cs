@@ -11,8 +11,8 @@ using _116.Identity.TestData.Builders.Entities;
 using _116.Identity.TestData.Builders.Requests;
 using _116.Identity.TestData.Factories;
 using _116.Tests.Fixtures.Stubs;
-using InternalServerErrorMessage = _116.Storage.Application.Shared.Errors.Messages.InternalServerErrorMessage;
-using StorageValidationErrorMessage = _116.Storage.Application.Shared.Errors.Messages.ValidationErrorMessage;
+using InternalServerErrorMessage = _116.Storage.Application.Errors.Messages.InternalServerErrorMessage;
+using StorageValidationErrorMessage = _116.Storage.Application.Errors.Messages.ValidationErrorMessage;
 
 namespace _116.Identity.Integration.Tests.Application.Auth.UseCases.Public.Commands.SocialLogin.V1;
 

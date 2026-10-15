@@ -1,7 +1,7 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
-using _116.Storage.Application.Shared.Persistence;
+using _116.Storage.Application.Persistence;
 using _116.Storage.Domain.Entities;
 using _116.Storage.Infrastructure.Persistence;
 using _116.Storage.TestData.Factories;

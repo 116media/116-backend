@@ -1,4 +1,4 @@
-using _116.Storage.Application.Shared.Errors.Facade;
+using _116.Storage.Application.Errors.Facade;
 using _116.Storage.Domain.Entities;
 using _116.Storage.Domain.Enums;
 using _116.Storage.Domain.Events;

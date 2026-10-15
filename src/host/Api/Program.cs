@@ -13,7 +13,7 @@ using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Infrastructure;
 using _116.Mailer.Application.Shared.Validators;
 using _116.Mailer.Infrastructure;
-using _116.Storage.Application.Shared.Errors.Facade;
+using _116.Storage.Application.Errors.Facade;
 using _116.Storage.Infrastructure;
 using Asp.Versioning;
 using Carter;

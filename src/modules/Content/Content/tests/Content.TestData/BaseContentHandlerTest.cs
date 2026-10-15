@@ -62,7 +62,9 @@ public abstract class BaseContentHandlerTest
             Mapper,
             fileStorage,
             MockContentTypeRepository.Create().SetupGetByIds(contentTypes).Object,
-            MockPricingTierRepository.Create().Object
+            MockPricingTierRepository.Create().Object,
+            MockVideoRepository.Create().Object,
+            MockArticleRepository.Create().Object
         );
     }
 

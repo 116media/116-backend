@@ -11,13 +11,13 @@ public static class PublicGetVideoFeedMetaField
         "PublicGetVideoFeed",
         "Get the public video feed",
         """
-            Returns the homepage video feed as an ordered list of sections, one per category
-            pinned to the feed (most recently pinned first). Each section contains the category
-            metadata and its latest published videos. Sections whose category has no published
+            Returns the homepage video feed as an ordered list of entries, one per category
+            pinned to the feed (most recently pinned first). Each entry carries the category
+            metadata and its latest published videos. Entries whose category has no published
             videos are omitted.
             \n
             **Response Codes:**\n
-            - Returns 200 OK with the list of feed sections\n
+            - Returns 200 OK with the list of feed entries\n
             - Returns 429 Too Many Requests if rate limit is exceeded\n
         """
     );

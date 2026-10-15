@@ -4,7 +4,7 @@ using _116.Content.Application.Editorial.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
-using _116.Storage.Application.Shared.Errors.Messages;
+using _116.Storage.Application.Errors.Messages;
 using _116.Storage.Contracts.Domain.Enums;
 using _116.Tests.Fixtures.Stubs;
 

@@ -178,4 +178,26 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
             .Take(limit)
             .ToListAsync(cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyDictionary<Guid, int>> CountPublishedByCategoriesAsync(
+        IReadOnlyCollection<Guid> categoryIds,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (categoryIds.Count == 0)
+        {
+            return new Dictionary<Guid, int>();
+        }
+
+        var counts = await Context
+            .Articles.Where(entity =>
+                categoryIds.Contains(entity.CategoryId) && entity.Status == EnumContentStatus.Published
+            )
+            .GroupBy(entity => entity.CategoryId)
+            .Select(group => new { CategoryId = group.Key, Count = group.Count() })
+            .ToListAsync(cancellationToken);
+
+        return counts.ToDictionary(row => row.CategoryId, row => row.Count);
+    }
 }

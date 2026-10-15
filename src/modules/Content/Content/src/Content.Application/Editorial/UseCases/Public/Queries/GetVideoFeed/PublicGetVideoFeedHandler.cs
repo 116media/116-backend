@@ -8,10 +8,10 @@ using _116.Content.Domain.Entities;
 namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoFeed;
 
 /// <summary>
-/// Handles the <see cref="PublicGetVideoFeedQuery" /> to serve the video feed: one section per
+/// Handles the <see cref="PublicGetVideoFeedQuery" /> to serve the video feed: one entry per
 /// pinned video category, each with its latest published videos.
 /// </summary>
-/// <param name="feedService">Service resolving the pinned sections.</param>
+/// <param name="feedService">Service resolving the pinned entries.</param>
 /// <param name="categoryDtoService">Service assembling the category DTOs.</param>
 /// <param name="videoDtoService">Service assembling the public video summaries.</param>
 public class PublicGetVideoFeedHandler(
@@ -26,37 +26,37 @@ public class PublicGetVideoFeedHandler(
         CancellationToken cancellationToken
     )
     {
-        IReadOnlyList<VideoFeedSection> sections = await feedService.GetPinnedSectionsAsync(cancellationToken);
+        IReadOnlyList<VideoFeed> feeds = await feedService.GetPinnedFeedsAsync(cancellationToken);
 
-        // Empty sections are omitted so the UI never renders a blank block.
-        IReadOnlyList<VideoFeedSection> filled = [.. sections.Where(section => section.Videos.Count > 0)];
+        // Empty entries are omitted so the UI never renders a blank block.
+        IReadOnlyList<VideoFeed> filled = [.. feeds.Where(feed => feed.Videos.Count > 0)];
 
         if (filled.Count == 0)
         {
-            return new PublicGetVideoFeedResult(Sections: []);
+            return new PublicGetVideoFeedResult(Items: []);
         }
 
-        // One batch each for the categories and for every section's videos.
+        // One batch each for the categories and for every entry's videos.
         IReadOnlyList<CategoryDto> categoryDtos = await categoryDtoService.CreateManyAsync(
-            [.. filled.Select(section => section.Category)],
+            [.. filled.Select(feed => feed.Category)],
             cancellationToken
         );
         PublicVideoSummaryContext context = await videoDtoService.ResolvePublicContextAsync(
-            [.. filled.SelectMany(section => section.Videos)],
+            [.. filled.SelectMany(feed => feed.Videos)],
             cancellationToken
         );
 
-        List<VideoFeedSectionDto> result =
+        List<VideoFeedDto> result =
         [
             .. filled.Select(
-                (section, index) =>
-                    new VideoFeedSectionDto(
+                (feed, index) =>
+                    new VideoFeedDto(
                         Category: categoryDtos[index],
-                        Videos: videoDtoService.CreatePublicMany(section.Videos, context)
+                        Videos: videoDtoService.CreatePublicMany(feed.Videos, context)
                     )
             ),
         ];
 
-        return new PublicGetVideoFeedResult(Sections: result);
+        return new PublicGetVideoFeedResult(Items: result);
     }
 }

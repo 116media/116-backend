@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Infrastructure.Outbox;
-using _116.Storage.Application.Shared.Repositories;
+using _116.Storage.Application.Repositories;
 using _116.Storage.Domain.Entities;
 using _116.Storage.Infrastructure.Persistence;
 using _116.Storage.TestData.Factories;

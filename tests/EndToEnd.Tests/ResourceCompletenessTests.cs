@@ -7,7 +7,7 @@ using _116.BuildingBlocks.Application.Exceptions.Messages;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Mailer.Application.Shared.Validators;
-using _116.Storage.Application.Shared.Errors.Facade;
+using _116.Storage.Application.Errors.Facade;
 
 namespace _116.EndToEnd.Tests;
 

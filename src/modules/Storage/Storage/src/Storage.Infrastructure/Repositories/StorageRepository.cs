@@ -1,6 +1,6 @@
 using _116.BuildingBlocks.Infrastructure.Repositories;
 using _116.Shared.Domain;
-using _116.Storage.Application.Shared.Repositories;
+using _116.Storage.Application.Repositories;
 using _116.Storage.Infrastructure.Persistence;
 
 namespace _116.Storage.Infrastructure.Repositories;

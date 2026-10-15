@@ -7,7 +7,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
 using _116.Tests.Fixtures.Stubs;
-using StorageValidationErrorMessage = _116.Storage.Application.Shared.Errors.Messages.ValidationErrorMessage;
+using StorageValidationErrorMessage = _116.Storage.Application.Errors.Messages.ValidationErrorMessage;
 
 namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Admin.Commands.UploadAlbumCover.V1;
 

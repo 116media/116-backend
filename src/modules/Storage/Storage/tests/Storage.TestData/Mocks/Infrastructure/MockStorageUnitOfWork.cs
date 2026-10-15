@@ -1,4 +1,4 @@
-using _116.Storage.Application.Shared.Persistence;
+using _116.Storage.Application.Persistence;
 using Moq;
 
 namespace _116.Storage.TestData.Mocks.Infrastructure;

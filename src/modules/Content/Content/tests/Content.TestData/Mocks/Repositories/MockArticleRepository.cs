@@ -141,6 +141,10 @@ public static class MockArticleRepository
     /// <param name="mock">The repository mock to configure.</param>
     private static void SetupDefaults(Mock<IArticleRepository> mock)
     {
+        mock.Setup(x =>
+                x.CountPublishedByCategoriesAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(new Dictionary<Guid, int>());
         mock.Setup(x => x.AddAsync(It.IsAny<ArticleEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         mock.Setup(x =>

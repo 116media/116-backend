@@ -24,12 +24,43 @@ public class CategoryMapperTests : BaseContentHandlerTest
     /// <summary>
     /// The lookups the DTO factory hands the mapper, resolving the shared video content type.
     /// </summary>
-    private static CategoryLookups Lookups(IReadOnlyDictionary<Guid, FileReferenceDto>? posters = null) =>
+    private static CategoryLookups Lookups(
+        IReadOnlyDictionary<Guid, FileReferenceDto>? posters = null,
+        IReadOnlyDictionary<Guid, int>? publishedCounts = null
+    ) =>
         new(
             Posters: posters is null ? new Dictionary<Guid, FileReferenceDto>() : posters,
             ContentTypes: new Dictionary<Guid, ContentTypeEntity> { [VideoType.Id] = VideoType },
-            PricingTiers: new Dictionary<Guid, PricingTierEntity>()
+            PricingTiers: new Dictionary<Guid, PricingTierEntity>(),
+            PublishedCounts: publishedCounts ?? new Dictionary<Guid, int>()
         );
+
+    [Fact]
+    public void ToCategoryDto_ShouldReadPublishedCountFromLookups()
+    {
+        // Arrange
+        CategoryEntity entity = CategoryWithContentType();
+        var counts = new Dictionary<Guid, int> { [entity.Id] = 7 };
+
+        // Act
+        CategoryDto dto = entity.ToCategoryDto(Mapper, Lookups(publishedCounts: counts));
+
+        // Assert
+        dto.PublishedCount.Should().Be(7);
+    }
+
+    [Fact]
+    public void ToCategoryDto_WhenCategoryAbsentFromCounts_ShouldBeZero()
+    {
+        // Arrange
+        CategoryEntity entity = CategoryWithContentType();
+
+        // Act
+        CategoryDto dto = entity.ToCategoryDto(Mapper, Lookups());
+
+        // Assert
+        dto.PublishedCount.Should().Be(0);
+    }
 
     [Fact]
     public void ToCategoryDto_WhenPosterInFileMap_ShouldResolvePosterUrl()

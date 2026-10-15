@@ -106,7 +106,6 @@ internal class PublicLoginEndpointV1 : ICarterModule
             .RequireRateLimiting(policyName: RateLimitPolicies.Authentication)
             .ProducesValidationProblem()
             .Produces<PublicLoginMobileResponse>()
-            .Produces<PublicLoginWebResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)

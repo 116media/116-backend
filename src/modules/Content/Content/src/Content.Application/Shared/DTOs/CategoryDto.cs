@@ -17,6 +17,7 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="PinnedToFeedAt">When the category was pinned to the feed, or null if it is not pinned.</param>
 /// <param name="PosterUrl">The resolved URL of the show's poster image, or null if no poster is set.</param>
 /// <param name="Colors">The poster's background/foreground color pair, or null when there is no poster or no extracted color.</param>
+/// <param name="PublishedCount">How many published items the category holds.</param>
 /// <param name="Pricing">The pricing tiers configured for this category.</param>
 public record CategoryDto(
     Guid Id,
@@ -33,5 +34,6 @@ public record CategoryDto(
     DateTimeOffset? PinnedToFeedAt,
     string? PosterUrl,
     CategoryColorsDto? Colors,
+    int PublishedCount,
     IReadOnlyList<CategoryPricingDto> Pricing
 );

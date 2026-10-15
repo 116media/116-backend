@@ -213,6 +213,10 @@ public static class MockVideoRepository
     /// <param name="mock">The repository mock to configure.</param>
     private static void SetupDefaults(Mock<IVideoRepository> mock)
     {
+        mock.Setup(x =>
+                x.CountPublishedByCategoriesAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(new Dictionary<Guid, int>());
         mock.Setup(x => x.AddAsync(It.IsAny<VideoEntity>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
         mock.Setup(x =>
                 x.GetAllAsync(

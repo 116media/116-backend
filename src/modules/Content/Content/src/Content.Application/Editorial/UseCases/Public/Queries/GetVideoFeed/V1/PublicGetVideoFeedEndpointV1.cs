@@ -13,12 +13,12 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoFee
 /// <summary>
 /// Response model for the public video feed.
 /// </summary>
-/// <param name="Sections">The ordered feed sections, most recently pinned category first.</param>
-public record PublicGetVideoFeedResponse(IReadOnlyList<VideoFeedSectionDto> Sections);
+/// <param name="Items">The ordered feed entries, most recently pinned category first.</param>
+public record PublicGetVideoFeedResponse(IReadOnlyList<VideoFeedDto> Items);
 
 /// <summary>
 /// Defines the public video feed endpoint.
-/// Returns the homepage video feed grouped into one section per pinned category.
+/// Returns the homepage video feed grouped into one entry per pinned category.
 /// </summary>
 internal class PublicGetVideoFeedEndpointV1 : ICarterModule
 {
@@ -43,7 +43,7 @@ internal class PublicGetVideoFeedEndpointV1 : ICarterModule
                         cancellationToken: cancellationToken
                     );
 
-                    var response = new PublicGetVideoFeedResponse(Sections: result.Sections);
+                    var response = new PublicGetVideoFeedResponse(Items: result.Items);
                     return Results.Ok(response);
                 }
             )
