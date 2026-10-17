@@ -2,160 +2,84 @@
 
 ## Checklist
 
-- [ ] `SearchVector` property mapped as computed and stored
-- [ ] Property excluded from inserts and updates
-- [ ] `NpgsqlTsVector` package reference present
-- [ ] Migration generated with the raw SQL for the function and columns
-- [ ] `dotnet ef migrations has-pending-model-changes` reports none
+- [x] `SearchDocument` mapped to `content.search_documents` with a composite key
+- [x] The generated vector mapped read-only, never sent on a write
+- [x] The projection kept out of the model on a non-Npgsql provider
+- [x] Migration carries the raw SQL for the vector, the index and the backfill
+- [x] `dotnet ef migrations has-pending-model-changes` reports none
+- [x] `Content.Domain` gains no persistence package reference
 
 ---
 
-## Entity
+## Why the vector is not on the source entities
 
-The column is database-generated, so the entity exposes it as a private-set property
-that EF never writes. It is not part of the domain: nothing in `Content.Domain`
-reads it, and no factory or verb touches it.
+Two rules forbid it, and the second applies to a shadow property as much as a real one.
 
-```csharp
-// Content.Domain/Entities/ArticleEntity.cs
-/// <summary>
-/// The full-text search vector, maintained by the database as a generated column.
-/// Never written by the application.
-/// </summary>
-public NpgsqlTsVector SearchVector { get; private init; } = null!;
-```
+`tests/Architecture.Tests/LayerDependencyTests.cs` asserts
+`DomainDependsOnNoPersistenceOrWebFramework`, whose forbidden list includes `Npgsql`.
+`NpgsqlTsVector` is an `Npgsql` type, so it cannot sit on a `Content.Domain` entity.
 
-`NpgsqlTsVector` comes from `Npgsql.EntityFrameworkCore.PostgreSQL`, already referenced
-by `Content.Infrastructure`.
+And EF materialises every mapped property, shadow properties included. Every article list
+path returns entities rather than projections, so a mapped vector would be selected on each
+of them — and the article vector averaged **711 bytes** against a 1,123-byte row, so that is
+roughly 60% added to the payload of every feed page for a column no feed reads.
+
+The projection sidesteps both: the vector lives on a type the domain never sees, in a table
+ordinary reads never touch.
 
 ---
 
-## Configuration
+## The mapping
 
 ```csharp
-// Content.Infrastructure/Persistence/Configurations/ArticleConfiguration.cs
+builder.ToTable("search_documents", ContentConstants.SchemaName);
+builder.HasKey(document => new { document.Type, document.EntityId });
+
+builder.Property(document => document.Type).HasColumnName("type").HasConversion<string>();
+
 builder
-    .Property(article => article.SearchVector)
+    .Property(document => document.SearchVector)
     .HasColumnName("search_vector")
     .HasColumnType("tsvector")
     .ValueGeneratedOnAddOrUpdate();
 
-builder
-    .HasIndex(article => article.SearchVector)
-    .HasDatabaseName("ix_articles_search_vector_published")
-    .HasMethod("GIN")
-    .HasFilter("status = 'Published'");
+builder.Property(document => document.SearchVector).Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Ignore);
+builder.Property(document => document.SearchVector).Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore);
 ```
 
-`ValueGeneratedOnAddOrUpdate` is what keeps the column out of `INSERT` and `UPDATE`
-statements. Without it EF tries to write `NULL` and Postgres rejects the write on a
-generated column.
+The database owns the vector, so EF must never include it in an `INSERT` or `UPDATE`. The two
+save behaviours are what enforce that.
 
-The generation expression itself is **not** expressed in the model. EF's
-`HasComputedColumnSql` cannot represent `setweight(...) || setweight(...)` with the
-`immutable_unaccent` dependency in a way that round-trips through a scaffold, so the
-expression lives in the migration's raw SQL and the model only declares the column's
-shape. Consequence: a future `dotnet ef dbcontext scaffold` will not reproduce it.
-That is recorded here so it is not rediscovered as a bug.
+`SearchDocumentConfiguration` implements the `IPostgresOnlyConfiguration` marker, and
+`OnModelCreating` ignores `SearchDocument` entirely when the provider is not Npgsql —
+`NpgsqlTsVector` has no meaning elsewhere, and a `DbSet` pulls its type into the model
+whether or not a configuration ran.
+
+### The composite key caught a latent bug
+
+`OnModelCreating` walked every entity type calling `SingleOrDefault()` on its primary-key
+properties, to mark Guid keys as never store-generated. `SearchDocument` is the first entity
+with a two-property key, and that call threw `Sequence contains more than one element` at
+design time. The loop now skips composite keys rather than assuming one property.
 
 ---
 
 ## Migration
 
 ```bash
-dotnet ef migrations add AddSearchVectors \
+dotnet ef migrations add AddSearchDocuments \
   --project src/modules/Content/Content/src/Content.Infrastructure \
-  --startup-project src/Api \
+  --startup-project src/host/Api \
   --context ContentDbContext
 ```
 
-The generated migration must be edited to carry the raw SQL. Expected shape:
+EF scaffolds the table but can only emit a plain `tsvector` column, so the migration drops
+that column and re-adds it as `GENERATED ALWAYS AS (...) STORED`, then creates the partial
+index, backfills from the three source tables, and drops what it supersedes: the three
+`*_search` views, the three partial GIN indexes, and the `search_vector` column on
+`articles`, `videos` and `short_videos`.
 
-```csharp
-/// <summary>
-/// Adds the full-text search vectors and their GIN indexes for articles and videos,
-/// plus the immutable unaccent wrapper the generated columns depend on.
-/// </summary>
-public partial class AddSearchVectors : Migration
-{
-    /// <inheritdoc />
-    protected override void Up(MigrationBuilder migrationBuilder)
-    {
-        migrationBuilder.Sql("CREATE EXTENSION IF NOT EXISTS unaccent;");
+`Down()` restores all of it, so the migration is reversible.
 
-        migrationBuilder.Sql(
-            """
-            CREATE OR REPLACE FUNCTION content.immutable_unaccent(text)
-            RETURNS text LANGUAGE sql IMMUTABLE PARALLEL SAFE STRICT
-            AS $$ SELECT public.unaccent('public.unaccent'::regdictionary, $1) $$;
-            """);
-
-        migrationBuilder.Sql(
-            """
-            ALTER TABLE content.articles
-                ADD COLUMN search_vector tsvector
-                GENERATED ALWAYS AS (
-                    setweight(to_tsvector('french', content.immutable_unaccent(coalesce(title, ''))), 'A') ||
-                    setweight(to_tsvector('french', content.immutable_unaccent(coalesce(headline, ''))), 'B') ||
-                    setweight(to_tsvector('french', content.immutable_unaccent(coalesce(meta_title, ''))), 'C') ||
-                    setweight(to_tsvector('french', content.immutable_unaccent(coalesce(meta_description, ''))), 'C') ||
-                    setweight(to_tsvector('french', content.immutable_unaccent(coalesce(body, ''))), 'D')
-                ) STORED;
-            """);
-
-        migrationBuilder.Sql(
-            """
-            ALTER TABLE content.videos
-                ADD COLUMN search_vector tsvector
-                GENERATED ALWAYS AS (
-                    setweight(to_tsvector('french', content.immutable_unaccent(coalesce(title, ''))), 'A') ||
-                    setweight(to_tsvector('french', content.immutable_unaccent(coalesce(description, ''))), 'B') ||
-                    setweight(to_tsvector('french', content.immutable_unaccent(coalesce(meta_title, ''))), 'C') ||
-                    setweight(to_tsvector('french', content.immutable_unaccent(coalesce(meta_description, ''))), 'C')
-                ) STORED;
-            """);
-
-        migrationBuilder.Sql(
-            """
-            CREATE INDEX ix_articles_search_vector_published
-                ON content.articles USING GIN (search_vector)
-                WHERE status = 'Published';
-            """);
-
-        migrationBuilder.Sql(
-            """
-            CREATE INDEX ix_videos_search_vector_published
-                ON content.videos USING GIN (search_vector)
-                WHERE status = 'Published';
-            """);
-    }
-
-    /// <inheritdoc />
-    protected override void Down(MigrationBuilder migrationBuilder)
-    {
-        migrationBuilder.Sql("DROP INDEX IF EXISTS content.ix_videos_search_vector_published;");
-        migrationBuilder.Sql("DROP INDEX IF EXISTS content.ix_articles_search_vector_published;");
-        migrationBuilder.Sql("ALTER TABLE content.videos DROP COLUMN IF EXISTS search_vector;");
-        migrationBuilder.Sql("ALTER TABLE content.articles DROP COLUMN IF EXISTS search_vector;");
-        migrationBuilder.Sql("DROP FUNCTION IF EXISTS content.immutable_unaccent(text);");
-    }
-}
-```
-
----
-
-## Backfill
-
-None needed. `GENERATED … STORED` computes every existing row as part of the
-`ADD COLUMN`, which takes an `ACCESS EXCLUSIVE` lock for the duration.
-
-On a large `articles` table that lock is the deployment risk. Measure first:
-
-```sql
-SELECT count(*), pg_size_pretty(pg_total_relation_size('content.articles'))
-FROM content.articles;
-```
-
-Under roughly 100k rows this is seconds and can ship in a normal release. Above that,
-plan a maintenance window or switch to a nullable column plus a trigger and a batched
-backfill — a different spec, not this one.
+Dropping those columns is a real reclaim, not just tidiness: the article vector alone was
+711 bytes per row.
