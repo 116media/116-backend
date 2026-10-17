@@ -129,6 +129,7 @@ public class PublicSearchHandler(
         {
             EnumSearchScope.Articles => counts.Articles,
             EnumSearchScope.Videos => counts.Videos,
+            EnumSearchScope.Shorts => counts.Shorts,
             _ => counts.All,
         };
 
@@ -171,6 +172,11 @@ public class PublicSearchHandler(
         if (scope == EnumSearchScope.Videos)
         {
             return await searchRepository.SearchVideosAsync(term, skip, request.PageSize, ct);
+        }
+
+        if (scope == EnumSearchScope.Shorts)
+        {
+            return await searchRepository.SearchShortsAsync(term, skip, request.PageSize, ct);
         }
 
         int window = skip + request.PageSize;
@@ -357,3 +363,15 @@ internal class PublicSearchEndpointV1 : ICarterModule
 ```
 
 `EditorialRouteConstants.Search` is a new constant, `"search"`.
+
+---
+
+## Adding a scope
+
+Each searchable type costs one branch here and one in the count switch. When lyrics and
+artists land, the `All` arm concatenates their window alongside the existing three before
+the shared `OrderByDescending(Score).ThenByDescending(PublishedAt)` slice, so no ranking
+logic is duplicated per type.
+
+The validator needs no change: it checks `IsInEnum`, so a new member is accepted the
+moment it exists.
