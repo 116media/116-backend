@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace _116.Api.Logging;
+namespace _116.BuildingBlocks.Presentation.Logging;
 
 /// <summary>
 /// Redacts the search term from a logged request path so reader queries are never
