@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 using _116.Api;
+using _116.Api.Logging;
 using _116.Api.Middlewares;
 using _116.BuildingBlocks.Application.Configurations;
 using _116.BuildingBlocks.Application.Configurations.Schemas;
@@ -238,7 +239,15 @@ app.Use(
 );
 
 app.UseMiddleware<CorrelationIdMiddleware>();
-app.UseSerilogRequestLogging();
+app.UseSerilogRequestLogging(options =>
+    // A reader's search term must never reach the log store, so the path is enriched
+    // with the term redacted rather than logged verbatim.
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+        diagnosticContext.Set(
+            "RequestPath",
+            SearchQueryRedaction.Redact($"{httpContext.Request.Path}{httpContext.Request.QueryString}")
+        )
+);
 app.UseAppLocalization();
 app.UseCors();
 app.UseAppExceptionHandler();
