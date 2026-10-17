@@ -1,13 +1,13 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 using _116.Api;
-using _116.Api.Logging;
 using _116.Api.Middlewares;
 using _116.BuildingBlocks.Application.Configurations;
 using _116.BuildingBlocks.Application.Configurations.Schemas;
 using _116.BuildingBlocks.Infrastructure.Cache;
 using _116.BuildingBlocks.Infrastructure.Seed;
 using _116.BuildingBlocks.Presentation.Extensions;
+using _116.BuildingBlocks.Presentation.Logging;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Infrastructure;
 using _116.Identity.Application.Shared.Errors.Facade;
@@ -240,14 +240,17 @@ app.Use(
 
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseSerilogRequestLogging(options =>
-    // A reader's search term must never reach the log store, so the path is enriched
-    // with the term redacted rather than logged verbatim.
+{
+    // Serilog builds RequestPath itself and overwrites anything enriched under that name,
+    // so keeping the query out of it is what stops a reader's term reaching the log store.
+    // Pinned rather than left to the default, which a future upgrade could change.
+    options.IncludeQueryInRequestPath = false;
+
+    // The rest of the query is worth having when reading a trace, so it is attached under
+    // its own name with the term redacted.
     options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
-        diagnosticContext.Set(
-            "RequestPath",
-            SearchQueryRedaction.Redact($"{httpContext.Request.Path}{httpContext.Request.QueryString}")
-        )
-);
+        diagnosticContext.Set("RequestQuery", SearchQueryRedaction.Redact(httpContext.Request.QueryString.Value));
+});
 app.UseAppLocalization();
 app.UseCors();
 app.UseAppExceptionHandler();
