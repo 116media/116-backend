@@ -2,12 +2,12 @@
 
 ## Checklist
 
-- [ ] `PublicSearchQuery` with `IQuery<PublicSearchResult>`
-- [ ] `PublicSearchValidator` enforcing length and scope
-- [ ] `PublicSearchHandler` resolving counts, hits, images and category names
-- [ ] `PublicSearchMetaField` with the route metadata
-- [ ] `PublicSearchEndpointV1` under `ContentBrowsing`
-- [ ] Route registered and visible in Swagger
+- [x] `PublicSearchQuery` with `IQuery<PublicSearchResult>`
+- [x] `PublicSearchValidator` enforcing length and scope
+- [x] `PublicSearchHandler` resolving counts, hits, images and category names
+- [x] `PublicSearchMetaField` with the route metadata
+- [x] `PublicSearchEndpointV1` under `ContentBrowsing`
+- [x] Route registered and visible in Swagger
 
 ---
 
