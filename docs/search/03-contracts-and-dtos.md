@@ -33,12 +33,30 @@ public enum EnumSearchScope
     /// Published videos only.
     /// </summary>
     Videos,
+
+    /// <summary>
+    /// Active short videos only.
+    /// </summary>
+    Shorts,
 }
 ```
 
-Lyrics and artists are deliberately absent: adding an enum member the API cannot serve
-would publish a contract the backend does not honour. They are added when their
-listing endpoints exist.
+Shorts were added after the first release of this endpoint. **Lyrics and artists are the
+remaining work**: they are deliberately absent for now because adding an enum member the
+API cannot serve would publish a contract the backend does not honour. Each needs a
+`search_vector` on its table, a partial index, a read view, a scope member, a repository
+arm and a branch in the handler's merge, exactly as shorts did.
+
+Shorts differ from articles and videos in three ways the DTO has to carry:
+
+| | Articles / videos | Shorts |
+| --- | --- | --- |
+| Visibility | `status = 'Published'` | `is_active` — shorts have no editorial workflow |
+| Searchable text | title, headline/description, meta fields, body | title only |
+| Category | always set | none; `CategoryId` and `CategoryName` come back null |
+
+A short also has no publication date, so `PublishedAt` carries its `created_at`, which is
+what the feed orders on anyway.
 
 ---
 
@@ -63,11 +81,10 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="Title">The entity title.</param>
 /// <param name="Excerpt">A plain-text summary, truncated server-side on a word boundary.</param>
 /// <param name="ImageUrl">The resolved cover or thumbnail URL, or null when none is set.</param>
-/// <param name="CategoryName">The owning category's display name.</param>
-/// <param name="PublishedAt">When the entity was published.</param>
+/// <param name="CategoryName">The owning category's display name, or null for a type that has none.</param>
+/// <param name="PublishedAt">When the entity was published, or first created for a type that has no publication date.</param>
 /// <param name="Score">The relevance score; higher ranks first.</param>
 /// <param name="RatingAverage">The cached average rating, videos only.</param>
-/// <param name="DurationSeconds">The runtime in seconds, videos only.</param>
 public record SearchHitDto(
     EnumCoreContentType Type,
     Guid Id,
@@ -75,13 +92,20 @@ public record SearchHitDto(
     string Title,
     string Excerpt,
     string? ImageUrl,
-    string CategoryName,
+    string? CategoryName,
     DateTimeOffset? PublishedAt,
     double Score,
-    double? RatingAverage,
-    int? DurationSeconds
+    decimal? RatingAverage
 );
 ```
+
+A duration field was specified here originally and has been removed: videos carry no
+duration column, nothing in the frontend reads one, and the helper the spec called for
+does not exist. Adding it later is additive, the same argument this spec makes for the
+lyrics and artists scopes.
+
+`RatingAverage` is `decimal?` to match `VideoEntity.RatingAverage`, so no precision is
+lost crossing the boundary. `Score` stays `double`: `ts_rank_cd` returns `real`.
 
 `Type` reuses the existing `EnumCoreContentType` rather than inventing a parallel enum,
 so a hit's type is the same value the rest of the system uses for content types.
@@ -141,7 +165,8 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="All">Total across every scope.</param>
 /// <param name="Articles">Matching published articles.</param>
 /// <param name="Videos">Matching published videos.</param>
-public record SearchCountsDto(int All, int Articles, int Videos);
+/// <param name="Shorts">Matching active short videos.</param>
+public record SearchCountsDto(int All, int Articles, int Videos, int Shorts);
 ```
 
 `All` is stored rather than derived so a future scope cannot silently break the sum on
