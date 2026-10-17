@@ -6,7 +6,8 @@ namespace _116.Shared.Unit.Tests.Shared.Application.Pagination;
 
 /// <summary>
 /// Unit tests for <see cref="PaginatedRequest"/>, including the constructor-enforced bounds:
-/// page index is floored at 0 and page size is clamped to [1, <see cref="PaginatedRequest.MaxPageSize"/>].
+/// page index is clamped to [0, <see cref="PaginatedRequest.MaxPageIndex"/>] and page size to
+/// [1, <see cref="PaginatedRequest.MaxPageSize"/>], so <see cref="PaginatedRequest.Skip"/> never overflows.
 /// </summary>
 public class PaginatedRequestTests
 {
@@ -50,14 +51,6 @@ public class PaginatedRequestTests
         request.PageSize.Should().Be(50);
     }
 
-    [Fact]
-    public void Constructor_WithLargePageIndex_ShouldAcceptValue()
-    {
-        PaginatedRequest request = new(pageIndex: int.MaxValue);
-
-        request.PageIndex.Should().Be(int.MaxValue, "page index has no upper bound, only a floor of 0");
-    }
-
     #endregion
 
     #region Bounds Enforcement
@@ -66,6 +59,50 @@ public class PaginatedRequestTests
     public void MaxPageSize_ShouldBe100()
     {
         PaginatedRequest.MaxPageSize.Should().Be(100);
+    }
+
+    [Fact]
+    public void MaxPageIndex_ShouldBe10000()
+    {
+        PaginatedRequest.MaxPageIndex.Should().Be(10_000);
+    }
+
+    [Fact]
+    public void Constructor_WithPageIndexAboveMax_ShouldClampToMax()
+    {
+        PaginatedRequest request = new(pageIndex: int.MaxValue);
+
+        request.PageIndex.Should().Be(PaginatedRequest.MaxPageIndex, "an over-deep page index is clamped");
+    }
+
+    [Fact]
+    public void Constructor_WithPageIndexAtMax_ShouldKeepMax()
+    {
+        PaginatedRequest request = new(pageIndex: PaginatedRequest.MaxPageIndex);
+
+        request.PageIndex.Should().Be(PaginatedRequest.MaxPageIndex);
+    }
+
+    [Theory]
+    [InlineData(0, 20, 0)]
+    [InlineData(3, 20, 60)]
+    [InlineData(PaginatedRequest.MaxPageIndex, PaginatedRequest.MaxPageSize, 1_000_000)]
+    public void Skip_ShouldBeTheRowsPrecedingThePage(int pageIndex, int pageSize, int expected)
+    {
+        PaginatedRequest request = new(pageIndex, pageSize);
+
+        request.Skip.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData(30_000_000)]
+    [InlineData(100_000_000)]
+    [InlineData(int.MaxValue)]
+    public void Skip_WithAnOverflowingPageIndex_ShouldStayPositive(int pageIndex)
+    {
+        PaginatedRequest request = new(pageIndex, PaginatedRequest.MaxPageSize);
+
+        request.Skip.Should().BePositive("an unclamped index would wrap the multiplication negative");
     }
 
     [Fact]
