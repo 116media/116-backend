@@ -22,6 +22,8 @@ public class ArticleBuilder
     private string? _rejectionReason;
     private DateTimeOffset? _promotedUntil;
     private Guid _promotionLevelId = Guid.NewGuid();
+    private string _headline = string.Empty;
+    private string _body = string.Empty;
     private DateTimeOffset? _publishedAtOverride;
     private DateTime? _createdAt;
 
@@ -39,6 +41,19 @@ public class ArticleBuilder
     public ArticleBuilder WithTitle(string title)
     {
         _title = title;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the teaser and the rich-text body, which the search vector weights below the title.
+    /// </summary>
+    /// <param name="headline">The short teaser text.</param>
+    /// <param name="body">The rich-text body.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public ArticleBuilder WithBody(string headline, string body)
+    {
+        _headline = headline;
+        _body = body;
         return this;
     }
 
@@ -176,6 +191,11 @@ public class ArticleBuilder
                 slug: _slug,
                 authorId: _authorId
             );
+
+        if (_headline.Length > 0 || _body.Length > 0)
+        {
+            entity.ReviseBody(_headline, _body);
+        }
 
         ApplyStatusTransition(entity);
 
