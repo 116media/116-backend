@@ -59,4 +59,54 @@ public class ExcerptHelperTests
         // Assert
         result.Length.Should().Be(200);
     }
+
+    [Fact]
+    public void Truncate_WithRichText_ShouldStripTheMarkup()
+    {
+        // Act
+        string excerpt = ExcerptHelper.Truncate("<p>Beat Breakdown</p><p><br>Behind the production</p>");
+
+        // Assert
+        excerpt.Should().Be("Beat Breakdown Behind the production");
+    }
+
+    [Fact]
+    public void Truncate_WithAdjacentBlocks_ShouldKeepTheWordsApart()
+    {
+        // Act
+        string excerpt = ExcerptHelper.Truncate("<p>a</p><p>b</p>");
+
+        // Assert
+        excerpt.Should().Be("a b", "removing a tag outright would run the words together");
+    }
+
+    [Fact]
+    public void Truncate_WithHtmlEntities_ShouldDecodeThem()
+    {
+        // Act
+        string excerpt = ExcerptHelper.Truncate("Hip-Hop &amp; Rhumba");
+
+        // Assert
+        excerpt.Should().Be("Hip-Hop & Rhumba");
+    }
+
+    [Fact]
+    public void Truncate_WithMarkupOnly_ShouldReturnEmpty()
+    {
+        // Act
+        string excerpt = ExcerptHelper.Truncate("<p></p><br/>");
+
+        // Assert
+        excerpt.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Truncate_WithCollapsibleWhitespace_ShouldCollapseIt()
+    {
+        // Act
+        string excerpt = ExcerptHelper.Truncate("one\n\n  two\tthree");
+
+        // Assert
+        excerpt.Should().Be("one two three");
+    }
 }
