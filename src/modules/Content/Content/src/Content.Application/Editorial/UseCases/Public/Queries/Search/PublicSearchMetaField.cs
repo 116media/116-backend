@@ -14,10 +14,10 @@ public static class PublicSearchMetaField
         "PublicSearch",
         "Search across the published content",
         """
-            Searches the published articles and videos with PostgreSQL full-text search,
-            ranked by relevance. Accent-insensitive and stemmed for French. Returns the
-            hits for the requested scope plus the hit counts for every scope, so a client
-            can label its scope tabs from one response.
+            Searches the published articles, videos and short videos with PostgreSQL
+            full-text search, ranked by relevance. Accent-insensitive and stemmed for both
+            French and English. Returns the hits for the requested scope plus the hit counts
+            for every scope, so a client can label its scope tabs from one response.
             \n
             **Response Codes:**\n
             - Returns 200 OK with the ranked hits, or an empty list when nothing matches\n
