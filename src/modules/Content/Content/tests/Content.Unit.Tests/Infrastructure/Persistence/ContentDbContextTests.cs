@@ -2,6 +2,7 @@ using _116.BuildingBlocks.Infrastructure.Outbox;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Content.Infrastructure.Persistence.Projections;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -20,6 +21,11 @@ public class ContentDbContextTests
     /// silently passing runs with zero cases.
     /// </summary>
     private const int DomainEntityCount = 49;
+
+    /// <summary>
+    /// The namespace a type must sit in to count as a Content domain entity.
+    /// </summary>
+    private const string DomainEntityNamespace = "_116.Content.Domain.Entities";
 
     /// <summary>
     /// The model is built once for the whole class. <see cref="IModel"/> is a frozen snapshot, so
@@ -114,7 +120,12 @@ public class ContentDbContextTests
     [Fact]
     public void Model_ShouldNotMapAnyTypeOutsideTheDomainEntities()
     {
-        string[] infrastructureTypes = [nameof(OutboxEventEntity), nameof(ProcessedDomainEventEntity)];
+        string[] infrastructureTypes =
+        [
+            nameof(OutboxEventEntity),
+            nameof(ProcessedDomainEventEntity),
+            nameof(SearchDocument),
+        ];
 
         IEnumerable<string> mapped = SharedModel
             .GetEntityTypes()
@@ -129,16 +140,37 @@ public class ContentDbContextTests
     #region DbSet Properties
 
     /// <summary>
-    /// Enumerates the public <see cref="DbSet{TEntity}"/> properties the context declares.
-    /// Reflection walks the type system here, matching the discovery style of the theories above.
+    /// Enumerates the public <see cref="DbSet{TEntity}"/> properties the context declares
+    /// over domain entities. Read-model sets are excluded: they project existing tables and
+    /// answer to no aggregate, so the one-set-per-entity rule does not reach them.
     /// </summary>
     /// <returns>The DbSet property infos, ordered by name for stable test output.</returns>
     private static IReadOnlyList<System.Reflection.PropertyInfo> DbSetProperties() =>
         typeof(ContentDbContext)
             .GetProperties()
             .Where(p => p.PropertyType.IsGenericType && p.PropertyType.GetGenericTypeDefinition() == typeof(DbSet<>))
+            .Where(p => p.PropertyType.GetGenericArguments()[0].Namespace == DomainEntityNamespace)
             .OrderBy(p => p.Name)
             .ToList();
+
+    /// <summary>
+    /// Enumerates the public <see cref="DbSet{TEntity}"/> properties over projections.
+    /// </summary>
+    /// <returns>The read-model DbSet property infos, ordered by name.</returns>
+    private static IReadOnlyList<System.Reflection.PropertyInfo> ReadModelSetProperties() =>
+        typeof(ContentDbContext)
+            .GetProperties()
+            .Where(p => p.PropertyType.IsGenericType && p.PropertyType.GetGenericTypeDefinition() == typeof(DbSet<>))
+            .Where(p => p.PropertyType.GetGenericArguments()[0].Namespace != DomainEntityNamespace)
+            .OrderBy(p => p.Name)
+            .ToList();
+
+    [Fact]
+    public void ProjectionSets_ShouldBeExposedForSearch()
+    {
+        // Arrange & Act & Assert
+        ReadModelSetProperties().Select(property => property.Name).Should().BeEquivalentTo(["SearchDocuments"]);
+    }
 
     [Fact]
     public void DbSetProperties_ShouldExposeOneSetPerDomainEntity()
