@@ -2,10 +2,10 @@
 
 ## Checklist
 
-- [ ] `EnumSearchScope` in `Content.Domain/Enums/`
-- [ ] `SearchHitDto` in `Content.Application/Shared/DTOs/`
-- [ ] `SearchCountsDto` in the same folder
-- [ ] Both registered in the OpenAPI schema through the endpoint's `Produces`
+- [x] `EnumSearchScope` in `Content.Domain/Enums/`
+- [x] `SearchHitDto` in `Content.Application/Shared/DTOs/`
+- [x] `SearchCountsDto` in the same folder
+- [x] Both registered in the OpenAPI schema through the endpoint's `Produces`
 
 ---
 
