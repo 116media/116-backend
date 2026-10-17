@@ -75,6 +75,11 @@ public static partial class TestConstants
             public const string Packages = $"{Base}/{CatalogRouteConstants.Packages}";
             public const string Articles = $"{Base}/{InteractionsRouteConstants.Articles}";
             public const string Videos = $"{Base}/{InteractionsRouteConstants.Videos}";
+
+            /// <summary>
+            /// The public cross-content search route.
+            /// </summary>
+            public const string Search = $"{Base}/{EditorialRouteConstants.Search}";
             public const string Shorts = $"{Base}/{InteractionsRouteConstants.Shorts}";
             public const string Playlists = $"{Base}/{InteractionsRouteConstants.Playlists}";
             public const string Lyrics = $"{Base}/{EditorialRouteConstants.Lyrics}";
