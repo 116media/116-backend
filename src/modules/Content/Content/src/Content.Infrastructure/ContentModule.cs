@@ -389,6 +389,7 @@ public static class ContentModule
             .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(10));
         services.AddScheduledJob<AbandonedDraftCleanupJob>(cronExpression: "0 0 * * * ?");
         services.AddScheduledJob<ShortVideoViewEventCleanupJob>(cronExpression: "0 0 3 * * ?");
+        services.AddScheduledJob<SearchProjectionReconcileJob>(cronExpression: "0 0 4 * * ?");
 
         // Seeders run from the advisory-locked seeding hosted service. The concrete type stays
         // registered for direct resolution; Testing hosts register no IDataSeeder, so the
