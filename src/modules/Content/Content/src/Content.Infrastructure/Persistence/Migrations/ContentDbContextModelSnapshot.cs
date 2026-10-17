@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using NpgsqlTypes;
 using _116.Content.Infrastructure.Persistence;
 
 #nullable disable
@@ -23,6 +24,51 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("_116.BuildingBlocks.Infrastructure.Outbox.OutboxEventEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AttemptCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("attempt_count");
+
+                    b.Property<DateTime?>("DispatchedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("dispatched_at");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("event_type");
+
+                    b.Property<string>("LastError")
+                        .HasColumnType("text")
+                        .HasColumnName("last_error");
+
+                    b.Property<DateTime>("OccurredOn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_on");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("payload");
+
+                    b.HasKey("Id")
+                        .HasName("pk_domain_event_outbox");
+
+                    b.HasIndex("OccurredOn")
+                        .HasDatabaseName("ix_domain_event_outbox_pending")
+                        .HasFilter("dispatched_at IS NULL");
+
+                    b.ToTable("domain_event_outbox", "content");
+                });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.AlbumEntity", b =>
                 {
@@ -3129,49 +3175,71 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.ToTable("video_tags", "content");
                 });
 
-            modelBuilder.Entity("_116.BuildingBlocks.Infrastructure.Outbox.OutboxEventEntity", b =>
+            modelBuilder.Entity("_116.Content.Infrastructure.Persistence.Projections.SearchDocument", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<string>("Type")
+                        .HasColumnType("text")
+                        .HasColumnName("type");
+
+                    b.Property<Guid>("EntityId")
                         .HasColumnType("uuid")
-                        .HasColumnName("id");
+                        .HasColumnName("entity_id");
 
-                    b.Property<int>("AttemptCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("attempt_count");
-
-                    b.Property<DateTime?>("DispatchedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("dispatched_at");
-
-                    b.Property<string>("EventType")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("event_type");
-
-                    b.Property<string>("LastError")
-                        .HasColumnType("text")
-                        .HasColumnName("last_error");
-
-                    b.Property<DateTime>("OccurredOn")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("occurred_on");
-
-                    b.Property<string>("Payload")
+                    b.Property<string>("Body")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("payload");
+                        .HasColumnName("body");
 
-                    b.HasKey("Id")
-                        .HasName("pk_domain_event_outbox");
+                    b.Property<Guid?>("CategoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("category_id");
 
-                    b.HasIndex("OccurredOn")
-                        .HasDatabaseName("ix_domain_event_outbox_pending")
-                        .HasFilter("dispatched_at IS NULL");
+                    b.Property<Guid?>("ImageFileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("image_file_id");
 
-                    b.ToTable("domain_event_outbox", "content");
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_visible");
+
+                    b.Property<string>("Keywords")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("keywords");
+
+                    b.Property<DateTimeOffset?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_at");
+
+                    b.Property<decimal?>("RatingAverage")
+                        .HasColumnType("numeric")
+                        .HasColumnName("rating_average");
+
+                    b.Property<NpgsqlTsVector>("SearchVector")
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("tsvector")
+                        .HasColumnName("search_vector");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("slug");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("summary");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("title");
+
+                    b.HasKey("Type", "EntityId")
+                        .HasName("pk_search_documents");
+
+                    b.ToTable("search_documents", "content");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.AlbumEntity", b =>
@@ -3185,95 +3253,77 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleArtistEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", "Article")
+                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", null)
                         .WithMany("Artists")
                         .HasForeignKey("ArticleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_article_artists_articles_article_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.ArtistEntity", "Artist")
+                    b.HasOne("_116.Content.Domain.Entities.ArtistEntity", null)
                         .WithMany()
                         .HasForeignKey("ArtistId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_article_artists_artists_artist_id");
-
-                    b.Navigation("Article");
-
-                    b.Navigation("Artist");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleBookmarkEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", "Article")
+                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", null)
                         .WithMany()
                         .HasForeignKey("ArticleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_article_bookmarks_articles_article_id");
-
-                    b.Navigation("Article");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleCommentEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", "Article")
+                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", null)
                         .WithMany()
                         .HasForeignKey("ArticleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_article_comments_articles_article_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.ArticleCommentEntity", "ParentComment")
+                    b.HasOne("_116.Content.Domain.Entities.ArticleCommentEntity", null)
                         .WithMany()
                         .HasForeignKey("ParentCommentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_article_comments_article_comments_parent_comment_id");
-
-                    b.Navigation("Article");
-
-                    b.Navigation("ParentComment");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleCommentLikeEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.ArticleCommentEntity", "Comment")
+                    b.HasOne("_116.Content.Domain.Entities.ArticleCommentEntity", null)
                         .WithMany()
                         .HasForeignKey("CommentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_article_comment_likes_article_comments_comment_id");
-
-                    b.Navigation("Comment");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.CategoryEntity", "Category")
+                    b.HasOne("_116.Content.Domain.Entities.CategoryEntity", null)
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_articles_categories_category_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.CustomerEntity", "Customer")
+                    b.HasOne("_116.Content.Domain.Entities.CustomerEntity", null)
                         .WithMany()
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_articles_customers_customer_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.PromotionLevelEntity", "PromotionLevel")
+                    b.HasOne("_116.Content.Domain.Entities.PromotionLevelEntity", null)
                         .WithMany()
                         .HasForeignKey("PromotionLevelId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_articles_promotion_levels_promotion_level_id");
-
-                    b.Navigation("Category");
-
-                    b.Navigation("Customer");
-
-                    b.Navigation("PromotionLevel");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleImageEntity", b =>
@@ -3288,26 +3338,22 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleLikeEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", "Article")
+                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", null)
                         .WithMany()
                         .HasForeignKey("ArticleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_article_likes_articles_article_id");
-
-                    b.Navigation("Article");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleShareEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", "Article")
+                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", null)
                         .WithMany()
                         .HasForeignKey("ArticleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_article_shares_articles_article_id");
-
-                    b.Navigation("Article");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleTagEntity", b =>
@@ -3319,14 +3365,12 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_article_tags_articles_article_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.TagEntity", "Tag")
+                    b.HasOne("_116.Content.Domain.Entities.TagEntity", null)
                         .WithMany()
                         .HasForeignKey("TagId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_article_tags_tags_tag_id");
-
-                    b.Navigation("Tag");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArtistSocialLinkEntity", b =>
@@ -3341,14 +3385,12 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("_116.Content.Domain.Entities.CategoryEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.ContentTypeEntity", "ContentType")
+                    b.HasOne("_116.Content.Domain.Entities.ContentTypeEntity", null)
                         .WithMany()
                         .HasForeignKey("ContentTypeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_categories_content_types_content_type_id");
-
-                    b.Navigation("ContentType");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.CategoryPricingEntity", b =>
@@ -3360,96 +3402,78 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_category_pricing_categories_category_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.PricingTierEntity", "PricingTier")
+                    b.HasOne("_116.Content.Domain.Entities.PricingTierEntity", null)
                         .WithMany()
                         .HasForeignKey("PricingTierId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_category_pricing_pricing_tiers_pricing_tier_id");
-
-                    b.Navigation("PricingTier");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ContentItemTierEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.ContentOrderItemEntity", "OrderItem")
+                    b.HasOne("_116.Content.Domain.Entities.ContentOrderItemEntity", null)
                         .WithMany("Tiers")
                         .HasForeignKey("OrderItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_content_item_tiers_content_order_items_order_item_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.PricingTierEntity", "PricingTier")
+                    b.HasOne("_116.Content.Domain.Entities.PricingTierEntity", null)
                         .WithMany()
                         .HasForeignKey("PricingTierId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_content_item_tiers_pricing_tiers_pricing_tier_id");
-
-                    b.Navigation("OrderItem");
-
-                    b.Navigation("PricingTier");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ContentOrderEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.CustomerEntity", "Customer")
+                    b.HasOne("_116.Content.Domain.Entities.CustomerEntity", null)
                         .WithMany()
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_content_orders_customers_customer_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.PackageEntity", "Package")
+                    b.HasOne("_116.Content.Domain.Entities.PackageEntity", null)
                         .WithMany()
                         .HasForeignKey("PackageId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_content_orders_packages_package_id");
-
-                    b.Navigation("Customer");
-
-                    b.Navigation("Package");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ContentOrderItemEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.CategoryEntity", "Category")
+                    b.HasOne("_116.Content.Domain.Entities.CategoryEntity", null)
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_content_order_items_categories_category_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.ContentOrderEntity", "Order")
+                    b.HasOne("_116.Content.Domain.Entities.ContentOrderEntity", null)
                         .WithMany("Items")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_content_order_items_content_orders_order_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.PromotionLevelEntity", "PromotionLevel")
+                    b.HasOne("_116.Content.Domain.Entities.PromotionLevelEntity", null)
                         .WithMany()
                         .HasForeignKey("PromotionLevelId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_content_order_items_promotion_levels_promotion_level_id");
-
-                    b.Navigation("Category");
-
-                    b.Navigation("Order");
-
-                    b.Navigation("PromotionLevel");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ContentPaymentEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.ContentOrderEntity", "Order")
+                    b.HasOne("_116.Content.Domain.Entities.ContentOrderEntity", null)
                         .WithOne("Payment")
                         .HasForeignKey("_116.Content.Domain.Entities.ContentPaymentEntity", "OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_content_payments_content_orders_order_id");
-
-                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsEntity", b =>
@@ -3466,42 +3490,34 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_lyrics_artists_artist_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.CategoryEntity", "Category")
+                    b.HasOne("_116.Content.Domain.Entities.CategoryEntity", null)
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_lyrics_categories_category_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.CustomerEntity", "Customer")
+                    b.HasOne("_116.Content.Domain.Entities.CustomerEntity", null)
                         .WithMany()
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_lyrics_customers_customer_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.VideoEntity", "Video")
+                    b.HasOne("_116.Content.Domain.Entities.VideoEntity", null)
                         .WithMany()
                         .HasForeignKey("VideoId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_lyrics_videos_video_id");
-
-                    b.Navigation("Category");
-
-                    b.Navigation("Customer");
-
-                    b.Navigation("Video");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsLikeEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.LyricsEntity", "Lyrics")
+                    b.HasOne("_116.Content.Domain.Entities.LyricsEntity", null)
                         .WithMany()
                         .HasForeignKey("LyricsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_lyrics_likes_lyrics_lyrics_id");
-
-                    b.Navigation("Lyrics");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsRevisionEntity", b =>
@@ -3526,14 +3542,12 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsShareEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.LyricsEntity", "Lyrics")
+                    b.HasOne("_116.Content.Domain.Entities.LyricsEntity", null)
                         .WithMany()
                         .HasForeignKey("LyricsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_lyrics_shares_lyrics_lyrics_id");
-
-                    b.Navigation("Lyrics");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsTagEntity", b =>
@@ -3545,14 +3559,12 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_lyrics_tags_lyrics_lyrics_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.TagEntity", "Tag")
+                    b.HasOne("_116.Content.Domain.Entities.TagEntity", null)
                         .WithMany()
                         .HasForeignKey("TagId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_lyrics_tags_tags_tag_id");
-
-                    b.Navigation("Tag");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsTranslationEntity", b =>
@@ -3587,20 +3599,18 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsViewEventEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.LyricsEntity", "Lyrics")
+                    b.HasOne("_116.Content.Domain.Entities.LyricsEntity", null)
                         .WithMany()
                         .HasForeignKey("LyricsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_lyrics_view_events_lyrics_lyrics_id");
-
-                    b.Navigation("Lyrics");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.PackageSlotEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.CategoryEntity", "Category")
-                        .WithMany("PackageSlots")
+                    b.HasOne("_116.Content.Domain.Entities.CategoryEntity", null)
+                        .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_package_slots_categories_category_id");
@@ -3611,8 +3621,6 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_package_slots_packages_package_id");
-
-                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.PlaylistVideoEntity", b =>
@@ -3624,92 +3632,76 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_playlist_videos_playlists_playlist_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.VideoEntity", "Video")
+                    b.HasOne("_116.Content.Domain.Entities.VideoEntity", null)
                         .WithMany()
                         .HasForeignKey("VideoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_playlist_videos_videos_video_id");
-
-                    b.Navigation("Video");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoBookmarkEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.ShortVideoEntity", "ShortVideo")
+                    b.HasOne("_116.Content.Domain.Entities.ShortVideoEntity", null)
                         .WithMany()
                         .HasForeignKey("ShortVideoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_short_video_bookmarks_short_videos_short_video_id");
-
-                    b.Navigation("ShortVideo");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.VideoEntity", "ParentVideo")
-                        .WithMany("Shorts")
+                    b.HasOne("_116.Content.Domain.Entities.VideoEntity", null)
+                        .WithMany()
                         .HasForeignKey("VideoId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_short_videos_videos_video_id");
-
-                    b.Navigation("ParentVideo");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoLikeEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.ShortVideoEntity", "ShortVideo")
+                    b.HasOne("_116.Content.Domain.Entities.ShortVideoEntity", null)
                         .WithMany()
                         .HasForeignKey("ShortVideoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_short_video_likes_short_videos_short_video_id");
-
-                    b.Navigation("ShortVideo");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoShareEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.ShortVideoEntity", "ShortVideo")
+                    b.HasOne("_116.Content.Domain.Entities.ShortVideoEntity", null)
                         .WithMany()
                         .HasForeignKey("ShortVideoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_short_video_shares_short_videos_short_video_id");
-
-                    b.Navigation("ShortVideo");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoViewEventEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.ShortVideoEntity", "ShortVideo")
+                    b.HasOne("_116.Content.Domain.Entities.ShortVideoEntity", null)
                         .WithMany()
                         .HasForeignKey("ShortVideoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_short_video_view_events_short_videos_short_video_id");
-
-                    b.Navigation("ShortVideo");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.StreamingLinkEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.AlbumEntity", "Album")
+                    b.HasOne("_116.Content.Domain.Entities.AlbumEntity", null)
                         .WithMany()
                         .HasForeignKey("AlbumId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("fk_streaming_links_albums_album_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.LyricsEntity", "Lyrics")
+                    b.HasOne("_116.Content.Domain.Entities.LyricsEntity", null)
                         .WithMany()
                         .HasForeignKey("LyricsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("fk_streaming_links_lyrics_lyrics_id");
-
-                    b.Navigation("Album");
-
-                    b.Navigation("Lyrics");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.VideoEntity", b =>
@@ -3720,59 +3712,49 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_videos_artists_artist_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.CategoryEntity", "Category")
+                    b.HasOne("_116.Content.Domain.Entities.CategoryEntity", null)
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_videos_categories_category_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.CustomerEntity", "Customer")
+                    b.HasOne("_116.Content.Domain.Entities.CustomerEntity", null)
                         .WithMany()
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_videos_customers_customer_id");
 
-                    b.HasOne("_116.Content.Domain.Entities.PromotionLevelEntity", "PromotionLevel")
+                    b.HasOne("_116.Content.Domain.Entities.PromotionLevelEntity", null)
                         .WithMany()
                         .HasForeignKey("PromotionLevelId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_videos_promotion_levels_promotion_level_id");
-
-                    b.Navigation("Category");
-
-                    b.Navigation("Customer");
-
-                    b.Navigation("PromotionLevel");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.VideoRatingEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.VideoEntity", "Video")
+                    b.HasOne("_116.Content.Domain.Entities.VideoEntity", null)
                         .WithMany()
                         .HasForeignKey("VideoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_video_ratings_videos_video_id");
-
-                    b.Navigation("Video");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.VideoShareEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.VideoEntity", "Video")
+                    b.HasOne("_116.Content.Domain.Entities.VideoEntity", null)
                         .WithMany()
                         .HasForeignKey("VideoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_video_shares_videos_video_id");
-
-                    b.Navigation("Video");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.VideoTagEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.TagEntity", "Tag")
+                    b.HasOne("_116.Content.Domain.Entities.TagEntity", null)
                         .WithMany()
                         .HasForeignKey("TagId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3785,8 +3767,6 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_video_tags_videos_video_id");
-
-                    b.Navigation("Tag");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleEntity", b =>
@@ -3805,8 +3785,6 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("_116.Content.Domain.Entities.CategoryEntity", b =>
                 {
-                    b.Navigation("PackageSlots");
-
                     b.Navigation("Pricing");
                 });
 
@@ -3839,8 +3817,6 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("_116.Content.Domain.Entities.VideoEntity", b =>
                 {
-                    b.Navigation("Shorts");
-
                     b.Navigation("Tags");
                 });
 #pragma warning restore 612, 618
