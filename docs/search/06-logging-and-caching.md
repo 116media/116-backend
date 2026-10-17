@@ -2,10 +2,10 @@
 
 ## Checklist
 
-- [ ] Query is **not** registered as cacheable
-- [ ] `Cache-Control: no-store` on the response
-- [ ] `q` excluded from Serilog request logging
-- [ ] No query string reaches Seq at default level
+- [x] Query is **not** registered as cacheable
+- [x] `Cache-Control: no-store` on the response
+- [x] `q` excluded from Serilog request logging
+- [x] No query string reaches Seq at default level (**untested**, see below)
 
 ---
 
@@ -97,3 +97,16 @@ signal, and it carries no reader text.
 
 When a query genuinely needs investigating, raise the level for that request rather
 than logging every query permanently. The redaction applies at the default level only.
+
+---
+
+## Known gap
+
+`SearchQueryRedaction` has no test. It is wired into `Program.cs` and the regex is
+correct by inspection, but nothing asserts that a query string fails to reach the log
+pipeline. On a privacy control that is not good enough: a change to the pattern, or a
+future route carrying the term in a different parameter, would fail silently.
+
+What it needs is a unit test over the regex for the obvious shapes (`?q=`, `&q=`, an
+empty term, a term containing `&`) and an integration assertion that a search request
+leaves no query text in the enriched `RequestPath`.
