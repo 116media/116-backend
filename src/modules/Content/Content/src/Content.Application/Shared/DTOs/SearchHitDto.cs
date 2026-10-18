@@ -23,14 +23,7 @@ public sealed record SearchHitEngagementDto(
     int? BookmarkCount,
     decimal? RatingAverage,
     int? RatingCount
-)
-{
-    /// <summary>
-    /// The figures for a hit whose source row has gone, so every one is unknown rather
-    /// than zero.
-    /// </summary>
-    public static SearchHitEngagementDto None { get; } = new(null, null, null, null, null, null, null);
-}
+);
 
 /// <summary>
 /// One search result, flattened across content types. Type-specific fields are null when
@@ -71,11 +64,6 @@ public record SearchHitDto(
 /// <param name="ByScope">The hit count each provider reported, keyed by its scope.</param>
 public sealed record SearchCountsDto(IReadOnlyDictionary<EnumSearchScope, int> ByScope)
 {
-    /// <summary>
-    /// An empty set of counts, for a query no provider answered.
-    /// </summary>
-    public static SearchCountsDto Empty { get; } = new(new Dictionary<EnumSearchScope, int>());
-
     /// <summary>
     /// The total across every scope.
     /// </summary>
