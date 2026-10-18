@@ -1,5 +1,6 @@
 using System.Text.Json;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.Search.V1;
+using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Search;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -18,6 +19,26 @@ namespace _116.Content.Integration.Tests.Application.Editorial.UseCases.Public.Q
 public class PublicSearchEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
     private const string Term = "bolingo";
+
+    /// <summary>
+    /// A term carried by one article alone, whose teaser is rich text longer than an excerpt,
+    /// so the markup stripping and the word-boundary cut are both exercised.
+    /// </summary>
+    private const string RichTextTerm = "sebene";
+
+    /// <summary>
+    /// A term carried by the one article whose teaser is markup and nothing else.
+    /// </summary>
+    private const string EmptyTeaserTerm = "ndombolo";
+
+    /// <summary>
+    /// A teaser as the editor authors it: block tags, an entity, and more prose than an
+    /// excerpt holds.
+    /// </summary>
+    private const string RichTextHeadline =
+        "<p>Le <strong>sebene</strong> &amp; la rumba</p><p>Une plongee dans les ateliers de "
+        + "Kinshasa ou les guitaristes repetent la nuit, entre les sessions de studio et les "
+        + "concerts, pour tenir la ligne melodique qui porte toute la chanson jusqu'au bout.</p>";
 
     private CategoryEntity _category = null!;
 
@@ -46,6 +67,28 @@ public class PublicSearchEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
                     .AsPublished()
                     .Build(),
                 new ArticleBuilder(_category.Id).WithTitle("Bolingo en coulisses").WithSlug("bolingo-coulisses").Build()
+            )
+        );
+
+        await SeedAsync<ContentDbContext>(ctx =>
+            ctx.Articles.Add(
+                new ArticleBuilder(_category.Id)
+                    .WithTitle("Sebene, la chronique")
+                    .WithSlug("sebene-chronique")
+                    .WithBody(RichTextHeadline, "<p>Corps de l'article.</p>")
+                    .AsPublished()
+                    .Build()
+            )
+        );
+
+        await SeedAsync<ContentDbContext>(ctx =>
+            ctx.Articles.Add(
+                new ArticleBuilder(_category.Id)
+                    .WithTitle("Ndombolo, la chronique")
+                    .WithSlug("ndombolo-chronique")
+                    .WithBody("<p></p><br/>", "<p>Corps de l'article.</p>")
+                    .AsPublished()
+                    .Build()
             )
         );
 
@@ -304,5 +347,55 @@ public class PublicSearchEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Headers.CacheControl!.NoStore.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Search_WhenTheTeaserIsRichText_ReturnsAPlainTextExcerpt()
+    {
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Search}?q={RichTextTerm}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<PublicSearchResponse>();
+        SearchHitDto hit = body.Results.Items.Should().ContainSingle().Subject;
+
+        hit.Excerpt.Should().NotContain("<", "markup would reach the reader verbatim");
+        hit.Excerpt.Should().NotContain("&amp;").And.Contain("&", "entities are decoded, not stripped");
+        hit.Excerpt.Should().Contain("sebene").And.Contain("la rumba", "adjacent blocks keep a space between them");
+    }
+
+    [Fact]
+    public async Task Search_WhenTheTeaserOutgrowsAnExcerpt_CutsItOnAWordBoundary()
+    {
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Search}?q={RichTextTerm}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<PublicSearchResponse>();
+        SearchHitDto hit = body.Results.Items.Should().ContainSingle().Subject;
+
+        hit.Excerpt.Length.Should().BeLessThanOrEqualTo(200);
+        hit.Excerpt.Should().NotEndWith(" ");
+        RichTextHeadline.Should().Contain(hit.Excerpt.Split(' ')[^1], "the cut lands between words");
+    }
+
+    [Fact]
+    public async Task Search_WhenTheTeaserIsMarkupOnly_ReturnsAnEmptyExcerpt()
+    {
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Search}?q={EmptyTeaserTerm}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<PublicSearchResponse>();
+        SearchHitDto hit = body.Results.Items.Should().ContainSingle().Subject;
+
+        hit.Excerpt.Should().BeEmpty("stripping the tags leaves nothing to show");
+        hit.Title.Should().Contain("Ndombolo", "the hit is still returned, excerpt or not");
     }
 }
