@@ -5,7 +5,7 @@
 - [x] Query is **not** registered as cacheable
 - [x] `Cache-Control: no-store` on the response
 - [x] `q` excluded from Serilog request logging
-- [x] No query string reaches Seq at default level (**untested**, see below)
+- [x] No query string reaches Seq at default level
 
 ---
 
@@ -100,13 +100,27 @@ than logging every query permanently. The redaction applies at the default level
 
 ---
 
-## Known gap
+## How the redaction is wired
 
-`SearchQueryRedaction` has no test. It is wired into `Program.cs` and the regex is
-correct by inspection, but nothing asserts that a query string fails to reach the log
-pipeline. On a privacy control that is not good enough: a change to the pattern, or a
-future route carrying the term in a different parameter, would fail silently.
+Serilog's request-logging middleware builds `RequestPath` itself and overwrites anything
+enriched under that name, so an enricher that redacted `RequestPath` had no effect at all.
+Two things carry the control now:
 
-What it needs is a unit test over the regex for the obvious shapes (`?q=`, `&q=`, an
-empty term, a term containing `&`) and an integration assertion that a search request
-leaves no query text in the enriched `RequestPath`.
+- `IncludeQueryInRequestPath` is pinned to `false`, so the raw query string never enters
+  `RequestPath`. It is the default, but pinned rather than assumed, because a change to it
+  would leak the term silently.
+- The query is attached separately as `RequestQuery`, with the term replaced. A trace still
+  shows the scope and the page that were asked for.
+
+`SearchQueryRedaction` lives in `BuildingBlocks.Presentation/Logging/` rather than the API
+host, so a unit test project can reach it.
+
+## Tests
+
+- `SearchQueryRedactionTests` (unit) covers the pattern: the term first, last and repeated
+  in the query, an empty term, an encoded term, uppercase `Q`, a parameter that merely ends
+  in `q`, a path with no query, and null. Every case asserts the term is absent rather than
+  that the output matches a shape.
+- `SearchQueryRedactionLoggingTests` (integration) drives the real endpoint over HTTP against
+  a host whose Serilog pipeline writes to an in-memory sink, and asserts the term appears in
+  no property of any event the host wrote. This is the test that caught the overwrite above.
