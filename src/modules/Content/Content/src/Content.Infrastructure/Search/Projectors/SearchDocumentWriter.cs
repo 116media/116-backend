@@ -84,6 +84,5 @@ public class SearchDocumentWriter(ContentDbContext context)
         to.ImageFileId = from.ImageFileId;
         to.CategoryId = from.CategoryId;
         to.PublishedAt = from.PublishedAt;
-        to.RatingAverage = from.RatingAverage;
     }
 }
