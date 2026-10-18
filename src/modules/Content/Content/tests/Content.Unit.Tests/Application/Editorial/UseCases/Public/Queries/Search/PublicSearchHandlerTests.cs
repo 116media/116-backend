@@ -17,6 +17,11 @@ namespace _116.Content.Unit.Tests.Application.Editorial.UseCases.Public.Queries.
 /// </summary>
 public class PublicSearchHandlerTests
 {
+    /// <summary>
+    /// Counts for a query no provider answered.
+    /// </summary>
+    private static SearchCountsDto NoCounts => new(new Dictionary<EnumSearchScope, int>());
+
     private readonly Mock<ISearchCatalog> _catalogMock = new();
     private readonly Mock<ISearchHitDtoService> _searchHitDtoServiceMock = new();
     private readonly PublicSearchHandler _handler;
@@ -40,7 +45,7 @@ public class PublicSearchHandlerTests
 
         _catalogMock
             .Setup(catalog => catalog.CountAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(SearchCountsDto.Empty);
+            .ReturnsAsync(NoCounts);
 
         _searchHitDtoServiceMock
             .Setup(service =>
