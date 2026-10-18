@@ -30,7 +30,6 @@ public class SearchDocumentConfiguration : IPostgresOnlyConfiguration, IEntityTy
         builder.Property(document => document.ImageFileId).HasColumnName("image_file_id");
         builder.Property(document => document.CategoryId).HasColumnName("category_id");
         builder.Property(document => document.PublishedAt).HasColumnName("published_at");
-        builder.Property(document => document.RatingAverage).HasColumnName("rating_average");
 
         builder
             .Property(document => document.SearchVector)
