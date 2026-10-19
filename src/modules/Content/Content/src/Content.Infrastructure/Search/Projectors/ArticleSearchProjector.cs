@@ -61,6 +61,5 @@ public class ArticleSearchProjector(ContentDbContext context, SearchDocumentWrit
             ImageFileId = article.CoverImageFileId,
             CategoryId = article.CategoryId,
             PublishedAt = article.PublishedAt,
-            RatingAverage = null,
         };
 }
