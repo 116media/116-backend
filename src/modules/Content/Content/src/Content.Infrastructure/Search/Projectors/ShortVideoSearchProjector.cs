@@ -62,6 +62,5 @@ public class ShortVideoSearchProjector(ContentDbContext context, SearchDocumentW
             ImageFileId = shortVideo.ThumbnailFileId,
             CategoryId = null,
             PublishedAt = shortVideo.CreatedAt,
-            RatingAverage = null,
         };
 }
