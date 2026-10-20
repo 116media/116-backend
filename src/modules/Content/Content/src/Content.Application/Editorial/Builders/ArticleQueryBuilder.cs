@@ -12,7 +12,9 @@ namespace _116.Content.Application.Editorial.Builders;
 /// </summary>
 public class ArticleQueryBuilder : IArticleQueryBuilder
 {
+    private string? _categorySlug;
     private Specification<ArticleEntity>? _specification;
+    private string? _tagSlug;
 
     /// <inheritdoc />
     public IArticleQueryBuilder WithSearch(string? search)
@@ -54,8 +56,47 @@ public class ArticleQueryBuilder : IArticleQueryBuilder
     }
 
     /// <inheritdoc />
-    public Specification<ArticleEntity>? Build()
+    public IArticleQueryBuilder WithCategorySlug(string? categorySlug)
     {
+        if (string.IsNullOrWhiteSpace(value: categorySlug))
+        {
+            return this;
+        }
+
+        _categorySlug = categorySlug;
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IArticleQueryBuilder WithTag(string? tagSlug)
+    {
+        if (string.IsNullOrWhiteSpace(value: tagSlug))
+        {
+            return this;
+        }
+
+        _tagSlug = tagSlug;
+        return this;
+    }
+
+    /// <inheritdoc />
+    public Specification<ArticleEntity>? Build(IQueryable<TagEntity> tags, IQueryable<CategoryEntity> categories)
+    {
+        if (_categorySlug is not null)
+        {
+            var categorySlugSpec = new ArticleByCategorySlugSpecification(
+                categorySlug: _categorySlug,
+                categories: categories
+            );
+            CombineSpecification(spec: categorySlugSpec);
+        }
+
+        if (_tagSlug is not null)
+        {
+            var tagSpec = new ArticleByTagSlugSpecification(tagSlug: _tagSlug, tags: tags);
+            CombineSpecification(spec: tagSpec);
+        }
+
         return _specification;
     }
 
