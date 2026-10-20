@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Discovery settings for the editor only. CollectSourceInformation is what makes the test
+  platform report a file and line per test, which the gutter run icons anchor to. The
+  coverage runsettings under tests/ are for CI and are unaffected by this one.
+-->
+<RunSettings>
+    <RunConfiguration>
+        <CollectSourceInformation>true</CollectSourceInformation>
+    </RunConfiguration>
+</RunSettings>
