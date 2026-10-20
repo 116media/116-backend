@@ -43,6 +43,24 @@ public class SessionRepository(IdentityDbContext context, TimeProvider timeProvi
     }
 
     /// <inheritdoc />
+    public async Task<SessionEntity?> GetByPreviousRefreshTokenHashAsync(
+        string refreshTokenHash,
+        DateTime now,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var spec = new SessionByPreviousRefreshTokenHashSpecification(refreshTokenHash: refreshTokenHash, now: now);
+        return await Context
+            .Sessions.Where(spec.ToExpression())
+            .Include(s => s.User)
+                .ThenInclude(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                        .ThenInclude(r => r.RolePermissions)
+                            .ThenInclude(rp => rp.Permission)
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task RevokeAsync(
         Guid sessionId,
         EnumSessionRevokeReason reason = EnumSessionRevokeReason.SelfSignOut,
@@ -92,8 +110,8 @@ public class SessionRepository(IdentityDbContext context, TimeProvider timeProvi
     )
     {
         var hashSpec = new SessionByRefreshTokenHashSpecification(refreshTokenHash: refreshTokenHash);
-        var revokedSpec = new SessionIsRevokedSpecification();
-        Specification<SessionEntity> spec = hashSpec.And(other: revokedSpec);
+        var signedOutSpec = new SessionRevokedBySignOutSpecification();
+        Specification<SessionEntity> spec = hashSpec.And(other: signedOutSpec);
 
         return await Context.Sessions.Where(spec.ToExpression()).FirstOrDefaultAsync(cancellationToken);
     }
@@ -315,6 +333,7 @@ public class SessionRepository(IdentityDbContext context, TimeProvider timeProvi
         Guid sessionId,
         string newRefreshTokenHash,
         DateTime newExpiresAt,
+        DateTime previousTokenUsableUntil,
         CancellationToken cancellationToken = default
     )
     {
@@ -326,6 +345,10 @@ public class SessionRepository(IdentityDbContext context, TimeProvider timeProvi
             .Sessions.Where(spec.ToExpression())
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-        session?.UpdateRefreshToken(newRefreshTokenHash: newRefreshTokenHash, newExpiresAt: newExpiresAt);
+        session?.UpdateRefreshToken(
+            newRefreshTokenHash: newRefreshTokenHash,
+            newExpiresAt: newExpiresAt,
+            previousTokenUsableUntil: previousTokenUsableUntil
+        );
     }
 }
