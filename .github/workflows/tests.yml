@@ -176,7 +176,7 @@ jobs:
                   path: coverage/integration
 
             - name: Generate unit coverage summary
-              uses: danielpalme/ReportGenerator-GitHub-Action@5
+              uses: danielpalme/ReportGenerator-GitHub-Action@v5
               with:
                   reports: coverage/unit/**/coverage.cobertura.xml
                   targetdir: coverage/report/unit
@@ -185,7 +185,7 @@ jobs:
                   title: Unit
 
             - name: Generate integration coverage summary
-              uses: danielpalme/ReportGenerator-GitHub-Action@5
+              uses: danielpalme/ReportGenerator-GitHub-Action@v5
               with:
                   reports: coverage/integration/**/coverage.cobertura.xml
                   targetdir: coverage/report/integration
