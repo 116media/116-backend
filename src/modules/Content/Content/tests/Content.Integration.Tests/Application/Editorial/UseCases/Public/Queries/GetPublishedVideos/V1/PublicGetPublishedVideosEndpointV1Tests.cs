@@ -44,6 +44,83 @@ public class PublicGetPublishedVideosEndpointV1Tests(PostgresFixture db) : BaseA
         body.Videos.PageSize.Should().Be(10);
     }
 
+    /// <summary>
+    /// Seeds a category the slug filter can name, alongside the video filed under it and one
+    /// filed elsewhere.
+    /// </summary>
+    private async Task<(
+        VideoEntity InCategory,
+        VideoEntity Elsewhere,
+        CategoryEntity Category
+    )> SeedCategorisedVideosAsync()
+    {
+        Guid otherCategoryId = await SeedCategoryAsync();
+
+        return await SeedAsync<ContentDbContext, (VideoEntity, VideoEntity, CategoryEntity)>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+
+            VideoEntity inCategory = VideoFactory.CreatePublished(category.Id);
+            VideoEntity elsewhere = VideoFactory.CreatePublished(otherCategoryId);
+            ctx.Videos.AddRange(inCategory, elsewhere);
+
+            return (inCategory, elsewhere, category);
+        });
+    }
+
+    [Fact]
+    public async Task GetPublishedVideos_WithCategorySlug_ReturnsOnlyVideosInThatCategory()
+    {
+        (VideoEntity inCategory, VideoEntity elsewhere, CategoryEntity category) = await SeedCategorisedVideosAsync();
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Videos}?categorySlug={category.Slug}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetPublishedVideosResponse body = await response.ReadAsAsync<PublicGetPublishedVideosResponse>();
+        body.Videos.Items.Should().Contain(item => item.Id == inCategory.Id);
+        body.Videos.Items.Should().NotContain(item => item.Id == elsewhere.Id);
+    }
+
+    [Fact]
+    public async Task GetPublishedVideos_WithCategorySlugInDifferentCase_ReturnsVideosInThatCategory()
+    {
+        (VideoEntity inCategory, _, CategoryEntity category) = await SeedCategorisedVideosAsync();
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync(
+            $"{ApiRoutes.Public.Videos}?categorySlug={category.Slug.Value.ToUpperInvariant()}"
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetPublishedVideosResponse body = await response.ReadAsAsync<PublicGetPublishedVideosResponse>();
+        body.Videos.Items.Should().Contain(item => item.Id == inCategory.Id);
+    }
+
+    [Fact]
+    public async Task GetPublishedVideos_WithUnknownCategorySlug_ReturnsEmptyResult()
+    {
+        await SeedCategorisedVideosAsync();
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Videos}?categorySlug=slug-with-no-videos");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetPublishedVideosResponse body = await response.ReadAsAsync<PublicGetPublishedVideosResponse>();
+        body.Videos.Items.Should().BeEmpty();
+        body.Videos.Count.Should().Be(0);
+    }
+
     private async Task<(VideoEntity TaggedVideo, VideoEntity UntaggedVideo, TagEntity Tag)> SeedTaggedVideosAsync()
     {
         Guid categoryId = await SeedCategoryAsync();
