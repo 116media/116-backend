@@ -1,7 +1,6 @@
 using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Session.Ports;
 using _116.Identity.Application.Shared.DTOs;
-using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Services;
 using _116.Identity.TestData.Mocks.Services;
@@ -150,40 +149,6 @@ public class TokenDeliveryServiceTests : IDisposable
         // Assert
         string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
         setCookieHeader.Should().Contain($"{TokenCookieConstants.AccessTokenCookie}=");
-    }
-
-    [Fact]
-    public void SetTokenCookies_ForDashboardClient_ShouldBuildAdminSessionPath()
-    {
-        // Arrange
-        DefaultHttpContext httpContext = CreateHttpContext("/api/v1/admin/auth/login");
-        SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationDto authResult = CreateAuthResult();
-
-        // Act
-        _sut.SetTokenCookies(authResult);
-
-        // Assert
-        string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
-        string expectedPath = $"/api/v1/{IdentityConstants.Admin}";
-        setCookieHeader.Should().Contain($"path={expectedPath}");
-    }
-
-    [Fact]
-    public void SetTokenCookies_ForWebAppClient_ShouldBuildPublicSessionPath()
-    {
-        // Arrange
-        DefaultHttpContext httpContext = CreateHttpContext("/api/v1/public/auth/login");
-        SetupHttpContext(httpContext, EnumClient.WebApp);
-        AuthenticationDto authResult = CreateAuthResult();
-
-        // Act
-        _sut.SetTokenCookies(authResult);
-
-        // Assert
-        string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
-        string expectedPath = $"/api/v1/{IdentityConstants.Public}";
-        setCookieHeader.Should().Contain($"path={expectedPath}");
     }
 
     [Fact]
@@ -380,38 +345,6 @@ public class TokenDeliveryServiceTests : IDisposable
 
         // Assert
         act.Should().NotThrow();
-    }
-
-    [Fact]
-    public void ClearTokenCookies_ForWebAppClient_ShouldUsePublicSessionPath()
-    {
-        // Arrange
-        DefaultHttpContext httpContext = CreateHttpContext("/api/v1/public/sessions/refresh-token");
-        SetupHttpContext(httpContext, EnumClient.WebApp);
-
-        // Act
-        _sut.ClearTokenCookies();
-
-        // Assert
-        string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
-        string expectedPath = $"/api/v1/{IdentityConstants.Public}";
-        setCookieHeader.Should().Contain($"path={expectedPath}");
-    }
-
-    [Fact]
-    public void ClearTokenCookies_WithApiV2Path_ShouldUseV2Prefix()
-    {
-        // Arrange
-        DefaultHttpContext httpContext = CreateHttpContext("/api/v2/admin/sessions/refresh-token");
-        SetupHttpContext(httpContext, EnumClient.Dashboard);
-
-        // Act
-        _sut.ClearTokenCookies();
-
-        // Assert
-        string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
-        string expectedPath = $"/api/v2/{IdentityConstants.Admin}";
-        setCookieHeader.Should().Contain($"path={expectedPath}");
     }
 
     [Fact]
@@ -612,77 +545,10 @@ public class TokenDeliveryServiceTests : IDisposable
 
     #endregion
 
-    #region BuildRefreshTokenCookiePath (tested indirectly via SetTokenCookies)
+    #region Refresh cookie scope
 
     [Fact]
-    public void SetTokenCookies_WithApiV2Path_ShouldUseV2Prefix()
-    {
-        // Arrange
-        DefaultHttpContext httpContext = CreateHttpContext("/api/v2/admin/auth/login");
-        SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationDto authResult = CreateAuthResult();
-
-        // Act
-        _sut.SetTokenCookies(authResult);
-
-        // Assert
-        string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
-        string expectedPath = $"/api/v2/{IdentityConstants.Admin}";
-        setCookieHeader.Should().Contain($"path={expectedPath}");
-    }
-
-    [Fact]
-    public void SetTokenCookies_WithNoApiVersionInPath_ShouldFallbackToV1()
-    {
-        // Arrange
-        DefaultHttpContext httpContext = CreateHttpContext("/some/other/path");
-        SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationDto authResult = CreateAuthResult();
-
-        // Act
-        _sut.SetTokenCookies(authResult);
-
-        // Assert
-        string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
-        string expectedPath = $"/api/v1/{IdentityConstants.Admin}";
-        setCookieHeader.Should().Contain($"path={expectedPath}");
-    }
-
-    [Fact]
-    public void SetTokenCookies_WithEmptyRequestPath_ShouldFallbackToV1()
-    {
-        // Arrange
-        DefaultHttpContext httpContext = new();
-        SetupHttpContext(httpContext, EnumClient.Dashboard);
-        AuthenticationDto authResult = CreateAuthResult();
-
-        // Act
-        _sut.SetTokenCookies(authResult);
-
-        // Assert
-        string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
-        string expectedPath = $"/api/v1/{IdentityConstants.Admin}";
-        setCookieHeader.Should().Contain($"path={expectedPath}");
-    }
-
-    [Fact]
-    public void ClearTokenCookies_WithNoApiVersionInPath_ShouldFallbackToV1()
-    {
-        // Arrange
-        DefaultHttpContext httpContext = CreateHttpContext("/some/other/path");
-        SetupHttpContext(httpContext, EnumClient.Dashboard);
-
-        // Act
-        _sut.ClearTokenCookies();
-
-        // Assert
-        string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
-        string expectedPath = $"/api/v1/{IdentityConstants.Admin}";
-        setCookieHeader.Should().Contain($"path={expectedPath}");
-    }
-
-    [Fact]
-    public void SetTokenCookies_ShouldScopeRefreshCookie_SoSignOutReceivesIt()
+    public void SetTokenCookies_ShouldRootScopeRefreshCookie_SoEveryConsumerReceivesIt()
     {
         // Arrange
         DefaultHttpContext httpContext = CreateHttpContext("/api/v1/public/auth/login");
@@ -692,14 +558,28 @@ public class TokenDeliveryServiceTests : IDisposable
         // Act
         _sut.SetTokenCookies(authResult);
 
-        // Assert — the refresh cookie must be scoped to a parent of BOTH the refresh and
-        // sign-out routes; scoping it to /sessions kept it from reaching /auth/sign-out,
-        // so the token was never sent there and revocation failed with a 400.
+        // Assert
         string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
-        string cookiePath = $"/api/v1/{IdentityConstants.Public}";
-        setCookieHeader.Should().Contain($"path={cookiePath}");
-        $"/api/v1/{IdentityConstants.Public}/auth/sign-out".Should().StartWith(cookiePath);
-        $"/api/v1/{IdentityConstants.Public}/sessions/refresh-token".Should().StartWith(cookiePath);
+        setCookieHeader.Should().Contain($"{TokenCookieConstants.RefreshTokenCookie}=");
+        setCookieHeader.Should().Contain("path=/");
+        setCookieHeader.Should().NotContain("path=/api");
+    }
+
+    [Fact]
+    public void ClearTokenCookies_ShouldClearTheRefreshCookieAtTheRoot()
+    {
+        // Arrange
+        DefaultHttpContext httpContext = CreateHttpContext("/api/v1/public/auth/sign-out");
+        SetupHttpContext(httpContext, EnumClient.WebApp);
+
+        // Act
+        _sut.ClearTokenCookies();
+
+        // Assert
+        string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
+        setCookieHeader.Should().Contain($"{TokenCookieConstants.RefreshTokenCookie}=");
+        setCookieHeader.Should().Contain("path=/");
+        setCookieHeader.Should().NotContain("path=/api");
     }
 
     #endregion
