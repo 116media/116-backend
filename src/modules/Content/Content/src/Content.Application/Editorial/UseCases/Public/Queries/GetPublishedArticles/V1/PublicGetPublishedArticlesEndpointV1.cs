@@ -49,6 +49,7 @@ internal class PublicGetPublishedArticlesEndpointV1 : ICarterModule
                     int pageSize = 10,
                     string? search = null,
                     Guid? categoryId = null,
+                    string? categorySlug = null,
                     string? tagSlug = null
                 ) =>
                 {
@@ -65,6 +66,7 @@ internal class PublicGetPublishedArticlesEndpointV1 : ICarterModule
                         PaginatedRequest: paginatedRequest,
                         Search: search,
                         CategoryId: categoryId,
+                        CategorySlug: categorySlug,
                         TagSlug: tagSlug,
                         CurrentUserId: userId
                     );
