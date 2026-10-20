@@ -80,6 +80,8 @@ public static class MockArticleRepository
                     It.IsAny<string?>(),
                     It.IsAny<EnumContentStatus?>(),
                     It.IsAny<Guid?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
                     It.IsAny<CancellationToken>()
                 )
             )
@@ -154,6 +156,8 @@ public static class MockArticleRepository
                     It.IsAny<string?>(),
                     It.IsAny<EnumContentStatus?>(),
                     It.IsAny<Guid?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
                     It.IsAny<CancellationToken>()
                 )
             )
