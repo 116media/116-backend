@@ -41,6 +41,8 @@ public interface IArticleRepository
     /// <param name="search">Optional search term to filter articles by title, description, or meta fields.</param>
     /// <param name="status">Optional filter by content status.</param>
     /// <param name="categoryId">Optional filter by category identifier.</param>
+    /// <param name="categorySlug">Optional filter by category slug.</param>
+    /// <param name="tagSlug">Optional filter by tag slug.</param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
     /// <returns>A tuple containing the list of articles and the total count.</returns>
     Task<(List<ArticleEntity> Articles, int TotalCount)> GetAllAsync(
@@ -49,6 +51,8 @@ public interface IArticleRepository
         string? search,
         EnumContentStatus? status,
         Guid? categoryId,
+        string? categorySlug = null,
+        string? tagSlug = null,
         CancellationToken cancellationToken = default
     );
 
