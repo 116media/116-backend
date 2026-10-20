@@ -390,6 +390,7 @@ public static class MockSessionRepository
                     sessionId,
                     It.IsAny<string>(),
                     It.IsAny<DateTime>(),
+                    It.IsAny<DateTime>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once
@@ -426,6 +427,7 @@ public static class MockSessionRepository
                 x.UpdateRefreshTokenAsync(
                     It.IsAny<Guid>(),
                     It.IsAny<string>(),
+                    It.IsAny<DateTime>(),
                     It.IsAny<DateTime>(),
                     It.IsAny<CancellationToken>()
                 )
