@@ -27,6 +27,12 @@ public sealed class SessionRevocationCache(IMemoryCache cache) : ISessionRevocat
     }
 
     /// <inheritdoc />
+    public void Allow(Guid sessionId)
+    {
+        cache.Remove(Key(sessionId));
+    }
+
+    /// <inheritdoc />
     public bool IsRevoked(Guid sessionId)
     {
         return cache.TryGetValue(Key(sessionId), out _);
