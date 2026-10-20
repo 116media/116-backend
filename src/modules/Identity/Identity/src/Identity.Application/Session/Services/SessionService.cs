@@ -3,6 +3,7 @@ using _116.BuildingBlocks.Application.Configurations.Schemas;
 using _116.BuildingBlocks.Presentation.Constants;
 using _116.Identity.Application.Adapters.Wangkanai.Detection;
 using _116.Identity.Application.Auth.Ports;
+using _116.Identity.Application.Session.Cache;
 using _116.Identity.Application.Session.Ports;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Cache;
@@ -24,6 +25,7 @@ namespace _116.Identity.Application.Session.Services;
 /// <param name="sessionMetadataService">Service for extracting session metadata from HTTP context.</param>
 /// <param name="tokenStateRepository">Repository providing the user's token-invalidation markers.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="revocationCache">Denylist of revoked session ids.</param>
 /// <param name="sessionErrors">Session domain error service for generating domain exceptions.</param>
 public class SessionService(
     IJwtService jwtService,
@@ -32,6 +34,7 @@ public class SessionService(
     ISessionMetadataService sessionMetadataService,
     IUserTokenStateRepository tokenStateRepository,
     IIdentityUnitOfWork unitOfWork,
+    ISessionRevocationCache revocationCache,
     SessionErrors sessionErrors
 ) : ISessionService
 {
@@ -74,6 +77,10 @@ public class SessionService(
         {
             sessionId = existingSession.Id;
             existingSession.Reactivate(refreshTokenHash, refreshTokenExpiresAt, absoluteExpiresAt);
+
+            // Signing out left this id on the denylist; reusing the row would otherwise mint
+            // tokens that reference a session the validator still rejects.
+            revocationCache.Allow(sessionId: sessionId);
         }
         else
         {
