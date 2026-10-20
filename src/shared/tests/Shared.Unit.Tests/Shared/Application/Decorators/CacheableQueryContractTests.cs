@@ -165,19 +165,63 @@ public class CacheableQueryContractTests
             ]
         ),
         [typeof(PublicGetPublishedArticlesQuery)] = new(
-            () => new PublicGetPublishedArticlesQuery(Page, Search: null, CategoryId: null, TagSlug: null),
+            () =>
+                new PublicGetPublishedArticlesQuery(
+                    Page,
+                    Search: null,
+                    CategoryId: null,
+                    CategorySlug: null,
+                    TagSlug: null
+                ),
             [
-                () => new PublicGetPublishedArticlesQuery(OtherPage, Search: null, CategoryId: null, TagSlug: null),
-                () => new PublicGetPublishedArticlesQuery(Page, Search: null, CategoryId: SomeId, TagSlug: null),
-                () => new PublicGetPublishedArticlesQuery(Page, Search: null, CategoryId: null, TagSlug: "afro"),
-            ],
-            [
-                () => new PublicGetPublishedArticlesQuery(Page, Search: "term", CategoryId: null, TagSlug: null),
+                () =>
+                    new PublicGetPublishedArticlesQuery(
+                        OtherPage,
+                        Search: null,
+                        CategoryId: null,
+                        CategorySlug: null,
+                        TagSlug: null
+                    ),
+                () =>
+                    new PublicGetPublishedArticlesQuery(
+                        Page,
+                        Search: null,
+                        CategoryId: SomeId,
+                        CategorySlug: null,
+                        TagSlug: null
+                    ),
                 () =>
                     new PublicGetPublishedArticlesQuery(
                         Page,
                         Search: null,
                         CategoryId: null,
+                        CategorySlug: "gospel",
+                        TagSlug: null
+                    ),
+                () =>
+                    new PublicGetPublishedArticlesQuery(
+                        Page,
+                        Search: null,
+                        CategoryId: null,
+                        CategorySlug: null,
+                        TagSlug: "afro"
+                    ),
+            ],
+            [
+                () =>
+                    new PublicGetPublishedArticlesQuery(
+                        Page,
+                        Search: "term",
+                        CategoryId: null,
+                        CategorySlug: null,
+                        TagSlug: null
+                    ),
+                () =>
+                    new PublicGetPublishedArticlesQuery(
+                        Page,
+                        Search: null,
+                        CategoryId: null,
+                        CategorySlug: null,
                         TagSlug: null,
                         CurrentUserId: SomeId
                     ),
@@ -234,13 +278,58 @@ public class CacheableQueryContractTests
             ]
         ),
         [typeof(PublicGetPublishedVideosQuery)] = new(
-            () => new PublicGetPublishedVideosQuery(Page, Search: null, CategoryId: null, TagSlug: null),
+            () =>
+                new PublicGetPublishedVideosQuery(
+                    Page,
+                    Search: null,
+                    CategoryId: null,
+                    CategorySlug: null,
+                    TagSlug: null
+                ),
             [
-                () => new PublicGetPublishedVideosQuery(OtherPage, Search: null, CategoryId: null, TagSlug: null),
-                () => new PublicGetPublishedVideosQuery(Page, Search: null, CategoryId: SomeId, TagSlug: null),
-                () => new PublicGetPublishedVideosQuery(Page, Search: null, CategoryId: null, TagSlug: "afro"),
+                () =>
+                    new PublicGetPublishedVideosQuery(
+                        OtherPage,
+                        Search: null,
+                        CategoryId: null,
+                        CategorySlug: null,
+                        TagSlug: null
+                    ),
+                () =>
+                    new PublicGetPublishedVideosQuery(
+                        Page,
+                        Search: null,
+                        CategoryId: SomeId,
+                        CategorySlug: null,
+                        TagSlug: null
+                    ),
+                () =>
+                    new PublicGetPublishedVideosQuery(
+                        Page,
+                        Search: null,
+                        CategoryId: null,
+                        CategorySlug: "gospel",
+                        TagSlug: null
+                    ),
+                () =>
+                    new PublicGetPublishedVideosQuery(
+                        Page,
+                        Search: null,
+                        CategoryId: null,
+                        CategorySlug: null,
+                        TagSlug: "afro"
+                    ),
             ],
-            [() => new PublicGetPublishedVideosQuery(Page, Search: "term", CategoryId: null, TagSlug: null)]
+            [
+                () =>
+                    new PublicGetPublishedVideosQuery(
+                        Page,
+                        Search: "term",
+                        CategoryId: null,
+                        CategorySlug: null,
+                        TagSlug: null
+                    ),
+            ]
         ),
         [typeof(PublicGetShortsFeedQuery)] = new(
             () => new PublicGetShortsFeedQuery(Cursor: null, PageSize: 10),
