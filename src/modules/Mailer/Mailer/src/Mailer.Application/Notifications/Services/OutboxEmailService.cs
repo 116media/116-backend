@@ -1,4 +1,5 @@
 using _116.Mailer.Application.Shared.Persistence;
+using _116.Mailer.Application.Shared.Ports;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Application.Shared.Templates.Emails;
 using _116.Mailer.Contracts.Application.DTOs;
@@ -15,10 +16,12 @@ namespace _116.Mailer.Application.Notifications.Services;
 /// <param name="renderer">The template renderer.</param>
 /// <param name="outboxRepository">The outbox persistence port.</param>
 /// <param name="unitOfWork">The Mailer module unit of work.</param>
+/// <param name="dispatchSignal">Signal asking the dispatcher to run now.</param>
 public class OutboxEmailService(
     IEmailTemplateRenderer renderer,
     IOutboxEmailRepository outboxRepository,
-    IMailerUnitOfWork unitOfWork
+    IMailerUnitOfWork unitOfWork,
+    IOutboxDispatchSignal dispatchSignal
 ) : IEmailService
 {
     /// <inheritdoc />
@@ -44,5 +47,8 @@ public class OutboxEmailService(
 
         await outboxRepository.AddAsync(email, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken);
+
+        // Signalled after the commit, so the dispatcher never races a row that is not there.
+        await dispatchSignal.RequestDispatchAsync(cancellationToken);
     }
 }
