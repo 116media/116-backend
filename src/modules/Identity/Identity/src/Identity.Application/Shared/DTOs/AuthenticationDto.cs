@@ -15,7 +15,7 @@ public record AuthenticationDto(
     UserResponseDto User,
     string AccessToken,
     DateTime AccessTokenExpiresAt,
-    string RefreshToken,
+    string? RefreshToken,
     DateTime RefreshTokenExpiresAt,
     string TokenType = "Bearer"
 );
