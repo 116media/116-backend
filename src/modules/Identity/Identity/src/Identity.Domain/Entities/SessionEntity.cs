@@ -92,6 +92,22 @@ public partial class SessionEntity : Aggregate<Guid>
     public DateTime? RevokedAt { get; private set; }
 
     /// <summary>
+    /// Why the session was revoked. Null while the session has not been revoked.
+    /// </summary>
+    public EnumSessionRevokeReason? RevokeReason { get; private set; }
+
+    /// <summary>
+    /// Hash of the refresh token this session held before its last rotation.
+    /// </summary>
+    [MaxLength(SessionConstants.MaxRefreshTokenHashLength)]
+    public string? PreviousRefreshTokenHash { get; private set; }
+
+    /// <summary>
+    /// UTC instant until which <see cref="PreviousRefreshTokenHash" /> still buys an access token.
+    /// </summary>
+    public DateTime? PreviousRefreshTokenUsableUntil { get; private set; }
+
+    /// <summary>
     /// Navigation property to the owning user.
     /// </summary>
     public UserEntity User { get; private set; } = null!;
