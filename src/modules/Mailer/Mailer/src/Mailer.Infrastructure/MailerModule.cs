@@ -75,6 +75,7 @@ public static class MailerModule
 
         RegisterEmailSender(services);
 
+        services.AddScoped<IOutboxDispatchSignal, QuartzOutboxDispatchSignal>();
         services.AddScheduledJob<OutboxEmailDispatcherJob>(cronExpression: MailerConstants.DispatchCron);
 
         return services;
