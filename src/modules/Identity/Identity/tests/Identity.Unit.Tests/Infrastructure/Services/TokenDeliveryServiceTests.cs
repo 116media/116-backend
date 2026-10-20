@@ -566,6 +566,23 @@ public class TokenDeliveryServiceTests : IDisposable
     }
 
     [Fact]
+    public void SetTokenCookies_WithoutARefreshToken_ShouldWriteOnlyTheAccessCookie()
+    {
+        // Arrange
+        DefaultHttpContext httpContext = CreateHttpContext("/api/v1/public/sessions/refresh-token");
+        SetupHttpContext(httpContext, EnumClient.WebApp);
+        AuthenticationDto authResult = CreateAuthResult() with { RefreshToken = null };
+
+        // Act
+        _sut.SetTokenCookies(authResult);
+
+        // Assert
+        string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
+        setCookieHeader.Should().Contain($"{TokenCookieConstants.AccessTokenCookie}=");
+        setCookieHeader.Should().NotContain($"{TokenCookieConstants.RefreshTokenCookie}=");
+    }
+
+    [Fact]
     public void ClearTokenCookies_ShouldClearTheRefreshCookieAtTheRoot()
     {
         // Arrange
