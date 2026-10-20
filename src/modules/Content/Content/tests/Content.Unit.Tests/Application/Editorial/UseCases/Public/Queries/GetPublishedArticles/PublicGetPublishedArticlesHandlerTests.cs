@@ -51,6 +51,7 @@ public class PublicGetPublishedArticlesHandlerTests : BaseContentHandlerTest
             PaginatedRequest: new PaginatedRequest(0, 10),
             Search: null,
             CategoryId: null,
+            CategorySlug: null,
             TagSlug: null
         );
 
@@ -72,6 +73,7 @@ public class PublicGetPublishedArticlesHandlerTests : BaseContentHandlerTest
             PaginatedRequest: new PaginatedRequest(0, 10),
             Search: null,
             CategoryId: null,
+            CategorySlug: null,
             TagSlug: null
         );
 
@@ -94,6 +96,7 @@ public class PublicGetPublishedArticlesHandlerTests : BaseContentHandlerTest
             PaginatedRequest: new PaginatedRequest(0, 10),
             Search: null,
             CategoryId: null,
+            CategorySlug: null,
             TagSlug: null
         );
 
@@ -118,6 +121,7 @@ public class PublicGetPublishedArticlesHandlerTests : BaseContentHandlerTest
             PaginatedRequest: new PaginatedRequest(0, 10),
             Search: null,
             CategoryId: null,
+            CategorySlug: null,
             TagSlug: null,
             CurrentUserId: Guid.NewGuid()
         );
