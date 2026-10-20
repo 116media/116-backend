@@ -26,6 +26,34 @@ public class SessionRevocationCacheTests : IDisposable
     }
 
     [Fact]
+    public void Allow_ShouldTakeARevokedSessionOffTheDenylist()
+    {
+        // Arrange
+        var sessionId = Guid.NewGuid();
+        _cache.Revoke(sessionId: sessionId, ttl: TimeSpan.FromMinutes(5));
+
+        // Act
+        _cache.Allow(sessionId: sessionId);
+
+        // Assert
+        _cache.IsRevoked(sessionId: sessionId).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Allow_ForASessionThatWasNeverRevoked_ShouldLeaveItAllowed()
+    {
+        // Arrange
+        var sessionId = Guid.NewGuid();
+
+        // Act
+        Action act = () => _cache.Allow(sessionId: sessionId);
+
+        // Assert
+        act.Should().NotThrow();
+        _cache.IsRevoked(sessionId: sessionId).Should().BeFalse();
+    }
+
+    [Fact]
     public void IsRevoked_ForAnUnknownSession_ShouldBeFalse()
     {
         // Arrange
