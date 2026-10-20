@@ -70,6 +70,20 @@ public interface ISessionRepository
     );
 
     /// <summary>
+    /// Gets the active session whose previous refresh token is still inside its rotation grace
+    /// window, with the user graph needed to mint an access token.
+    /// </summary>
+    /// <param name="refreshTokenHash">The hashed refresh token.</param>
+    /// <param name="now">The instant the grace window is judged at.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <returns>The session entity if one matches, null otherwise.</returns>
+    Task<SessionEntity?> GetByPreviousRefreshTokenHashAsync(
+        string refreshTokenHash,
+        DateTime now,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Gets a session by its ID.
     /// </summary>
     /// <param name="sessionId">The session ID.</param>
@@ -226,11 +240,13 @@ public interface ISessionRepository
     /// <param name="sessionId">The session ID.</param>
     /// <param name="newRefreshTokenHash">The new hashed refresh token.</param>
     /// <param name="newExpiresAt">The new expiration date.</param>
+    /// <param name="previousTokenUsableUntil">How long the superseded token still buys an access token.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     Task UpdateRefreshTokenAsync(
         Guid sessionId,
         string newRefreshTokenHash,
         DateTime newExpiresAt,
+        DateTime previousTokenUsableUntil,
         CancellationToken cancellationToken = default
     );
 }
