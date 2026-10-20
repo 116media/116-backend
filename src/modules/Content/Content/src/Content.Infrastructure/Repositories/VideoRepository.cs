@@ -24,6 +24,7 @@ public class VideoRepository(ContentDbContext context) : ContentRepository<Video
         string? search,
         EnumContentStatus? status,
         Guid? categoryId,
+        string? categorySlug = null,
         string? tagSlug = null,
         CancellationToken cancellationToken = default
     )
@@ -34,8 +35,9 @@ public class VideoRepository(ContentDbContext context) : ContentRepository<Video
             .WithSearch(search: search)
             .WithStatus(status: status)
             .WithCategory(categoryId: categoryId)
+            .WithCategorySlug(categorySlug: categorySlug)
             .WithTag(tagSlug: tagSlug)
-            .Build(tags: Context.Tags);
+            .Build(tags: Context.Tags, categories: Context.Categories);
 
         if (spec is not null)
         {
