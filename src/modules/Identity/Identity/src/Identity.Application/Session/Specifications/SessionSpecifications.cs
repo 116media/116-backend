@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using _116.BuildingBlocks.Domain.Specifications;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 
 namespace _116.Identity.Application.Session.Specifications;
 
@@ -111,6 +112,37 @@ public class SessionIsRevokedSpecification : Specification<SessionEntity>
     public override Expression<Func<SessionEntity, bool>> ToExpression()
     {
         return session => session.IsRevoked == true;
+    }
+}
+
+/// <summary>
+/// Specification that matches sessions a user deliberately signed out of. Revocations the
+/// system or an administrator performed are excluded, so their fallout is never read back as
+/// a replayed credential.
+/// </summary>
+public class SessionRevokedBySignOutSpecification : Specification<SessionEntity>
+{
+    public override Expression<Func<SessionEntity, bool>> ToExpression()
+    {
+        return session => session.IsRevoked && session.RevokeReason == EnumSessionRevokeReason.SelfSignOut;
+    }
+}
+
+/// <summary>
+/// Specification that matches an active session whose previous refresh token is still inside
+/// its rotation grace window.
+/// </summary>
+public class SessionByPreviousRefreshTokenHashSpecification(string refreshTokenHash, DateTime now)
+    : Specification<SessionEntity>
+{
+    public override Expression<Func<SessionEntity, bool>> ToExpression()
+    {
+        return session =>
+            !session.IsRevoked
+            && session.ExpiresAt > now
+            && session.PreviousRefreshTokenHash == refreshTokenHash
+            && session.PreviousRefreshTokenUsableUntil != null
+            && session.PreviousRefreshTokenUsableUntil > now;
     }
 }
 
