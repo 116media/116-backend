@@ -10,7 +10,7 @@ namespace _116.Identity.Application.Session.Services;
 public record RefreshTokenData(
     UserEntity User,
     SessionEntity Session,
-    string NewRefreshToken,
+    string? NewRefreshToken,
     UserSecurityState TokenState
 );
 
