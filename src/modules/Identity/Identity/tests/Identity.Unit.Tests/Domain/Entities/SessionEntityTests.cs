@@ -167,7 +167,7 @@ public class SessionEntityTests
         DateTime originalAbsoluteExpiresAt = session.AbsoluteExpiresAt;
 
         // Act
-        session.UpdateRefreshToken(newRefreshTokenHash, newExpiresAt);
+        session.UpdateRefreshToken(newRefreshTokenHash, newExpiresAt, DateTime.UtcNow.AddSeconds(30));
 
         // Assert
         session.RefreshTokenHash.Should().Be(newRefreshTokenHash);
@@ -184,7 +184,7 @@ public class SessionEntityTests
         DateTime newExpiresAt = DateTime.UtcNow.AddDays(30);
 
         // Act
-        session.UpdateRefreshToken(newRefreshTokenHash, newExpiresAt);
+        session.UpdateRefreshToken(newRefreshTokenHash, newExpiresAt, DateTime.UtcNow.AddSeconds(30));
 
         // Assert
         session.RefreshTokenHash.Should().Be(newRefreshTokenHash);
@@ -422,6 +422,30 @@ public class SessionEntityTests
         SessionReactivatedEvent raised = session.DomainEvents.OfType<SessionReactivatedEvent>().Single();
         raised.SessionId.Should().Be(session.Id);
         raised.UserId.Should().Be(session.UserId);
+    }
+
+    [Fact]
+    public void Revoke_ShouldRecordTheReasonOnTheSession()
+    {
+        SessionEntity session = SessionFactory.Create(Guid.NewGuid(), "device_1");
+
+        session.Revoke(reason: EnumSessionRevokeReason.SecurityInvalidation, now: DateTime.UtcNow);
+
+        session.RevokeReason.Should().Be(EnumSessionRevokeReason.SecurityInvalidation);
+    }
+
+    [Fact]
+    public void UpdateRefreshToken_ShouldKeepTheSupersededHashForItsGraceWindow()
+    {
+        SessionEntity session = SessionFactory.Create(Guid.NewGuid(), "device_1");
+        string supersededHash = session.RefreshTokenHash;
+        DateTime usableUntil = DateTime.UtcNow.AddSeconds(30);
+
+        session.UpdateRefreshToken("rotated_hash", DateTime.UtcNow.AddDays(1), usableUntil);
+
+        session.RefreshTokenHash.Should().Be("rotated_hash");
+        session.PreviousRefreshTokenHash.Should().Be(supersededHash);
+        session.PreviousRefreshTokenUsableUntil.Should().Be(usableUntil);
     }
 
     [Fact]
