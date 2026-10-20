@@ -14,6 +14,158 @@ public class PublicGetPublishedArticlesEndpointV1Tests(PostgresFixture db) : Bas
 {
     private async Task<Guid> SeedCategoryAsync() => await SeedAsync<ContentDbContext, Guid>(ContentSeeder.AddCategory);
 
+    /// <summary>
+    /// Seeds a category the slug filter can name, alongside the article filed under it and one
+    /// filed elsewhere.
+    /// </summary>
+    private async Task<(
+        ArticleEntity InCategory,
+        ArticleEntity Elsewhere,
+        CategoryEntity Category
+    )> SeedCategorisedArticlesAsync()
+    {
+        Guid otherCategoryId = await SeedCategoryAsync();
+
+        return await SeedAsync<ContentDbContext, (ArticleEntity, ArticleEntity, CategoryEntity)>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+
+            ArticleEntity inCategory = ArticleFactory.CreatePublished(category.Id);
+            ArticleEntity elsewhere = ArticleFactory.CreatePublished(otherCategoryId);
+            ctx.Articles.AddRange(inCategory, elsewhere);
+
+            return (inCategory, elsewhere, category);
+        });
+    }
+
+    /// <summary>
+    /// Seeds a tag carried by one published article and not by another.
+    /// </summary>
+    private async Task<(
+        ArticleEntity TaggedArticle,
+        ArticleEntity UntaggedArticle,
+        TagEntity Tag
+    )> SeedTaggedArticlesAsync()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+
+        return await SeedAsync<ContentDbContext, (ArticleEntity, ArticleEntity, TagEntity)>(ctx =>
+        {
+            ArticleEntity taggedArticle = ArticleFactory.CreatePublished(categoryId);
+            ArticleEntity untaggedArticle = ArticleFactory.CreatePublished(categoryId);
+            ctx.Articles.AddRange(taggedArticle, untaggedArticle);
+
+            TagEntity tag = TagFactory.Create();
+            ctx.Tags.Add(tag);
+            taggedArticle.ReplaceTags([.. taggedArticle.Tags.Select(t => t.TagId), tag.Id]);
+
+            return (taggedArticle, untaggedArticle, tag);
+        });
+    }
+
+    [Fact]
+    public async Task GetPublishedArticles_WithCategorySlug_ReturnsOnlyArticlesInThatCategory()
+    {
+        (ArticleEntity inCategory, ArticleEntity elsewhere, CategoryEntity category) =
+            await SeedCategorisedArticlesAsync();
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Articles}?categorySlug={category.Slug}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetPublishedArticlesResponse body = await response.ReadAsAsync<PublicGetPublishedArticlesResponse>();
+        body.Articles.Items.Should().Contain(item => item.Id == inCategory.Id);
+        body.Articles.Items.Should().NotContain(item => item.Id == elsewhere.Id);
+    }
+
+    [Fact]
+    public async Task GetPublishedArticles_WithCategorySlugInDifferentCase_ReturnsArticlesInThatCategory()
+    {
+        (ArticleEntity inCategory, _, CategoryEntity category) = await SeedCategorisedArticlesAsync();
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync(
+            $"{ApiRoutes.Public.Articles}?categorySlug={category.Slug.Value.ToUpperInvariant()}"
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetPublishedArticlesResponse body = await response.ReadAsAsync<PublicGetPublishedArticlesResponse>();
+        body.Articles.Items.Should().Contain(item => item.Id == inCategory.Id);
+    }
+
+    [Fact]
+    public async Task GetPublishedArticles_WithUnknownCategorySlug_ReturnsEmptyResult()
+    {
+        await SeedCategorisedArticlesAsync();
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Articles}?categorySlug=slug-with-no-articles");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetPublishedArticlesResponse body = await response.ReadAsAsync<PublicGetPublishedArticlesResponse>();
+        body.Articles.Items.Should().BeEmpty();
+        body.Articles.Count.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetPublishedArticles_WithTagSlug_ReturnsOnlyTaggedArticles()
+    {
+        (ArticleEntity taggedArticle, ArticleEntity untaggedArticle, TagEntity tag) = await SeedTaggedArticlesAsync();
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Articles}?tagSlug={tag.Slug}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetPublishedArticlesResponse body = await response.ReadAsAsync<PublicGetPublishedArticlesResponse>();
+        body.Articles.Items.Should().Contain(item => item.Id == taggedArticle.Id);
+        body.Articles.Items.Should().NotContain(item => item.Id == untaggedArticle.Id);
+    }
+
+    [Fact]
+    public async Task GetPublishedArticles_WithTagSlugInDifferentCase_ReturnsTaggedArticles()
+    {
+        (ArticleEntity taggedArticle, _, TagEntity tag) = await SeedTaggedArticlesAsync();
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync(
+            $"{ApiRoutes.Public.Articles}?tagSlug={tag.Slug.Value.ToUpperInvariant()}"
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetPublishedArticlesResponse body = await response.ReadAsAsync<PublicGetPublishedArticlesResponse>();
+        body.Articles.Items.Should().Contain(item => item.Id == taggedArticle.Id);
+    }
+
+    [Fact]
+    public async Task GetPublishedArticles_WithUnknownTagSlug_ReturnsEmptyResult()
+    {
+        await SeedTaggedArticlesAsync();
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Articles}?tagSlug=slug-with-no-articles");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetPublishedArticlesResponse body = await response.ReadAsAsync<PublicGetPublishedArticlesResponse>();
+        body.Articles.Items.Should().BeEmpty();
+        body.Articles.Count.Should().Be(0);
+    }
+
     [Fact]
     public async Task GetPublishedArticles_AsAnonymous_ReturnsOk()
     {
