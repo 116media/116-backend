@@ -873,7 +873,7 @@ public class SessionRepositoryTests : IDisposable
         DateTime newExpiresAt = DateTime.UtcNow.AddDays(60);
 
         // Act
-        await _repository.UpdateRefreshTokenAsync(session.Id, newHash, newExpiresAt);
+        await _repository.UpdateRefreshTokenAsync(session.Id, newHash, newExpiresAt, DateTime.UtcNow.AddSeconds(30));
         await _context.SaveChangesAsync();
 
         // Assert
@@ -891,7 +891,12 @@ public class SessionRepositoryTests : IDisposable
 
         // Act
         Func<Task> act = async () =>
-            await _repository.UpdateRefreshTokenAsync(nonExistentId, "new-hash", DateTime.UtcNow.AddDays(30));
+            await _repository.UpdateRefreshTokenAsync(
+                nonExistentId,
+                "new-hash",
+                DateTime.UtcNow.AddDays(30),
+                DateTime.UtcNow.AddSeconds(30)
+            );
 
         // Assert
         await act.Should().NotThrowAsync();
@@ -909,7 +914,12 @@ public class SessionRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        await _repository.UpdateRefreshTokenAsync(session.Id, "new-hash", DateTime.UtcNow.AddDays(30));
+        await _repository.UpdateRefreshTokenAsync(
+            session.Id,
+            "new-hash",
+            DateTime.UtcNow.AddDays(30),
+            DateTime.UtcNow.AddSeconds(30)
+        );
         await _context.SaveChangesAsync();
 
         // Assert
