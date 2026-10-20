@@ -1,6 +1,7 @@
 using _116.Identity.Application.Shared.OutboundEmails;
 using _116.Mailer.Application.Notifications.Services;
 using _116.Mailer.Application.Shared.Persistence;
+using _116.Mailer.Application.Shared.Ports;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Application.Shared.Templates.Emails;
 using _116.Mailer.Contracts.Application.DTOs;
@@ -22,6 +23,7 @@ public class OutboxMailerTests
     private readonly Mock<IEmailTemplateRenderer> _renderer = new();
     private readonly Mock<IOutboxEmailRepository> _repository = new();
     private readonly Mock<IMailerUnitOfWork> _unitOfWork = new();
+    private readonly Mock<IOutboxDispatchSignal> _dispatchSignal = new();
 
     [Fact]
     public async Task EnqueueAsync_ShouldPersistTheRenderedEmailAndCommit()
@@ -35,7 +37,12 @@ public class OutboxMailerTests
             .Setup(r => r.AddAsync(It.IsAny<OutboxEmailEntity>(), It.IsAny<CancellationToken>()))
             .Callback<OutboxEmailEntity, CancellationToken>((e, _) => captured = e);
 
-        var emailService = new OutboxEmailService(_renderer.Object, _repository.Object, _unitOfWork.Object);
+        var emailService = new OutboxEmailService(
+            _renderer.Object,
+            _repository.Object,
+            _unitOfWork.Object,
+            _dispatchSignal.Object
+        );
 
         await emailService.EnqueueAsync(
             template: IdentityEmailTemplates.Welcome,
@@ -65,7 +72,12 @@ public class OutboxMailerTests
             )
             .Throws(new InvalidOperationException("unresolved placeholder"));
 
-        var emailService = new OutboxEmailService(_renderer.Object, _repository.Object, _unitOfWork.Object);
+        var emailService = new OutboxEmailService(
+            _renderer.Object,
+            _repository.Object,
+            _unitOfWork.Object,
+            _dispatchSignal.Object
+        );
 
         Func<Task> act = () =>
             emailService.EnqueueAsync(
@@ -78,5 +90,35 @@ public class OutboxMailerTests
         await act.Should().ThrowAsync<InvalidOperationException>();
         _repository.Verify(r => r.AddAsync(It.IsAny<OutboxEmailEntity>(), It.IsAny<CancellationToken>()), Times.Never);
         _unitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task EnqueueAsync_ShouldSignalTheDispatcherOnlyAfterTheCommit()
+    {
+        _renderer
+            .Setup(r => r.Render(IdentityEmailTemplates.Welcome, It.IsAny<IReadOnlyDictionary<string, string>>(), "fr"))
+            .Returns(new RenderedEmail("Bienvenue", "<p>Salut</p>", "Salut"));
+
+        var order = new List<string>();
+        _unitOfWork.Setup(u => u.CommitAsync(It.IsAny<CancellationToken>())).Callback(() => order.Add("commit"));
+        _dispatchSignal
+            .Setup(d => d.RequestDispatchAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => order.Add("signal"));
+
+        var emailService = new OutboxEmailService(
+            _renderer.Object,
+            _repository.Object,
+            _unitOfWork.Object,
+            _dispatchSignal.Object
+        );
+
+        await emailService.EnqueueAsync(
+            template: IdentityEmailTemplates.Welcome,
+            to: new EmailRecipientDto("fan@example.com", "fr", "Fan"),
+            tokens: new Dictionary<string, string> { ["userName"] = "Fan" },
+            cancellationToken: CancellationToken.None
+        );
+
+        order.Should().Equal("commit", "signal");
     }
 }
