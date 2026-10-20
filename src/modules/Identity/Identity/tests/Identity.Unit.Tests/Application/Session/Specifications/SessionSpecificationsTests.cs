@@ -795,4 +795,40 @@ public class SessionSpecificationsTests
     }
 
     #endregion
+
+    #region SessionByPreviousRefreshTokenHashSpecification
+
+    [Fact]
+    public void SessionByPreviousRefreshTokenHashSpecification_WithLinq_ShouldMatchOnlyInsideTheWindow()
+    {
+        // Arrange
+        DateTime now = DateTime.UtcNow;
+        const string Superseded = "superseded_hash";
+
+        SessionEntity insideWindow = new SessionBuilder().WithRefreshTokenHash(Superseded).Build();
+        insideWindow.UpdateRefreshToken("rotated_hash", now.AddDays(1), now.AddSeconds(30));
+
+        SessionEntity windowClosed = new SessionBuilder().WithRefreshTokenHash(Superseded).Build();
+        windowClosed.UpdateRefreshToken("rotated_hash", now.AddDays(1), now.AddSeconds(-1));
+
+        SessionEntity neverRotated = new SessionBuilder().WithRefreshTokenHash(Superseded).Build();
+
+        SessionEntity revoked = new SessionBuilder().WithRefreshTokenHash(Superseded).AsRevoked().Build();
+        revoked.UpdateRefreshToken("rotated_hash", now.AddDays(1), now.AddSeconds(30));
+
+        SessionEntity otherToken = new SessionBuilder().WithRefreshTokenHash("someone_else").Build();
+        otherToken.UpdateRefreshToken("rotated_hash", now.AddDays(1), now.AddSeconds(30));
+
+        List<SessionEntity> sessions = [insideWindow, windowClosed, neverRotated, revoked, otherToken];
+        SessionByPreviousRefreshTokenHashSpecification spec = new(Superseded, now);
+
+        // Act
+        List<SessionEntity> filtered = sessions.Where(spec.ToExpression().Compile()).ToList();
+
+        // Assert
+        filtered.Should().ContainSingle();
+        filtered[0].Should().BeSameAs(insideWindow);
+    }
+
+    #endregion
 }
