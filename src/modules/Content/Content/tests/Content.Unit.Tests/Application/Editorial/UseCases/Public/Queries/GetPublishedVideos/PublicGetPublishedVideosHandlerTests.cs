@@ -50,6 +50,7 @@ public class PublicGetPublishedVideosHandlerTests : BaseContentHandlerTest
             PaginatedRequest: new PaginatedRequest(0, 10),
             Search: null,
             CategoryId: null,
+            CategorySlug: null,
             TagSlug: null
         );
 
@@ -71,6 +72,7 @@ public class PublicGetPublishedVideosHandlerTests : BaseContentHandlerTest
             PaginatedRequest: new PaginatedRequest(0, 10),
             Search: null,
             CategoryId: null,
+            CategorySlug: null,
             TagSlug: null
         );
 
