@@ -55,6 +55,38 @@ public class ArticleByCategorySpecification(Guid categoryId) : Specification<Art
 }
 
 /// <summary>
+/// Specification that matches articles filed under a category with the given slug
+/// (case-insensitive), probing the category rows since the relationship carries no navigation.
+/// </summary>
+public class ArticleByCategorySlugSpecification(string categorySlug, IQueryable<CategoryEntity> categories)
+    : Specification<ArticleEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleEntity, bool>> ToExpression()
+    {
+        return article =>
+            categories.Any(category =>
+                category.Id == article.CategoryId && EF.Functions.ILike(category.Slug, categorySlug)
+            );
+    }
+}
+
+/// <summary>
+/// Specification that matches articles carrying a tag with the given slug (case-insensitive).
+/// </summary>
+public class ArticleByTagSlugSpecification(string tagSlug, IQueryable<TagEntity> tags) : Specification<ArticleEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleEntity, bool>> ToExpression()
+    {
+        return article =>
+            article.Tags.Any(articleTag =>
+                tags.Any(tag => tag.Id == articleTag.TagId && EF.Functions.ILike(tag.Slug, tagSlug))
+            );
+    }
+}
+
+/// <summary>
 /// Specification for full-text search across article Title, Headline, Body,
 /// MetaTitle, and MetaDescription fields.
 /// Uses case-insensitive matching (ILIKE in PostgreSQL).
