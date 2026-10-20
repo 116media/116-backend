@@ -38,6 +38,15 @@ public record ContentLookups(
     }
 
     /// <summary>
+    /// The category's URL slug, or an empty slug when the row is gone.
+    /// </summary>
+    /// <param name="categoryId">The category to name.</param>
+    public string CategorySlug(Guid categoryId)
+    {
+        return Categories.TryGetValue(categoryId, out CategoryEntity? category) ? category.Slug : string.Empty;
+    }
+
+    /// <summary>
     /// The customer's display name, or null when the content carries no customer.
     /// </summary>
     /// <param name="customerId">The customer to name, if any.</param>
