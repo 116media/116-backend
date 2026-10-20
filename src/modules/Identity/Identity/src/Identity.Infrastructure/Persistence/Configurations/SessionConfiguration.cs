@@ -50,11 +50,18 @@ public class SessionConfiguration : IEntityTypeConfiguration<SessionEntity>
             .IsRequired();
         builder.Property(s => s.IsRevoked).HasDefaultValue(false).IsRequired();
         builder.Property(s => s.RevokedAt).IsRequired(false);
+        builder.Property(s => s.RevokeReason).IsRequired(false);
+        builder
+            .Property(s => s.PreviousRefreshTokenHash)
+            .HasMaxLength(maxLength: SessionConstants.MaxRefreshTokenHashLength)
+            .IsRequired(false);
+        builder.Property(s => s.PreviousRefreshTokenUsableUntil).IsRequired(false);
 
         // Indexes
         builder.HasIndex(s => s.UserId);
         builder.HasIndex(s => s.DeviceId);
         builder.HasIndex(s => s.RefreshTokenHash);
+        builder.HasIndex(s => s.PreviousRefreshTokenHash);
         builder.HasIndex(s => s.ExpiresAt);
         builder.HasIndex(s => s.IsRevoked);
 
