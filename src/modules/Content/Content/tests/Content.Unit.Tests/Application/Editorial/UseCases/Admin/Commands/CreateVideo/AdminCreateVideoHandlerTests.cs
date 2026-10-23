@@ -70,7 +70,6 @@ public class AdminCreateVideoHandlerTests : BaseContentHandlerTest
         var command = new AdminCreateVideoCommand(
             CategoryId: category.Id,
             Title: TestConstants.Video.ValidTitle,
-            Slug: slug,
             AuthorId: AuthorId,
             CustomerId: null,
             OrderItemId: null,
@@ -107,7 +106,6 @@ public class AdminCreateVideoHandlerTests : BaseContentHandlerTest
         var command = new AdminCreateVideoCommand(
             CategoryId: category.Id,
             Title: TestConstants.Video.ValidTitle,
-            Slug: slug,
             AuthorId: AuthorId,
             CustomerId: customerId,
             OrderItemId: orderItemId,
@@ -144,7 +142,6 @@ public class AdminCreateVideoHandlerTests : BaseContentHandlerTest
         var command = new AdminCreateVideoCommand(
             CategoryId: nonExistentId,
             Title: TestConstants.Video.ValidTitle,
-            Slug: TestConstants.Video.ValidSlug,
             AuthorId: AuthorId,
             CustomerId: null,
             OrderItemId: null,
@@ -159,35 +156,5 @@ public class AdminCreateVideoHandlerTests : BaseContentHandlerTest
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
     }
-
-    [Fact]
-    public async Task Handle_WhenSlugAlreadyExists_ShouldThrowConflictException()
-    {
-        // Arrange
-        CategoryEntity category = CategoryFactory.Create(CategoryId);
-        const string slug = TestConstants.Video.ValidSlug;
-
-        var command = new AdminCreateVideoCommand(
-            CategoryId: category.Id,
-            Title: TestConstants.Video.ValidTitle,
-            Slug: slug,
-            AuthorId: AuthorId,
-            CustomerId: null,
-            OrderItemId: null,
-            Description: TestConstants.Video.ValidDescription,
-            ShootingScheduledAt: null
-        );
-
-        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        VideoEntity existing = VideoFactory.CreateWithSlug(category.Id, slug);
-        _videoRepositoryMock.SetupGetBySlug(slug, existing);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
-    }
-
     #endregion
 }
