@@ -247,4 +247,69 @@ public class SlugHelperTests
     }
 
     #endregion
+
+    #region ToAvailableSlug Tests
+
+    [Fact]
+    public async Task ToAvailableSlugAsync_WhenThePlainSlugIsFree_ShouldReturnItUnsuffixed()
+    {
+        string slug = await SlugHelper.ToAvailableSlugAsync(
+            name: "Fally Ipupa",
+            isTakenAsync: (_, _) => Task.FromResult(false)
+        );
+
+        slug.Should().Be("fally-ipupa");
+    }
+
+    [Fact]
+    public async Task ToAvailableSlugAsync_WhenThePlainSlugIsTaken_ShouldSuffixIt()
+    {
+        string slug = await SlugHelper.ToAvailableSlugAsync(
+            name: "Fally Ipupa",
+            isTakenAsync: (candidate, _) => Task.FromResult(candidate == "fally-ipupa")
+        );
+
+        slug.Should().StartWith("fally-ipupa-");
+        slug.Should().MatchRegex(@"^fally-ipupa-[a-z0-9]{8}$");
+    }
+
+    [Fact]
+    public async Task ToAvailableSlugAsync_ShouldProbeThePlainSlugBeforeAnySuffix()
+    {
+        var probed = new List<string>();
+
+        await SlugHelper.ToAvailableSlugAsync(
+            name: "Fally Ipupa",
+            isTakenAsync: (candidate, _) =>
+            {
+                probed.Add(candidate);
+                return Task.FromResult(probed.Count == 1);
+            }
+        );
+
+        probed[0].Should().Be("fally-ipupa");
+        probed.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task ToAvailableSlugAsync_WhenEverySuffixIsTaken_ShouldThrow()
+    {
+        Func<Task> act = async () =>
+            await SlugHelper.ToAvailableSlugAsync(name: "Fally Ipupa", isTakenAsync: (_, _) => Task.FromResult(true));
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task ToAvailableSlugAsync_ShouldNormaliseTheNameTheSameWayAsToSlug()
+    {
+        string slug = await SlugHelper.ToAvailableSlugAsync(
+            name: "  Café & Crème  ",
+            isTakenAsync: (_, _) => Task.FromResult(false)
+        );
+
+        slug.Should().Be(SlugHelper.ToSlug("  Café & Crème  "));
+    }
+
+    #endregion
 }
