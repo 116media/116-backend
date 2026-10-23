@@ -31,14 +31,13 @@ public class AdminUpdateLyricsServiceTests
         );
     }
 
-    private static AdminUpdateLyricsCommand Command(LyricsEntity lyrics, string slug)
+    private static AdminUpdateLyricsCommand Command(LyricsEntity lyrics)
     {
         return new AdminUpdateLyricsCommand(
             lyrics.Id.ToString(),
             lyrics.CategoryId,
             "New title",
             "New artist",
-            slug,
             "New text",
             "fr",
             null,
@@ -55,32 +54,15 @@ public class AdminUpdateLyricsServiceTests
         LyricsEntity lyrics = LyricsFactory.CreateWithSlug(category.Id, "old-slug");
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _lyricsRepositoryMock.SetupGetBySlug("new-slug", null);
+        _lyricsRepositoryMock.SetupGetBySlug(It.IsAny<string>(), null);
 
         // Act
-        LyricsEntity result = await _service.UpdateAsync(Command(lyrics, "new-slug"), CancellationToken.None);
+        LyricsEntity result = await _service.UpdateAsync(Command(lyrics), CancellationToken.None);
 
         // Assert
         result.Should().BeSameAs(lyrics);
         lyrics.SongTitle.Should().Be("New title");
-        lyrics.Slug.Value.Should().Be("new-slug");
-    }
-
-    [Fact]
-    public async Task UpdateAsync_WhenTheNewSlugBelongsToAnotherPage_ShouldThrowConflictException()
-    {
-        // Arrange
-        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
-        LyricsEntity lyrics = LyricsFactory.CreateWithSlug(category.Id, "old-slug");
-        _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
-        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _lyricsRepositoryMock.SetupGetBySlug("new-slug", LyricsFactory.CreateWithSlug(category.Id, "new-slug"));
-
-        // Act
-        Func<Task> act = async () => await _service.UpdateAsync(Command(lyrics, "new-slug"), CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
+        lyrics.Slug.Value.Should().Be("old-slug");
     }
 
     [Fact]
@@ -93,7 +75,7 @@ public class AdminUpdateLyricsServiceTests
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
 
         // Act
-        await _service.UpdateAsync(Command(lyrics, "same-slug"), CancellationToken.None);
+        await _service.UpdateAsync(Command(lyrics), CancellationToken.None);
 
         // Assert
         _lyricsRepositoryMock.Verify(
