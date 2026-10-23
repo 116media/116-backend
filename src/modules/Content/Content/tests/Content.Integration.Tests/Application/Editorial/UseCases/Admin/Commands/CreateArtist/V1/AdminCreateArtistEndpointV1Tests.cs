@@ -21,7 +21,7 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequestBuilder().WithName("Fally Ipupa").WithSlug("fally-ipupa").Build()
+            new AdminCreateArtistRequestBuilder().WithName("Fally Ipupa").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -34,7 +34,7 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequestBuilder().WithName("Fally Ipupa").WithSlug("fally-ipupa").Build()
+            new AdminCreateArtistRequestBuilder().WithName("Fally Ipupa").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -47,11 +47,7 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequestBuilder()
-                .WithName("Fally Ipupa")
-                .WithSlug("fally-ipupa")
-                .WithBio("Congolese singer.")
-                .Build()
+            new AdminCreateArtistRequestBuilder().WithName("Fally Ipupa").WithBio("Congolese singer.").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -68,36 +64,13 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     }
 
     [Fact]
-    public async Task CreateArtist_WithDuplicateSlug_ReturnsConflict()
-    {
-        await SeedAsync<ContentDbContext, ArtistEntity>(ctx =>
-        {
-            ArtistEntity artist = ArtistFactory.CreateWithSlug("fally-ipupa");
-            ctx.Artists.Add(artist);
-            return artist;
-        });
-
-        Client.AuthenticateAsSuperAdmin();
-
-        var response = await Client.PostAsJsonAsync(
-            ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequestBuilder().WithName("Fally Ipupa Copy").WithSlug("fally-ipupa").Build()
-        );
-
-        await response.ShouldBeProblem<ConflictException>(
-            HttpStatusCode.Conflict,
-            Localized<ArtistErrorMessage>(m => m.SlugAlreadyExists("fally-ipupa"))
-        );
-    }
-
-    [Fact]
     public async Task CreateArtist_WithEmptyName_ReturnsValidationProblem()
     {
         Client.AuthenticateAsSuperAdmin();
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequestBuilder().WithName(string.Empty).WithSlug("some-slug").Build()
+            new AdminCreateArtistRequestBuilder().WithName(string.Empty).Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
