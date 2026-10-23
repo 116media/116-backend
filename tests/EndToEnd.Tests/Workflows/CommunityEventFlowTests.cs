@@ -4,6 +4,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.DecideTranslati
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectLyricsSubmission.V1;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.VerifyArtistOwner.V1;
 using _116.Content.Application.Interactions.UseCases.Public.Commands.AddCommentReply.V1;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.BackgroundJobs;
 using _116.Content.Infrastructure.Persistence;
@@ -93,7 +94,7 @@ public class CommunityEventFlowTests(PostgresFixture db) : BaseApiTest(db)
             .Should()
             .ContainSingle(n => n.Type == EnumNotificationType.SubmissionDecided)
             .Subject;
-        notification.LinkPath.Should().Be("/lyrics/eloko-oyo-approved");
+        notification.LinkPath.Should().Be($"/lyrics/{SlugHelper.ToSlug(submission.SongTitle)}");
     }
 
     [Fact]
