@@ -68,7 +68,6 @@ public class AdminCreateArticleHandlerTests : BaseContentHandlerTest
         var command = new AdminCreateArticleCommand(
             CategoryId: category.Id,
             Title: TestConstants.Article.ValidTitle,
-            Slug: slug,
             AuthorId: AuthorId,
             CustomerId: null,
             OrderItemId: null
@@ -105,7 +104,6 @@ public class AdminCreateArticleHandlerTests : BaseContentHandlerTest
         var command = new AdminCreateArticleCommand(
             CategoryId: category.Id,
             Title: TestConstants.Article.ValidTitle,
-            Slug: slug,
             AuthorId: AuthorId,
             CustomerId: customerId,
             OrderItemId: orderItemId
@@ -141,7 +139,6 @@ public class AdminCreateArticleHandlerTests : BaseContentHandlerTest
         var command = new AdminCreateArticleCommand(
             CategoryId: category.Id,
             Title: TestConstants.Article.ValidTitle,
-            Slug: slug,
             AuthorId: AuthorId,
             CustomerId: null,
             OrderItemId: null
@@ -178,7 +175,6 @@ public class AdminCreateArticleHandlerTests : BaseContentHandlerTest
         var command = new AdminCreateArticleCommand(
             CategoryId: nonExistentId,
             Title: TestConstants.Article.ValidTitle,
-            Slug: TestConstants.Article.ValidSlug,
             AuthorId: AuthorId,
             CustomerId: null,
             OrderItemId: null
@@ -192,67 +188,5 @@ public class AdminCreateArticleHandlerTests : BaseContentHandlerTest
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
     }
-
-    [Fact]
-    public async Task Handle_WhenSlugAlreadyExists_ShouldThrowConflictException()
-    {
-        // Arrange
-        CategoryEntity category = CategoryFactory.Create(CategoryId);
-        const string slug = TestConstants.Article.ValidSlug;
-
-        var command = new AdminCreateArticleCommand(
-            CategoryId: category.Id,
-            Title: TestConstants.Article.ValidTitle,
-            Slug: slug,
-            AuthorId: AuthorId,
-            CustomerId: null,
-            OrderItemId: null
-        );
-
-        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-
-        ArticleEntity existing = ArticleFactory.CreateWithSlug(category.Id, slug);
-        _articleRepositoryMock.SetupGetBySlug(slug, existing);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenSlugAlreadyExists_ShouldNotAddOrCommit()
-    {
-        // Arrange
-        CategoryEntity category = CategoryFactory.Create(CategoryId);
-        const string slug = TestConstants.Article.ValidSlug;
-
-        var command = new AdminCreateArticleCommand(
-            CategoryId: category.Id,
-            Title: TestConstants.Article.ValidTitle,
-            Slug: slug,
-            AuthorId: AuthorId,
-            CustomerId: null,
-            OrderItemId: null
-        );
-
-        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-
-        ArticleEntity existing = ArticleFactory.CreateWithSlug(category.Id, slug);
-        _articleRepositoryMock.SetupGetBySlug(slug, existing);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
-        _articleRepositoryMock.Verify(
-            x => x.AddAsync(It.IsAny<ArticleEntity>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
-        _unitOfWorkMock.VerifyCommitNotCalled();
-    }
-
     #endregion
 }
