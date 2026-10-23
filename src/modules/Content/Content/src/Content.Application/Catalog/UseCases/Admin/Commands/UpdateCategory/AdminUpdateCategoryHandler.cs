@@ -67,7 +67,7 @@ public class AdminUpdateCategoryHandler(
                     await unitOfWork.CommitAsync(cancellationToken: ct);
                 }
 
-                category.Rename(name: command.Name, slug: command.Slug);
+                category.Rename(name: command.Name);
                 category.Redescribe(description: command.Description);
                 category.Reclassify(
                     isGossip: command.IsGossip,
