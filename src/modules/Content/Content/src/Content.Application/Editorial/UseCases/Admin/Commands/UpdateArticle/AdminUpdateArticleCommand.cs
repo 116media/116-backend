@@ -11,7 +11,6 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtic
 /// <param name="Id">The unique identifier of the article to update.</param>
 /// <param name="CategoryId">The category this article belongs to.</param>
 /// <param name="Title">The article title.</param>
-/// <param name="Slug">The URL-safe slug. Must be unique across all articles.</param>
 /// <param name="Headline">The short teaser text (100–300 characters).</param>
 /// <param name="Body">The rich-text HTML body containing only Cloudinary image URLs.</param>
 /// <param name="CustomerId">Optional B2B customer who commissioned this article.</param>
@@ -23,7 +22,6 @@ public record AdminUpdateArticleCommand(
     string Id,
     Guid CategoryId,
     string Title,
-    string Slug,
     string Headline,
     string Body,
     Guid? CustomerId,
