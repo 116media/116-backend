@@ -21,20 +21,8 @@ public class AdminCreateArtistValidatorTests
         _validator = new AdminCreateArtistValidator(_i18n);
     }
 
-    private static AdminCreateArtistCommand BuildValidCommand(
-        string? name = null,
-        string? slug = null,
-        string? bio = null
-    ) =>
-        new(
-            name ?? TestConstants.Artist.ValidName,
-            slug ?? TestConstants.Artist.ValidSlug,
-            bio,
-            null,
-            null,
-            null,
-            null
-        );
+    private static AdminCreateArtistCommand BuildValidCommand(string? name = null, string? bio = null) =>
+        new(name ?? TestConstants.Artist.ValidName, bio, null, null, null, null);
 
     [Fact]
     public async Task Validate_WithValidData_ShouldNotHaveErrors()
@@ -67,39 +55,6 @@ public class AdminCreateArtistValidatorTests
                 e.PropertyName == nameof(AdminCreateArtistCommand.Name)
                 && e.ErrorMessage == _i18n.Artist.Msg.NameRequired()
             );
-    }
-
-    [Fact]
-    public async Task Validate_WithEmptySlug_ShouldHaveError()
-    {
-        // Arrange
-        var command = BuildValidCommand(slug: string.Empty);
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminCreateArtistCommand.Slug)
-                && e.ErrorMessage == _i18n.Artist.Msg.SlugRequired()
-            );
-    }
-
-    [Fact]
-    public async Task Validate_WithUppercaseSlug_ShouldHaveError()
-    {
-        // Arrange
-        var command = BuildValidCommand(slug: "Invalid-Slug");
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminCreateArtistCommand.Slug));
     }
 
     [Fact]
