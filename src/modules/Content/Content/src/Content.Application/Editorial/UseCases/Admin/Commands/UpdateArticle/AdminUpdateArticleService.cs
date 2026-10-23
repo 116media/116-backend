@@ -31,19 +31,6 @@ public partial class AdminUpdateArticleService(
         );
         await categoryRepository.GetByIdOrThrowAsync(id: command.CategoryId, cancellationToken: cancellationToken);
 
-        if (command.Slug != article.Slug)
-        {
-            ArticleEntity? slugConflict = await articleRepository.GetBySlugAsync(
-                slug: command.Slug,
-                cancellationToken: cancellationToken
-            );
-
-            if (slugConflict is not null && slugConflict.Id != article.Id)
-            {
-                throw i18n.Article.SlugAlreadyExists(slug: command.Slug);
-            }
-        }
-
         HashSet<string> newBodyUrls = CloudinaryUrlRegex
             .Matches(command.Body)
             .Select(m => m.Value)
@@ -55,7 +42,7 @@ public partial class AdminUpdateArticleService(
             .ToList();
 
         article.Recategorize(categoryId: command.CategoryId);
-        article.Retitle(title: command.Title, slug: command.Slug);
+        article.Retitle(title: command.Title);
         article.ReviseBody(
             headline: command.Headline,
             body: command.Body,
