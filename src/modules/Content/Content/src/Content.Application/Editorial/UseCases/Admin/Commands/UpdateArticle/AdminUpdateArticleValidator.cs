@@ -23,8 +23,6 @@ public class AdminUpdateArticleValidator : AbstractValidator<AdminUpdateArticleC
 
         RuleFor(x => x.Title).ValidArticleTitle(i18n.Article.Msg);
 
-        RuleFor(x => x.Slug).ValidArticleSlug(i18n.Article.Msg);
-
         RuleFor(x => x.Headline).ValidArticleHeadline(i18n.Article.Msg);
 
         RuleFor(x => x.Body).ValidArticleBody(i18n.Article.Msg);
