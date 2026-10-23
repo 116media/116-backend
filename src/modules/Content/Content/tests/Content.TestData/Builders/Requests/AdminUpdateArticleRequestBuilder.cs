@@ -128,7 +128,6 @@ public class AdminUpdateArticleRequestBuilder
         return new AdminUpdateArticleRequest(
             CategoryId: _categoryId,
             Title: _title,
-            Slug: _slug,
             Headline: _headline,
             Body: _body,
             CustomerId: _customerId,
