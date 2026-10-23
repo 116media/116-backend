@@ -10,7 +10,6 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo
 /// </summary>
 /// <param name="CategoryId">The category this video belongs to.</param>
 /// <param name="Title">The video display title.</param>
-/// <param name="Slug">The URL-safe slug for this video.</param>
 /// <param name="AuthorId">The identity user UUID read from JWT claims.</param>
 /// <param name="CustomerId">The B2B customer who commissioned this video. Null for free content.</param>
 /// <param name="OrderItemId">The order item this video fulfils. Null for free content.</param>
@@ -19,7 +18,6 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo
 public record AdminCreateVideoCommand(
     Guid CategoryId,
     string Title,
-    string Slug,
     Guid AuthorId,
     Guid? CustomerId,
     Guid? OrderItemId,
