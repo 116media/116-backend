@@ -23,8 +23,6 @@ public class AdminUpdateVideoValidator : AbstractValidator<AdminUpdateVideoComma
 
         RuleFor(x => x.Title).ValidVideoTitle(i18n.Video.Msg);
 
-        RuleFor(x => x.Slug).ValidVideoSlug(i18n.Video.Msg);
-
         RuleFor(x => x.Description).ValidVideoDescription(i18n.Video.Msg);
 
         When(x => x.CustomerId.HasValue, () => RuleFor(x => x.OrderItemId).ValidOrderItemId(i18n.ContentOrder.Msg));
