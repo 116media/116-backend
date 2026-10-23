@@ -17,7 +17,6 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtic
 /// </summary>
 /// <param name="CategoryId">The category this article belongs to.</param>
 /// <param name="Title">The article title.</param>
-/// <param name="Slug">The URL-safe slug. Must be unique across all articles.</param>
 /// <param name="Headline">The short teaser text (100–300 characters).</param>
 /// <param name="Body">The rich-text HTML body containing only Cloudinary image URLs.</param>
 /// <param name="CustomerId">Optional B2B customer who commissioned this article.</param>
@@ -28,7 +27,6 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtic
 public record AdminUpdateArticleRequest(
     Guid CategoryId,
     string Title,
-    string Slug,
     string Headline,
     string Body,
     Guid? CustomerId,
@@ -76,7 +74,6 @@ internal class AdminUpdateArticleEndpointV1 : ICarterModule
                         Id: id,
                         CategoryId: request.CategoryId,
                         Title: request.Title,
-                        Slug: request.Slug,
                         Headline: request.Headline,
                         Body: request.Body,
                         CustomerId: request.CustomerId,
