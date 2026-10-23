@@ -78,7 +78,6 @@ public class AdminCreateVideoRequestBuilder
         return new AdminCreateVideoRequest(
             CategoryId: _categoryId,
             Title: _title,
-            Slug: _slug,
             CustomerId: _customerId,
             OrderItemId: _orderItemId,
             Description: _description,
