@@ -65,7 +65,6 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
             Name: newName,
-            Slug: newSlug,
             Description: "Updated description",
             IsGossip: false,
             IsExclusive: false,
@@ -73,14 +72,14 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _categoryRepositoryMock.SetupGetBySlug(newSlug, null);
+        _categoryRepositoryMock.SetupGetBySlug(It.IsAny<string>(), null);
 
         // Act
         AdminUpdateCategoryResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.Category.Name.Should().Be(newName);
-        result.Category.Slug.Should().Be(newSlug);
+        result.Category.Slug.Should().Be(category.Slug.Value);
         _unitOfWorkMock.VerifyExecutedInTransaction();
     }
 
@@ -96,7 +95,6 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
             Name: "Updated Name",
-            Slug: slug,
             Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
@@ -130,7 +128,6 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: true,
@@ -160,7 +157,6 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: true,
@@ -189,7 +185,6 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
@@ -218,7 +213,6 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
             Name: TestConstants.Category.AnotherValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
@@ -250,7 +244,6 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
@@ -280,7 +273,6 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
@@ -311,7 +303,6 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
@@ -340,7 +331,6 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
@@ -368,7 +358,6 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: true,
@@ -400,7 +389,6 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminUpdateCategoryCommand(
             Id: inactive.Id.ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: true,
@@ -426,7 +414,6 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminUpdateCategoryCommand(
             Id: nonExistentId.ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
@@ -441,37 +428,5 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
     }
-
-    [Fact]
-    public async Task Handle_WhenSlugConflictsWithDifferentEntity_ShouldThrowConflictException()
-    {
-        // Arrange
-        ContentTypeEntity contentType = ContentTypeFactory.Create();
-        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
-        CategoryEntity category = CategoryFactory.Create(contentType.Id);
-        string conflictingSlug = TestConstants.Category.AnotherValidSlug;
-
-        var command = new AdminUpdateCategoryCommand(
-            Id: category.Id.ToString(),
-            Name: TestConstants.Category.ValidName,
-            Slug: conflictingSlug,
-            Description: TestConstants.Category.ValidDescription,
-            IsGossip: false,
-            IsExclusive: false,
-            IsDefaultForLyrics: false
-        );
-
-        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-
-        CategoryEntity otherCategory = CategoryFactory.Create(contentType.Id, "Other Name", conflictingSlug);
-        _categoryRepositoryMock.SetupGetBySlug(conflictingSlug, otherCategory);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
-    }
-
     #endregion
 }
