@@ -96,7 +96,6 @@ public class AdminCreateArticleRequestBuilder
         return new AdminCreateArticleRequest(
             CategoryId: _categoryId,
             Title: _title,
-            Slug: _slug,
             CustomerId: _customerId,
             OrderItemId: _orderItemId
         );
