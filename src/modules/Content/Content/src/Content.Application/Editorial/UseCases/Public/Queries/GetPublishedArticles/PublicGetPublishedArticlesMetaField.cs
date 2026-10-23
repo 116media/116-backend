@@ -13,8 +13,10 @@ public static class PublicGetPublishedArticlesMetaField
         """
             Retrieves a paginated list of all published articles for public consumption.
             \n
-            Supports optional filtering by category. Results are returned as a paginated list
-            with summary information suitable for article feed and browsing views.
+            Supports optional filtering by `category` and `tag`, each taking a slug.\n
+            `categorySlug` and `tagSlug` remain accepted as deprecated aliases.\n
+            Results are returned as a paginated list with summary information suitable
+            for article feed and browsing views.
             \n
             **Authentication Requirements:**\n
             - No authentication required\n
