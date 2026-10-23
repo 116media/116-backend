@@ -17,7 +17,6 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo
 /// </summary>
 /// <param name="CategoryId">The category this video belongs to.</param>
 /// <param name="Title">The video display title.</param>
-/// <param name="Slug">The URL-safe slug for this video.</param>
 /// <param name="Description">The description shown below the video player.</param>
 /// <param name="CustomerId">The B2B customer who commissioned this video. <c>null</c> for free content.</param>
 /// <param name="OrderItemId">The order item this video fulfils. Required when <c>CustomerId</c> is set.</param>
@@ -27,7 +26,6 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo
 public record AdminUpdateVideoRequest(
     Guid CategoryId,
     string Title,
-    string Slug,
     string Description,
     Guid? CustomerId,
     Guid? OrderItemId,
@@ -73,7 +71,6 @@ internal class AdminUpdateVideoEndpointV1 : ICarterModule
                         Id: id,
                         CategoryId: request.CategoryId,
                         Title: request.Title,
-                        Slug: request.Slug,
                         Description: request.Description,
                         CustomerId: request.CustomerId,
                         OrderItemId: request.OrderItemId,
