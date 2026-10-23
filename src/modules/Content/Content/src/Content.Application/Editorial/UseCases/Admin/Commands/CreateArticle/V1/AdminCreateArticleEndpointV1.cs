@@ -20,16 +20,9 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtic
 /// </summary>
 /// <param name="CategoryId">The category this article belongs to.</param>
 /// <param name="Title">The article display title.</param>
-/// <param name="Slug">The URL-safe slug for this article.</param>
 /// <param name="CustomerId">The B2B customer who commissioned this article. Null for free content.</param>
 /// <param name="OrderItemId">The order item this article fulfils. Null for free content.</param>
-public record AdminCreateArticleRequest(
-    Guid CategoryId,
-    string Title,
-    string Slug,
-    Guid? CustomerId,
-    Guid? OrderItemId
-);
+public record AdminCreateArticleRequest(Guid CategoryId, string Title, Guid? CustomerId, Guid? OrderItemId);
 
 /// <summary>
 /// Response model for successful article draft creation.
@@ -71,7 +64,6 @@ internal class AdminCreateArticleEndpointV1 : ICarterModule
                     var command = new AdminCreateArticleCommand(
                         CategoryId: request.CategoryId,
                         Title: request.Title,
-                        Slug: request.Slug,
                         AuthorId: authorId,
                         CustomerId: request.CustomerId,
                         OrderItemId: request.OrderItemId
