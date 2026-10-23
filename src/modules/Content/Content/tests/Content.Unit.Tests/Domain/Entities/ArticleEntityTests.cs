@@ -912,6 +912,51 @@ public class ArticleEntityTests
         article.DomainEvents.OfType<ArticleBodyImagesOrphanedEvent>().Should().BeEmpty();
     }
 
+    [Fact]
+    public void ReplaceArtists_WhenAnArtistIsDropped_ShouldRemoveTheCredit()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        Guid keptArtistId = Guid.NewGuid();
+        Guid droppedArtistId = Guid.NewGuid();
+        article.ReplaceArtists([keptArtistId, droppedArtistId]);
+
+        // Act
+        bool changed = article.ReplaceArtists([keptArtistId]);
+
+        // Assert
+        changed.Should().BeTrue();
+        article.Artists.Select(credit => credit.ArtistId).Should().Equal(keptArtistId);
+    }
+
+    [Fact]
+    public void ReplaceArtists_WithTheSameSet_ShouldReturnFalse()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        Guid artistId = Guid.NewGuid();
+        article.ReplaceArtists([artistId]);
+
+        // Act
+        bool changed = article.ReplaceArtists([artistId]);
+
+        // Assert
+        changed.Should().BeFalse();
+        article.Artists.Select(credit => credit.ArtistId).Should().Equal(artistId);
+    }
+
     #endregion
 
     [Fact]
