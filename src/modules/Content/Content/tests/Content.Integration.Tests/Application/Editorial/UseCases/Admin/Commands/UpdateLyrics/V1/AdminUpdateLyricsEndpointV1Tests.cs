@@ -78,7 +78,6 @@ public class AdminUpdateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         Client.AuthenticateAsSuperAdmin();
         AdminUpdateLyricsRequest request = new AdminUpdateLyricsRequestBuilder()
             .WithCategoryId(category.Id)
-            .WithSlug(lyrics.Slug)
             .WithSongTitle("Updated Song Title")
             .WithArtistName("Updated Artist")
             .WithLyricsText("Updated lyrics text that contains enough content to satisfy validation.")
@@ -121,10 +120,7 @@ public class AdminUpdateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         });
 
         Client.AuthenticateAsSuperAdmin();
-        AdminUpdateLyricsRequest request = new AdminUpdateLyricsRequestBuilder()
-            .WithCategoryId(newCategory.Id)
-            .WithSlug(lyrics.Slug)
-            .Build();
+        AdminUpdateLyricsRequest request = new AdminUpdateLyricsRequestBuilder().WithCategoryId(newCategory.Id).Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Lyrics}/{lyrics.Id}", request);
 
@@ -158,7 +154,6 @@ public class AdminUpdateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         Guid orderItemId = Guid.NewGuid();
         AdminUpdateLyricsRequest request = new AdminUpdateLyricsRequestBuilder()
             .WithCategoryId(category.Id)
-            .WithSlug(lyrics.Slug)
             .WithCustomerId(customer.Id)
             .WithOrderItemId(orderItemId)
             .Build();
@@ -188,44 +183,10 @@ public class AdminUpdateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         });
 
         Client.AuthenticateAsSuperAdmin();
-        AdminUpdateLyricsRequest request = new AdminUpdateLyricsRequestBuilder()
-            .WithCategoryId(category.Id)
-            .WithSlug(lyrics.Slug)
-            .Build();
+        AdminUpdateLyricsRequest request = new AdminUpdateLyricsRequestBuilder().WithCategoryId(category.Id).Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Lyrics}/{lyrics.Id}", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-    }
-
-    [Fact]
-    public async Task UpdateLyrics_AsSuperAdmin_WithSlugUsedByAnotherLyrics_ReturnsConflict()
-    {
-        CategoryEntity category = await SeedCategoryAsync();
-        LyricsEntity otherLyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
-        {
-            LyricsEntity l = LyricsFactory.Create(category.Id);
-            ctx.Lyrics.Add(l);
-            return l;
-        });
-        LyricsEntity lyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
-        {
-            LyricsEntity l = LyricsFactory.Create(category.Id);
-            ctx.Lyrics.Add(l);
-            return l;
-        });
-
-        Client.AuthenticateAsSuperAdmin();
-        AdminUpdateLyricsRequest request = new AdminUpdateLyricsRequestBuilder()
-            .WithCategoryId(category.Id)
-            .WithSlug(otherLyrics.Slug)
-            .Build();
-
-        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Lyrics}/{lyrics.Id}", request);
-
-        await response.ShouldBeProblem<ConflictException>(
-            HttpStatusCode.Conflict,
-            Localized<LyricsErrorMessage>(m => m.SlugAlreadyExists(otherLyrics.Slug))
-        );
     }
 }
