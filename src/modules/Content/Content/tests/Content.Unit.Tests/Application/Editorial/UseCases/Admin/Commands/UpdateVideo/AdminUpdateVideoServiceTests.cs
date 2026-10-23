@@ -35,7 +35,6 @@ public class AdminUpdateVideoServiceTests
             video.Id.ToString(),
             video.CategoryId,
             "New title",
-            slug,
             "Description",
             null,
             null,
@@ -61,23 +60,6 @@ public class AdminUpdateVideoServiceTests
         // Assert
         result.Should().BeSameAs(video);
         video.Title.Should().Be("New title");
-        video.Slug.Value.Should().Be("new-slug");
-    }
-
-    [Fact]
-    public async Task UpdateAsync_WhenTheNewSlugBelongsToAnotherVideo_ShouldThrowConflictException()
-    {
-        // Arrange
-        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
-        VideoEntity video = VideoFactory.CreateWithSlug(category.Id, "old-slug");
-        _videoRepositoryMock.SetupGetByIdOrThrow(video);
-        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _videoRepositoryMock.SetupGetBySlug("new-slug", VideoFactory.CreateWithSlug(category.Id, "new-slug"));
-
-        // Act
-        Func<Task> act = async () => await _service.UpdateAsync(Command(video, "new-slug"), CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
+        video.Slug.Value.Should().Be("old-slug");
     }
 }
