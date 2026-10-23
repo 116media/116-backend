@@ -8,7 +8,6 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtis
 /// existing lyrics or video record's <c>ArtistName</c>.
 /// </summary>
 /// <param name="Name">The artist's display name.</param>
-/// <param name="Slug">The URL-safe slug for the artist's public page.</param>
 /// <param name="Bio">Optional free-text biography.</param>
 /// <param name="RealName">The artist's legal or birth name, or null when unknown.</param>
 /// <param name="Aliases">Alternate names the artist is known by, or null for none.</param>
@@ -16,7 +15,6 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtis
 /// <param name="Hometown">Where the artist is from, or null when unknown.</param>
 public record AdminCreateArtistCommand(
     string Name,
-    string Slug,
     string? Bio,
     string? RealName,
     IReadOnlyList<string>? Aliases,
