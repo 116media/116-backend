@@ -115,7 +115,6 @@ public class AdminCreateArtistRequestBuilder
     {
         return new AdminCreateArtistRequest(
             Name: _name,
-            Slug: _slug,
             Bio: _bio,
             RealName: _realName,
             Aliases: _aliases,
