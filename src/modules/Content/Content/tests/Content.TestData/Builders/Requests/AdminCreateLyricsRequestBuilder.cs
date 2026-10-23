@@ -127,7 +127,6 @@ public class AdminCreateLyricsRequestBuilder
             CategoryId: _categoryId,
             SongTitle: _songTitle,
             ArtistName: _artistName,
-            Slug: _slug,
             LyricsText: _lyricsText,
             Language: _language,
             VideoId: _videoId,
