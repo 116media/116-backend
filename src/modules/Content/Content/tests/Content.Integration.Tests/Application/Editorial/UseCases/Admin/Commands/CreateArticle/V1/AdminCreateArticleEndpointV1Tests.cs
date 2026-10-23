@@ -2,6 +2,7 @@ using _116.BuildingBlocks.Application.Exceptions;
 using _116.BuildingBlocks.Application.Exceptions.Messages;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArticle.V1;
 using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
@@ -65,10 +66,7 @@ public class AdminCreateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         Client.AuthenticateAsSuperAdmin();
         string slug = $"test-article-{Guid.NewGuid().ToString("N")[..8]}";
-        AdminCreateArticleRequest request = new AdminCreateArticleRequestBuilder()
-            .WithCategoryId(category.Id)
-            .WithSlug(slug)
-            .Build();
+        AdminCreateArticleRequest request = new AdminCreateArticleRequestBuilder().WithCategoryId(category.Id).Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Articles, request);
 
@@ -76,7 +74,7 @@ public class AdminCreateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
         var body = await response.ReadAsAsync<AdminCreateArticleResponse>();
         body.Article.Id.Should().NotBeEmpty();
         body.Article.Title.Should().Be(request.Title);
-        body.Article.Slug.Should().Be(request.Slug);
+        body.Article.Slug.Should().MatchRegex($"^{SlugHelper.ToSlug(request.Title)}-[a-z0-9]{{8}}$");
         body.Article.CategoryId.Should().Be(category.Id);
         body.Article.Status.Should().Be(EnumContentStatus.Draft);
 
@@ -84,7 +82,7 @@ public class AdminCreateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
         ArticleEntity? persisted = await ctx.Articles.FindAsync(body.Article.Id);
         persisted.Should().NotBeNull();
         persisted!.Title.Should().Be(request.Title);
-        persisted.Slug.Value.Should().Be(request.Slug);
+        persisted.Slug.Value.Should().MatchRegex($"^{SlugHelper.ToSlug(request.Title)}-[a-z0-9]{{8}}$");
         persisted.Status.Should().Be(EnumContentStatus.Draft);
     }
 
@@ -94,7 +92,6 @@ public class AdminCreateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
         Client.AuthenticateAsSuperAdmin();
         AdminCreateArticleRequest request = new AdminCreateArticleRequestBuilder()
             .WithCategoryId(Guid.NewGuid())
-            .WithSlug("non-existent-category-article")
             .Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Articles, request);
@@ -114,40 +111,11 @@ public class AdminCreateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
         AdminCreateArticleRequest request = new AdminCreateArticleRequestBuilder()
             .WithCategoryId(category.Id)
             .WithTitle(string.Empty)
-            .WithSlug("empty-title-article")
             .Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Articles, request);
 
         await response.ShouldBeValidationProblem("Title", Localized<ArticleErrorMessage>(m => m.TitleRequired()));
-    }
-
-    [Fact]
-    public async Task CreateArticle_AsSuperAdmin_WithDuplicateSlug_ReturnsConflict()
-    {
-        ArticleEntity existingArticle = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
-        {
-            ContentTypeEntity contentType = ContentTypeFactory.Create();
-            CategoryEntity category = CategoryFactory.Create(contentType.Id);
-            ArticleEntity article = ArticleFactory.Create(category.Id);
-            ctx.ContentTypes.Add(contentType);
-            ctx.Categories.Add(category);
-            ctx.Articles.Add(article);
-            return article;
-        });
-
-        Client.AuthenticateAsSuperAdmin();
-        AdminCreateArticleRequest request = new AdminCreateArticleRequestBuilder()
-            .WithCategoryId(existingArticle.CategoryId)
-            .WithSlug(existingArticle.Slug)
-            .Build();
-
-        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Articles, request);
-
-        await response.ShouldBeProblem<ConflictException>(
-            HttpStatusCode.Conflict,
-            Localized<ArticleErrorMessage>(m => m.SlugAlreadyExists(existingArticle.Slug))
-        );
     }
 
     [Fact]
@@ -171,7 +139,6 @@ public class AdminCreateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
         Guid orderItemId = Guid.NewGuid();
         AdminCreateArticleRequest request = new AdminCreateArticleRequestBuilder()
             .WithCategoryId(categoryId)
-            .WithSlug(slug)
             .WithCustomerId(customer.Id)
             .WithOrderItemId(orderItemId)
             .Build();
