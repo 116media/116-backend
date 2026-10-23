@@ -31,7 +31,6 @@ public class AdminCreateVideoValidatorTests
         var command = new AdminCreateVideoCommand(
             CategoryId: Guid.NewGuid(),
             Title: TestConstants.Video.ValidTitle,
-            Slug: TestConstants.Video.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null,
@@ -54,7 +53,6 @@ public class AdminCreateVideoValidatorTests
         var command = new AdminCreateVideoCommand(
             CategoryId: Guid.NewGuid(),
             Title: TestConstants.Video.ValidTitle,
-            Slug: TestConstants.Video.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: Guid.NewGuid(),
             OrderItemId: Guid.NewGuid(),
@@ -81,7 +79,6 @@ public class AdminCreateVideoValidatorTests
         var command = new AdminCreateVideoCommand(
             CategoryId: Guid.Empty,
             Title: TestConstants.Video.ValidTitle,
-            Slug: TestConstants.Video.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null,
@@ -113,7 +110,6 @@ public class AdminCreateVideoValidatorTests
         var command = new AdminCreateVideoCommand(
             CategoryId: Guid.NewGuid(),
             Title: string.Empty,
-            Slug: TestConstants.Video.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null,
@@ -141,7 +137,6 @@ public class AdminCreateVideoValidatorTests
         var command = new AdminCreateVideoCommand(
             CategoryId: Guid.NewGuid(),
             Title: new string('a', TestConstants.Video.TitleMaxLength + 1),
-            Slug: TestConstants.Video.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null,
@@ -164,66 +159,6 @@ public class AdminCreateVideoValidatorTests
 
     #endregion
 
-    #region Slug Validation Tests
-
-    [Fact]
-    public async Task Validate_WithEmptySlug_ShouldHaveError()
-    {
-        // Arrange
-        var command = new AdminCreateVideoCommand(
-            CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Video.ValidTitle,
-            Slug: string.Empty,
-            AuthorId: Guid.NewGuid(),
-            CustomerId: null,
-            OrderItemId: null,
-            Description: TestConstants.Video.ValidDescription,
-            ShootingScheduledAt: null
-        );
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminCreateVideoCommand.Slug)
-                && e.ErrorMessage == _i18n.Video.Msg.SlugRequired()
-            );
-    }
-
-    [Fact]
-    public async Task Validate_WithUppercaseSlug_ShouldHaveError()
-    {
-        // Arrange
-        var command = new AdminCreateVideoCommand(
-            CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Video.ValidTitle,
-            Slug: "Invalid-Slug",
-            AuthorId: Guid.NewGuid(),
-            CustomerId: null,
-            OrderItemId: null,
-            Description: TestConstants.Video.ValidDescription,
-            ShootingScheduledAt: null
-        );
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminCreateVideoCommand.Slug)
-                && e.ErrorMessage == _i18n.Video.Msg.SlugInvalidFormat()
-            );
-    }
-
-    #endregion
-
     #region Conditional Validation Tests
 
     [Fact]
@@ -233,7 +168,6 @@ public class AdminCreateVideoValidatorTests
         var command = new AdminCreateVideoCommand(
             CategoryId: Guid.NewGuid(),
             Title: TestConstants.Video.ValidTitle,
-            Slug: TestConstants.Video.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: Guid.NewGuid(),
             OrderItemId: null,
@@ -261,7 +195,6 @@ public class AdminCreateVideoValidatorTests
         var command = new AdminCreateVideoCommand(
             CategoryId: Guid.NewGuid(),
             Title: TestConstants.Video.ValidTitle,
-            Slug: TestConstants.Video.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: Guid.NewGuid(),
@@ -293,7 +226,6 @@ public class AdminCreateVideoValidatorTests
         var command = new AdminCreateVideoCommand(
             CategoryId: Guid.NewGuid(),
             Title: TestConstants.Video.ValidTitle,
-            Slug: TestConstants.Video.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null,
