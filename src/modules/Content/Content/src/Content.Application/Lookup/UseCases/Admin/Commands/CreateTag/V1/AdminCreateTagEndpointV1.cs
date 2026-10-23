@@ -17,8 +17,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreateTag.V1;
 /// Request model for creating a content tag.
 /// </summary>
 /// <param name="Name">The display name of the tag.</param>
-/// <param name="Slug">The URL-safe slug for the tag (lowercase, hyphens only).</param>
-public record AdminCreateTagRequest(string Name, string Slug);
+public record AdminCreateTagRequest(string Name);
 
 /// <summary>
 /// Response model for successful tag creation.
@@ -53,7 +52,7 @@ internal class AdminCreateTagEndpointV1 : ICarterModule
                     HttpContext httpContext
                 ) =>
                 {
-                    var command = new AdminCreateTagCommand(Name: request.Name, Slug: request.Slug);
+                    var command = new AdminCreateTagCommand(Name: request.Name);
 
                     AdminCreateTagResult result = await dispatcher.Send(
                         request: command,
