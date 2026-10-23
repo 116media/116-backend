@@ -20,13 +20,7 @@ public interface IAdminApproveLyricsSubmissionService
     /// slug is taken or no default category is configured. The caller persists and commits.
     /// </summary>
     /// <param name="submissionId">The submission being approved.</param>
-    /// <param name="slug">The slug the page publishes under.</param>
     /// <param name="reviewerId">The approving reviewer.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    Task<ApprovedSubmissionData> PrepareAsync(
-        Guid submissionId,
-        string slug,
-        Guid reviewerId,
-        CancellationToken cancellationToken
-    );
+    Task<ApprovedSubmissionData> PrepareAsync(Guid submissionId, Guid reviewerId, CancellationToken cancellationToken);
 }
