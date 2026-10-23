@@ -28,33 +28,5 @@ public class AdminCreateArtistServiceTests
         );
     }
 
-    private static AdminCreateArtistCommand Command() => new("Name", "artist-slug", null, null, null, null, null);
-
-    [Fact]
-    public async Task CreateAsync_WithAFreeSlug_ShouldStageTheArtist()
-    {
-        // Arrange
-        _artistRepositoryMock.SetupGetBySlug("artist-slug", null);
-
-        // Act
-        ArtistEntity artist = await _service.CreateAsync(Command(), CancellationToken.None);
-
-        // Assert
-        artist.Slug.Value.Should().Be("artist-slug");
-        _artistRepositoryMock.VerifyAddCalled();
-    }
-
-    [Fact]
-    public async Task CreateAsync_WhenTheSlugIsTaken_ShouldThrowConflictException()
-    {
-        // Arrange
-        _artistRepositoryMock.SetupGetBySlug("artist-slug", ArtistFactory.Create());
-
-        // Act
-        Func<Task> act = async () => await _service.CreateAsync(Command(), CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
-        _artistRepositoryMock.VerifyAddNotCalled();
-    }
+    private static AdminCreateArtistCommand Command() => new("Name", null, null, null, null, null);
 }
