@@ -600,6 +600,68 @@ public class LyricsEntityTests
         lyrics.AssignCommission(customerId: lyrics.CustomerId, orderItemId: lyrics.OrderItemId).Should().BeFalse();
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Retitle_WithEmptySongTitle_ShouldThrowBadRequestException(string? invalidSongTitle)
+    {
+        // Arrange
+        LyricsEntity lyrics = CreateFreeLyrics();
+
+        // Act
+        Action act = () => lyrics.Retitle(songTitle: invalidSongTitle!, artistName: "New Artist");
+
+        // Assert
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.SongTitleRequired);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Retitle_WithEmptyArtistName_ShouldThrowBadRequestException(string? invalidArtistName)
+    {
+        // Arrange
+        LyricsEntity lyrics = CreateFreeLyrics();
+
+        // Act
+        Action act = () => lyrics.Retitle(songTitle: "New Song", artistName: invalidArtistName!);
+
+        // Assert
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.LyricsArtistNameRequired);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void ReviseText_WithEmptyLyricsText_ShouldThrowBadRequestException(string? invalidLyricsText)
+    {
+        // Arrange
+        LyricsEntity lyrics = CreateFreeLyrics();
+
+        // Act
+        Action act = () => lyrics.ReviseText(lyricsText: invalidLyricsText!, language: "en");
+
+        // Assert
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.LyricsTextRequired);
+    }
+
+    [Fact]
+    public void ReviseSeo_WithUnchangedValues_ShouldReturnFalse()
+    {
+        // Arrange
+        LyricsEntity lyrics = CreateFreeLyrics();
+        lyrics.ReviseSeo("Meta Title", "Meta Description", "{}");
+
+        // Act
+        bool changed = lyrics.ReviseSeo("Meta Title", "Meta Description", "{}");
+
+        // Assert
+        changed.Should().BeFalse();
+    }
+
     #endregion
 
     #region UpdateMetadata Tests
