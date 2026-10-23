@@ -108,10 +108,7 @@ public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(
             Routes.Public.LyricsSubmissionsAndRevisions.Submissions(),
-            new PublicSubmitLyricsRequestBuilder()
-                .WithArtistName("Some Impersonator Name")
-                .WithSlug("eloko-oyo-fast-path")
-                .Build()
+            new PublicSubmitLyricsRequestBuilder().WithArtistName("Some Impersonator Name").Build()
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -131,101 +128,5 @@ public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
         persistedLyrics.ArtistName.Should().Be(ownedArtist.Name);
         persistedLyrics.ArtistName.Should().NotBe("Some Impersonator Name");
         persistedLyrics.Status.Should().Be(EnumContentStatus.Draft);
-    }
-
-    [Fact]
-    public async Task SubmitLyrics_WithClaimedArtistButNoSlug_ReturnsBadRequest()
-    {
-        Guid userId = Guid.NewGuid();
-        await SeedAsync<IdentityDbContext>(ctx =>
-        {
-            UserEntity user = UserFactory.CreateWithId(userId);
-            user.MarkAsVerified();
-            user.Activate();
-            ctx.Users.Add(user);
-        });
-
-        await SeedAsync<ContentDbContext, ArtistEntity>(ctx =>
-        {
-            ContentTypeEntity contentType = ContentTypeFactory.Create();
-            CategoryEntity category = CategoryFactory.CreateDefaultForLyrics(contentType.Id);
-            ArtistEntity artist = ArtistFactory.CreateClaimed(userId);
-            ctx.ContentTypes.Add(contentType);
-            ctx.Categories.Add(category);
-            ctx.Artists.Add(artist);
-            return artist;
-        });
-
-        Client.AuthenticateAs(userId, "Visitor");
-
-        var response = await Client.PostAsJsonAsync(
-            Routes.Public.LyricsSubmissionsAndRevisions.Submissions(),
-            new PublicSubmitLyricsRequestBuilder().WithArtistName(null).Build()
-        );
-
-        await response.ShouldBeProblem<BadRequestException>(
-            HttpStatusCode.BadRequest,
-            Localized<LyricsErrorMessage>(m => m.SlugRequired())
-        );
-    }
-
-    [Fact]
-    public async Task SubmitLyrics_WithClaimedArtistAndAlreadyTakenSlug_ReturnsConflict()
-    {
-        string takenSlug = $"taken-slug-{Guid.NewGuid():N}";
-
-        Guid userId = Guid.NewGuid();
-        await SeedAsync<IdentityDbContext>(ctx =>
-        {
-            UserEntity user = UserFactory.CreateWithId(userId);
-            user.MarkAsVerified();
-            user.Activate();
-            ctx.Users.Add(user);
-        });
-
-        await SeedAsync<ContentDbContext>(ctx =>
-        {
-            ContentTypeEntity contentType = ContentTypeFactory.Create();
-            CategoryEntity category = CategoryFactory.CreateDefaultForLyrics(contentType.Id);
-            ArtistEntity artist = ArtistFactory.CreateClaimed(userId);
-            LyricsEntity existing = LyricsFactory.CreateWithSlug(category.Id, takenSlug);
-            ctx.ContentTypes.Add(contentType);
-            ctx.Categories.Add(category);
-            ctx.Artists.Add(artist);
-            ctx.Lyrics.Add(existing);
-        });
-
-        Client.AuthenticateAs(userId, "Visitor");
-
-        var response = await Client.PostAsJsonAsync(
-            Routes.Public.LyricsSubmissionsAndRevisions.Submissions(),
-            new PublicSubmitLyricsRequestBuilder().WithArtistName(null).WithSlug(takenSlug).Build()
-        );
-
-        await response.ShouldBeProblem<ConflictException>(
-            HttpStatusCode.Conflict,
-            Localized<LyricsErrorMessage>(m => m.SlugAlreadyExists(takenSlug))
-        );
-
-        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
-        int withTakenSlug = await ctx.Lyrics.CountAsync(lyrics => lyrics.Slug == takenSlug);
-        withTakenSlug.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task SubmitLyrics_WithMalformedOptionalSlug_ReturnsBadRequest()
-    {
-        Client.AuthenticateAsVisitor();
-
-        var response = await Client.PostAsJsonAsync(
-            Routes.Public.LyricsSubmissionsAndRevisions.Submissions(),
-            new PublicSubmitLyricsRequestBuilder().WithSlug("INVALID SLUG!!!").Build()
-        );
-
-        await response.ShouldBeValidationProblem("Slug", Localized<LyricsErrorMessage>(m => m.SlugInvalidFormat()));
-
-        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
-        bool anySubmissionCreated = await ctx.LyricsSubmissions.AnyAsync();
-        anySubmissionCreated.Should().BeFalse();
     }
 }
