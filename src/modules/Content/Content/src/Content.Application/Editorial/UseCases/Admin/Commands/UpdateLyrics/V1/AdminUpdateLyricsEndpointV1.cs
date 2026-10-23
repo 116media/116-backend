@@ -18,7 +18,6 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyric
 /// <param name="CategoryId">The category this lyrics page belongs to.</param>
 /// <param name="SongTitle">The song title.</param>
 /// <param name="ArtistName">The performing artist name.</param>
-/// <param name="Slug">The URL-safe slug. Must be unique across all lyrics pages.</param>
 /// <param name="LyricsText">The full lyrics text.</param>
 /// <param name="Language">ISO 639-1 language code.</param>
 /// <param name="VideoId">Optional linked video UUID. Null to unlink.</param>
@@ -28,7 +27,6 @@ public record AdminUpdateLyricsRequest(
     Guid CategoryId,
     string SongTitle,
     string ArtistName,
-    string Slug,
     string LyricsText,
     string Language,
     Guid? VideoId,
@@ -71,7 +69,6 @@ internal class AdminUpdateLyricsEndpointV1 : ICarterModule
                 {
                     var command = new AdminUpdateLyricsCommand(
                         Id: id,
-                        Slug: request.Slug,
                         CategoryId: request.CategoryId,
                         SongTitle: request.SongTitle,
                         ArtistName: request.ArtistName,
