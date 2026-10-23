@@ -12,7 +12,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateShort
 /// <param name="Slug">The URL-safe slug for the short video permalink.</param>
 /// <param name="AuthorId">The identity user UUID read from JWT claims.</param>
 /// <param name="VideoId">Optional parent full video identifier. When provided, creates a teaser.</param>
-public record AdminCreateShortVideoCommand(string Title, string Slug, Guid AuthorId, Guid? VideoId)
+public record AdminCreateShortVideoCommand(string Title, Guid AuthorId, Guid? VideoId)
     : ICommand<AdminCreateShortVideoResult>;
 
 /// <summary>
