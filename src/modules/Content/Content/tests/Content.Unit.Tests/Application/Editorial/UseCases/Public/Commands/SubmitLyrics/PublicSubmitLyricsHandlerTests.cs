@@ -69,7 +69,6 @@ public class PublicSubmitLyricsHandlerTests
             ArtistName: "Some Impersonator Name",
             LyricsText: "Some submitted lyrics text.",
             Language: "fr",
-            Slug: "eloko-oyo",
             UserId: userId
         );
 
@@ -99,62 +98,6 @@ public class PublicSubmitLyricsHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenSubmitterOwnsClaimedArtistButSlugMissing_ShouldThrowSlugRequired()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        ArtistEntity ownedArtist = ArtistFactory.CreateClaimed(userId);
-        _artistRepositoryMock.SetupGetByUserId(userId, ownedArtist);
-
-        var command = new PublicSubmitLyricsCommand(
-            SongTitle: "Eloko Oyo",
-            ArtistName: null,
-            LyricsText: "Some submitted lyrics text.",
-            Language: "fr",
-            Slug: null,
-            UserId: userId
-        );
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
-        _lyricsRepositoryMock.Verify(
-            x => x.AddAsync(It.IsAny<LyricsEntity>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
-    }
-
-    [Fact]
-    public async Task Handle_WhenSubmitterOwnsClaimedArtistButSlugAlreadyExists_ShouldThrowConflictException()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        ArtistEntity ownedArtist = ArtistFactory.CreateClaimed(userId);
-        _artistRepositoryMock.SetupGetByUserId(userId, ownedArtist);
-        CategoryEntity category = CategoryFactory.CreateDefaultForLyrics(Guid.NewGuid());
-        _categoryRepositoryMock.SetupGetDefaultLyricsCategory(category);
-        LyricsEntity existing = LyricsFactory.CreateWithSlug(category.Id, "eloko-oyo");
-        _lyricsRepositoryMock.SetupGetBySlug("eloko-oyo", existing);
-
-        var command = new PublicSubmitLyricsCommand(
-            SongTitle: "Eloko Oyo",
-            ArtistName: null,
-            LyricsText: "Some submitted lyrics text.",
-            Language: "fr",
-            Slug: "eloko-oyo",
-            UserId: userId
-        );
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
-    }
-
-    [Fact]
     public async Task Handle_WhenSubmitterOwnsClaimedArtistButNoDefaultCategoryConfigured_ShouldThrowConfigurationError()
     {
         // Arrange
@@ -168,7 +111,6 @@ public class PublicSubmitLyricsHandlerTests
             ArtistName: null,
             LyricsText: "Some submitted lyrics text.",
             Language: "fr",
-            Slug: "eloko-oyo",
             UserId: userId
         );
 
@@ -199,7 +141,6 @@ public class PublicSubmitLyricsHandlerTests
             ArtistName: null,
             LyricsText: "Some submitted lyrics text.",
             Language: "fr",
-            Slug: null,
             UserId: userId
         );
 
@@ -223,7 +164,6 @@ public class PublicSubmitLyricsHandlerTests
             ArtistName: "Fally Ipupa",
             LyricsText: "Some submitted lyrics text.",
             Language: "fr",
-            Slug: null,
             UserId: userId
         );
 
