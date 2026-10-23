@@ -1,5 +1,6 @@
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyrics;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -73,7 +74,6 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
             CategoryId: categoryId,
             SongTitle: TestConstants.Lyrics.ValidSongTitle,
             ArtistName: TestConstants.Lyrics.ValidArtistName,
-            Slug: slug,
             LyricsText: TestConstants.Lyrics.ValidLyricsText,
             Language: TestConstants.Lyrics.ValidLanguage,
             AuthorId: AuthorId,
@@ -93,7 +93,7 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
         var command = BuildCommand(category.Id, slug);
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _lyricsRepositoryMock.SetupGetBySlug(slug, null);
+        _lyricsRepositoryMock.SetupGetBySlug(It.IsAny<string>(), null);
 
         LyricsEntity? added = null;
         _lyricsRepositoryMock
@@ -115,7 +115,7 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
         added.CategoryId.Should().Be(category.Id);
         added.SongTitle.Should().Be(TestConstants.Lyrics.ValidSongTitle);
         added.ArtistName.Should().Be(TestConstants.Lyrics.ValidArtistName);
-        added.Slug.Value.Should().Be(slug);
+        added.Slug.Value.Should().Be(SlugHelper.ToSlug(command.SongTitle));
         added.LyricsText.Should().Be(TestConstants.Lyrics.ValidLyricsText);
         added.Language.Should().Be(TestConstants.Lyrics.ValidLanguage);
         added.AuthorId.Should().Be(AuthorId);
@@ -139,7 +139,7 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
         var command = BuildCommand(category.Id, slug, customerId: customerId, orderItemId: orderItemId);
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _lyricsRepositoryMock.SetupGetBySlug(slug, null);
+        _lyricsRepositoryMock.SetupGetBySlug(It.IsAny<string>(), null);
 
         LyricsEntity? added = null;
         _lyricsRepositoryMock
@@ -177,7 +177,7 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
         var command = BuildCommand(category.Id, slug, videoId: videoId);
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _lyricsRepositoryMock.SetupGetBySlug(slug, null);
+        _lyricsRepositoryMock.SetupGetBySlug(It.IsAny<string>(), null);
 
         LyricsEntity? added = null;
         _lyricsRepositoryMock
@@ -216,7 +216,7 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
         var command = BuildCommand(category.Id, slug);
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _lyricsRepositoryMock.SetupGetBySlug(slug, null);
+        _lyricsRepositoryMock.SetupGetBySlug(It.IsAny<string>(), null);
 
         LyricsEntity reloaded = LyricsFactory.Create(category.Id);
         _lyricsRepositoryMock
@@ -254,31 +254,5 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
         await act.Should().ThrowAsync<NotFoundException>();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
-
-    [Fact]
-    public async Task Handle_WhenSlugAlreadyExists_ShouldThrowConflictException()
-    {
-        // Arrange
-        CategoryEntity category = CategoryFactory.Create(CategoryId);
-        string slug = TestConstants.Lyrics.ValidSlug;
-        var command = BuildCommand(category.Id, slug);
-
-        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-
-        LyricsEntity existing = LyricsFactory.CreateWithSlug(category.Id, slug);
-        _lyricsRepositoryMock.SetupGetBySlug(slug, existing);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
-        _lyricsRepositoryMock.Verify(
-            x => x.AddAsync(It.IsAny<LyricsEntity>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
-        _unitOfWorkMock.VerifyCommitNotCalled();
-    }
-
     #endregion
 }
