@@ -1,6 +1,7 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -27,28 +28,26 @@ public class AdminCreateShortVideoHandler(
         CancellationToken cancellationToken
     )
     {
-        ShortVideoEntity? existing = await shortVideoRepository.GetBySlugAsync(
-            slug: command.Slug,
+        string slug = await SlugHelper.ToAvailableSlugAsync(
+            name: command.Title,
+            isTakenAsync: async (candidate, ct) =>
+                await shortVideoRepository.GetBySlugAsync(slug: candidate, cancellationToken: ct) is not null,
+            unique: true,
             cancellationToken: cancellationToken
         );
-
-        if (existing is not null)
-        {
-            throw i18n.ShortVideo.SlugAlreadyExists(slug: command.Slug);
-        }
 
         ShortVideoEntity shortVideo = command.VideoId is { } videoId
             ? ShortVideoEntity.CreateTeaser(
                 id: Guid.NewGuid(),
                 title: command.Title,
-                slug: command.Slug,
+                slug: slug,
                 videoId: videoId,
                 authorId: command.AuthorId
             )
             : ShortVideoEntity.CreateStandalone(
                 id: Guid.NewGuid(),
                 title: command.Title,
-                slug: command.Slug,
+                slug: slug,
                 authorId: command.AuthorId
             );
 
