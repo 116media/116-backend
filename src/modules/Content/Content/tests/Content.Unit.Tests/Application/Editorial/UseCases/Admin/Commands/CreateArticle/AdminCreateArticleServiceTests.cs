@@ -34,28 +34,10 @@ public class AdminCreateArticleServiceTests
         return new AdminCreateArticleCommand(
             categoryId,
             "Title",
-            "slug",
             Guid.NewGuid(),
             customerId,
             customerId is null ? null : Guid.NewGuid()
         );
-    }
-
-    [Fact]
-    public async Task CreateAsync_WithAFreeSlug_ShouldStageAFreeArticle()
-    {
-        // Arrange
-        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
-        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _articleRepositoryMock.SetupGetBySlug("slug", null);
-
-        // Act
-        ArticleEntity article = await _service.CreateAsync(Command(category.Id), CancellationToken.None);
-
-        // Assert
-        article.Slug.Value.Should().Be("slug");
-        article.CustomerId.Should().BeNull();
-        _articleRepositoryMock.VerifyAddCalled();
     }
 
     [Fact]
@@ -72,20 +54,5 @@ public class AdminCreateArticleServiceTests
 
         // Assert
         article.CustomerId.Should().Be(customerId);
-    }
-
-    [Fact]
-    public async Task CreateAsync_WhenTheSlugIsTaken_ShouldThrowConflictException()
-    {
-        // Arrange
-        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
-        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _articleRepositoryMock.SetupGetBySlug("slug", ArticleFactory.Create(category.Id));
-
-        // Act
-        Func<Task> act = async () => await _service.CreateAsync(Command(category.Id), CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
     }
 }
