@@ -20,14 +20,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Commands.SubmitLyri
 /// <param name="ArtistName">The performing artist name, required unless the submitter owns a claimed artist profile.</param>
 /// <param name="LyricsText">The full submitted lyrics text.</param>
 /// <param name="Language">ISO 639-1 language code of the submitted lyrics.</param>
-/// <param name="Slug">The URL-safe slug, required only on the verified-artist fast path.</param>
-public record PublicSubmitLyricsRequest(
-    string SongTitle,
-    string? ArtistName,
-    string LyricsText,
-    string Language,
-    string? Slug
-);
+public record PublicSubmitLyricsRequest(string SongTitle, string? ArtistName, string LyricsText, string Language);
 
 /// <summary>
 /// Response model for a successful SubmitLyrics operation.
@@ -71,7 +64,6 @@ internal class PublicSubmitLyricsEndpointV1 : ICarterModule
                         ArtistName: request.ArtistName,
                         LyricsText: request.LyricsText,
                         Language: request.Language,
-                        Slug: request.Slug,
                         UserId: userId
                     );
                     PublicSubmitLyricsResult result = await dispatcher.Send(
