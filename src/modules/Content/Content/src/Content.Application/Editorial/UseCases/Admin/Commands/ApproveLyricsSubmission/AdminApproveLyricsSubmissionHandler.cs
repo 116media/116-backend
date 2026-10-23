@@ -26,7 +26,6 @@ public class AdminApproveLyricsSubmissionHandler(
     {
         ApprovedSubmissionData approval = await approveService.PrepareAsync(
             submissionId: command.Id,
-            slug: command.Slug,
             reviewerId: command.ReviewerId,
             cancellationToken: cancellationToken
         );
