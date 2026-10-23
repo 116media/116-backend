@@ -10,14 +10,13 @@ namespace _116.Content.Domain.Entities;
 public sealed partial class LyricsEntity
 {
     /// <summary>
-    /// Renames the song, its performing artist and its slug. Slug uniqueness is the handler's
-    /// to enforce.
+    /// Renames the song and its performing artist. The slug is assigned once at creation and
+    /// never follows the title, so a published URL keeps resolving.
     /// </summary>
     /// <param name="songTitle">The song title.</param>
     /// <param name="artistName">The performing artist name.</param>
-    /// <param name="slug">The URL-safe slug. Uniqueness enforced by handler.</param>
     /// <returns><c>true</c> if any value changed; otherwise <c>false</c>.</returns>
-    public bool Retitle(string songTitle, string artistName, string slug)
+    public bool Retitle(string songTitle, string artistName)
     {
         if (string.IsNullOrWhiteSpace(value: songTitle))
         {
@@ -29,19 +28,13 @@ public sealed partial class LyricsEntity
             throw new ContentRuleException(ContentRuleCodes.LyricsArtistNameRequired);
         }
 
-        if (string.IsNullOrWhiteSpace(value: slug))
-        {
-            throw new ContentRuleException(ContentRuleCodes.LyricsSlugRequired);
-        }
-
-        if (SongTitle == songTitle && ArtistName == artistName && Slug == slug)
+        if (SongTitle == songTitle && ArtistName == artistName)
         {
             return false;
         }
 
         SongTitle = songTitle;
         ArtistName = artistName;
-        Slug = slug;
 
         return true;
     }
