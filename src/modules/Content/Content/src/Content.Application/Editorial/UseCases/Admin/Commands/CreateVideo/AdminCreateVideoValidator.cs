@@ -18,7 +18,6 @@ public class AdminCreateVideoValidator : AbstractValidator<AdminCreateVideoComma
         RuleFor(x => x.CategoryId).ValidArticleCategoryId(i18n.Article.Msg.CategoryIdRequired());
 
         RuleFor(x => x.Title).ValidVideoTitle(i18n.Video.Msg);
-        RuleFor(x => x.Slug).ValidVideoSlug(i18n.Video.Msg);
 
         RuleFor(x => x.Description).ValidVideoDescription(i18n.Video.Msg);
 
