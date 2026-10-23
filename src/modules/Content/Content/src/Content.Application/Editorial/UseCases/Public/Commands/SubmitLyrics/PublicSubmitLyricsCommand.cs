@@ -18,7 +18,6 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Commands.SubmitLyri
 /// </param>
 /// <param name="LyricsText">The full submitted lyrics text.</param>
 /// <param name="Language">ISO 639-1 language code of the submitted lyrics.</param>
-/// <param name="Slug">
 /// The URL-safe slug for the lyrics page. Only used, and only required, on the
 /// verified-artist fast path, where a real lyrics record is created immediately. A queued
 /// community submission has no slug yet — one is assigned only once an admin approves it.
@@ -29,7 +28,6 @@ public record PublicSubmitLyricsCommand(
     string? ArtistName,
     string LyricsText,
     string Language,
-    string? Slug,
     Guid UserId
 ) : ICommand<PublicSubmitLyricsResult>;
 
