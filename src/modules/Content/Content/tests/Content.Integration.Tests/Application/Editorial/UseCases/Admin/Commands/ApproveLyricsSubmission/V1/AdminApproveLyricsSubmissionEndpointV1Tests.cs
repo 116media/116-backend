@@ -2,6 +2,7 @@ using _116.BuildingBlocks.Application.Exceptions;
 using _116.BuildingBlocks.Application.Exceptions.Messages;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveLyricsSubmission.V1;
 using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
@@ -21,10 +22,7 @@ public class AdminApproveLyricsSubmissionEndpointV1Tests(PostgresFixture db) : B
     {
         Client.ClearAuthentication();
 
-        var response = await Client.PutAsJsonAsync(
-            Routes.Admin.Lyrics.Submission(Guid.NewGuid()),
-            new AdminApproveLyricsSubmissionRequestBuilder().WithSlug("some-slug").Build()
-        );
+        var response = await Client.PutAsync(Routes.Admin.Lyrics.Submission(Guid.NewGuid()), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -34,10 +32,7 @@ public class AdminApproveLyricsSubmissionEndpointV1Tests(PostgresFixture db) : B
     {
         Client.AuthenticateAsVisitor();
 
-        var response = await Client.PutAsJsonAsync(
-            Routes.Admin.Lyrics.Submission(Guid.NewGuid()),
-            new AdminApproveLyricsSubmissionRequestBuilder().WithSlug("some-slug").Build()
-        );
+        var response = await Client.PutAsync(Routes.Admin.Lyrics.Submission(Guid.NewGuid()), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -47,10 +42,7 @@ public class AdminApproveLyricsSubmissionEndpointV1Tests(PostgresFixture db) : B
     {
         Client.AuthenticateAsAdmin();
 
-        var response = await Client.PutAsJsonAsync(
-            Routes.Admin.Lyrics.Submission(Guid.NewGuid()),
-            new AdminApproveLyricsSubmissionRequestBuilder().WithSlug("some-slug").Build()
-        );
+        var response = await Client.PutAsync(Routes.Admin.Lyrics.Submission(Guid.NewGuid()), null);
 
         await response.ShouldBeProblem<NotFoundException>(
             HttpStatusCode.NotFound,
@@ -74,10 +66,7 @@ public class AdminApproveLyricsSubmissionEndpointV1Tests(PostgresFixture db) : B
 
         Client.AuthenticateAsAdmin();
 
-        var response = await Client.PutAsJsonAsync(
-            Routes.Admin.Lyrics.Submission(submission.Id),
-            new AdminApproveLyricsSubmissionRequestBuilder().WithSlug("eloko-oyo-approved").Build()
-        );
+        var response = await Client.PutAsync(Routes.Admin.Lyrics.Submission(submission.Id), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.ReadAsAsync<AdminApproveLyricsSubmissionResponse>();
@@ -88,7 +77,7 @@ public class AdminApproveLyricsSubmissionEndpointV1Tests(PostgresFixture db) : B
         LyricsSubmissionEntity? persistedSubmission = await ctx.LyricsSubmissions.FindAsync(submission.Id);
 
         persistedLyrics.Should().NotBeNull();
-        persistedLyrics!.Slug.Value.Should().Be("eloko-oyo-approved");
+        persistedLyrics!.Slug.Value.Should().Be(SlugHelper.ToSlug(submission.SongTitle));
         persistedLyrics.SongTitle.Should().Be("Eloko Oyo");
         persistedLyrics.ArtistName.Should().Be("Fally Ipupa");
         persistedLyrics.LyricsText.Should().Be(submission.LyricsText);
@@ -97,43 +86,6 @@ public class AdminApproveLyricsSubmissionEndpointV1Tests(PostgresFixture db) : B
         persistedSubmission!.Status.Should().Be(EnumSubmissionStatus.Approved);
         persistedSubmission.PublishedLyricsId.Should().Be(body.LyricsId);
         persistedSubmission.ReviewedByUserId.Should().Be(TestUser.AdminId);
-    }
-
-    [Fact]
-    public async Task ApproveLyricsSubmission_WithSlugCollidingWithExistingLyrics_ReturnsConflict()
-    {
-        (LyricsSubmissionEntity submission, LyricsEntity existingLyrics) = await SeedAsync<
-            ContentDbContext,
-            (LyricsSubmissionEntity, LyricsEntity)
-        >(ctx =>
-        {
-            ContentTypeEntity contentType = ContentTypeFactory.Create();
-            CategoryEntity category = CategoryFactory.CreateDefaultForLyrics(contentType.Id);
-            LyricsEntity existingLyrics = LyricsFactory.CreateWithSlug(category.Id, "already-taken-slug");
-            LyricsSubmissionEntity submission = LyricsSubmissionFactory.Create();
-            ctx.ContentTypes.Add(contentType);
-            ctx.Categories.Add(category);
-            ctx.Lyrics.Add(existingLyrics);
-            ctx.LyricsSubmissions.Add(submission);
-            return (submission, existingLyrics);
-        });
-
-        Client.AuthenticateAsAdmin();
-
-        var response = await Client.PutAsJsonAsync(
-            Routes.Admin.Lyrics.Submission(submission.Id),
-            new AdminApproveLyricsSubmissionRequestBuilder().WithSlug("already-taken-slug").Build()
-        );
-
-        await response.ShouldBeProblem<ConflictException>(
-            HttpStatusCode.Conflict,
-            Localized<LyricsErrorMessage>(m => m.SlugAlreadyExists("already-taken-slug"))
-        );
-
-        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
-        LyricsSubmissionEntity? persistedSubmission = await ctx.LyricsSubmissions.FindAsync(submission.Id);
-        persistedSubmission.Should().NotBeNull();
-        persistedSubmission!.Status.Should().Be(EnumSubmissionStatus.Pending);
     }
 
     [Fact]
@@ -152,10 +104,7 @@ public class AdminApproveLyricsSubmissionEndpointV1Tests(PostgresFixture db) : B
 
         Client.AuthenticateAsAdmin();
 
-        var response = await Client.PutAsJsonAsync(
-            Routes.Admin.Lyrics.Submission(submission.Id),
-            new AdminApproveLyricsSubmissionRequestBuilder().WithSlug("some-other-slug").Build()
-        );
+        var response = await Client.PutAsync(Routes.Admin.Lyrics.Submission(submission.Id), null);
 
         await response.ShouldBeProblem<ConflictException>(
             HttpStatusCode.Conflict,
