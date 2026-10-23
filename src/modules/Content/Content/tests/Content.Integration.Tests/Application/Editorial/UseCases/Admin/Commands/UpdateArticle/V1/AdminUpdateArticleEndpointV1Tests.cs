@@ -79,7 +79,6 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
         AdminUpdateArticleRequest request = new AdminUpdateArticleRequestBuilder()
             .WithCategoryId(article.CategoryId)
             .WithTitle("Updated Article Title")
-            .WithSlug(article.Slug)
             .WithBody("<p>Updated article body content.</p>")
             .Build();
 
@@ -118,18 +117,6 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
     }
 
     [Fact]
-    public async Task UpdateArticle_WithInvalidSlug_ReturnsBadRequest()
-    {
-        Client.AuthenticateAsSuperAdmin();
-        var id = Guid.NewGuid();
-        AdminUpdateArticleRequest request = new AdminUpdateArticleRequestBuilder().WithSlug("INVALID SLUG!!!").Build();
-
-        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
-
-        await response.ShouldBeValidationProblem("Slug", Localized<ArticleErrorMessage>(m => m.SlugInvalidFormat()));
-    }
-
-    [Fact]
     public async Task UpdateArticle_WithTooShortHeadline_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
@@ -141,23 +128,6 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
         await response.ShouldBeValidationProblem(
             "Headline",
             Localized<ArticleErrorMessage>(m => m.HeadlineTooShort(ContentConstants.MinHeadlineLength))
-        );
-    }
-
-    [Fact]
-    public async Task UpdateArticle_WithSlugTooLong_ReturnsBadRequest()
-    {
-        Client.AuthenticateAsSuperAdmin();
-        var id = Guid.NewGuid();
-        AdminUpdateArticleRequest request = new AdminUpdateArticleRequestBuilder()
-            .WithSlug(new string('a', 300))
-            .Build();
-
-        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
-
-        await response.ShouldBeValidationProblem(
-            "Slug",
-            Localized<ArticleErrorMessage>(m => m.SlugTooLong(ContentConstants.MaxSlugLength))
         );
     }
 
@@ -274,7 +244,6 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
         AdminUpdateArticleRequest request = new AdminUpdateArticleRequestBuilder()
             .WithCategoryId(article.CategoryId)
             .WithTitle("Edited After Publication")
-            .WithSlug(article.Slug)
             .Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{article.Id}", request);
