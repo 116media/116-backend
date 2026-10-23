@@ -1,6 +1,7 @@
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.CreateTag.V1;
 using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Builders.Requests;
@@ -60,32 +61,11 @@ public class AdminCreateTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         var body = await response.ReadAsAsync<AdminCreateTagResponse>();
         body.Tag.Id.Should().NotBeEmpty();
         body.Tag.Name.Should().Be(request.Name);
-        body.Tag.Slug.Should().Be(request.Slug);
+        body.Tag.Slug.Should().MatchRegex($"^{SlugHelper.ToSlug(request.Name)}-[a-z0-9]{{8}}$");
 
         await using ContentDbContext context = CreateDbContext<ContentDbContext>();
         TagEntity? persisted = await context.Tags.FindAsync(body.Tag.Id);
         persisted.Should().NotBeNull();
-        persisted!.Slug.Value.Should().Be(request.Slug);
-    }
-
-    [Fact]
-    public async Task CreateTag_AsSuperAdmin_DuplicateSlug_ReturnsConflict()
-    {
-        await SeedAsync<ContentDbContext, TagEntity>(ctx =>
-        {
-            TagEntity existingTag = TagFactory.Create("Fally Ipupa", "fally-ipupa");
-            ctx.Tags.Add(existingTag);
-            return existingTag;
-        });
-
-        Client.AuthenticateAsSuperAdmin();
-        var request = new AdminCreateTagRequestBuilder().WithSlug("fally-ipupa").Build();
-
-        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Tags, request);
-
-        await response.ShouldBeProblem<ConflictException>(
-            HttpStatusCode.Conflict,
-            Localized<TagErrorMessage>(m => m.SlugAlreadyExists(request.Slug))
-        );
+        persisted!.Slug.Value.Should().MatchRegex($"^{SlugHelper.ToSlug(request.Name)}-[a-z0-9]{{8}}$");
     }
 }
