@@ -28,7 +28,6 @@ public class AdminUpdateLyricsValidatorTests
             CategoryId: Guid.NewGuid(),
             SongTitle: TestConstants.Lyrics.ValidSongTitle,
             ArtistName: TestConstants.Lyrics.ValidArtistName,
-            Slug: TestConstants.Lyrics.ValidSlug,
             LyricsText: TestConstants.Lyrics.ValidLyricsText,
             Language: TestConstants.Lyrics.ValidLanguage,
             VideoId: null,
@@ -172,54 +171,6 @@ public class AdminUpdateLyricsValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateLyricsCommand.ArtistName)
                 && e.ErrorMessage == _i18n.Lyrics.Msg.ArtistNameRequired()
-            );
-    }
-
-    #endregion
-
-    #region Slug Validation Tests
-
-    [Fact]
-    public async Task Validate_WithEmptySlug_ShouldHaveError()
-    {
-        // Arrange
-        var command = ValidCommand() with
-        {
-            Slug = string.Empty,
-        };
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateLyricsCommand.Slug)
-                && e.ErrorMessage == _i18n.Lyrics.Msg.SlugRequired()
-            );
-    }
-
-    [Fact]
-    public async Task Validate_WithUppercaseSlug_ShouldHaveError()
-    {
-        // Arrange
-        var command = ValidCommand() with
-        {
-            Slug = "Invalid-Slug",
-        };
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateLyricsCommand.Slug)
-                && e.ErrorMessage == _i18n.Lyrics.Msg.SlugInvalidFormat()
             );
     }
 
