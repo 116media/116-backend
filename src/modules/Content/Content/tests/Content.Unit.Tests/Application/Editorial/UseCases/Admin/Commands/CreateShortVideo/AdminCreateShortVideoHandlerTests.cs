@@ -50,7 +50,6 @@ public class AdminCreateShortVideoHandlerTests : BaseContentHandlerTest
         // Arrange
         var command = new AdminCreateShortVideoCommand(
             Title: TestConstants.ShortVideo.ValidTitle,
-            Slug: TestConstants.ShortVideo.ValidSlug,
             AuthorId: Guid.NewGuid(),
             VideoId: null
         );
@@ -84,7 +83,6 @@ public class AdminCreateShortVideoHandlerTests : BaseContentHandlerTest
         Guid videoId = Guid.NewGuid();
         var command = new AdminCreateShortVideoCommand(
             Title: TestConstants.ShortVideo.ValidTitle,
-            Slug: TestConstants.ShortVideo.ValidSlug,
             AuthorId: Guid.NewGuid(),
             VideoId: videoId
         );
@@ -106,27 +104,5 @@ public class AdminCreateShortVideoHandlerTests : BaseContentHandlerTest
         result.ShortVideo.HasFullVideo.Should().BeTrue();
         _shortVideoRepositoryMock.VerifyAddCalled();
         _unitOfWorkMock.VerifyCommitCalled();
-    }
-
-    [Fact]
-    public async Task Handle_WhenSlugAlreadyExists_ShouldThrowConflictException()
-    {
-        // Arrange
-        string slug = TestConstants.ShortVideo.ValidSlug;
-        var command = new AdminCreateShortVideoCommand(
-            Title: TestConstants.ShortVideo.ValidTitle,
-            Slug: slug,
-            AuthorId: Guid.NewGuid(),
-            VideoId: null
-        );
-
-        ShortVideoEntity existing = ShortVideoFactory.CreateWithSlug(slug);
-        _shortVideoRepositoryMock.SetupGetBySlug(slug, existing);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
     }
 }
