@@ -2,6 +2,7 @@ using _116.BuildingBlocks.Application.Exceptions;
 using _116.BuildingBlocks.Application.Exceptions.Messages;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyrics.V1;
 using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
@@ -65,10 +66,7 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         Client.AuthenticateAsSuperAdmin();
         string slug = $"test-lyrics-{Guid.NewGuid().ToString("N")[..8]}";
-        AdminCreateLyricsRequest request = new AdminCreateLyricsRequestBuilder()
-            .WithCategoryId(category.Id)
-            .WithSlug(slug)
-            .Build();
+        AdminCreateLyricsRequest request = new AdminCreateLyricsRequestBuilder().WithCategoryId(category.Id).Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Lyrics, request);
 
@@ -77,7 +75,7 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         body.Lyrics.Id.Should().NotBeEmpty();
         body.Lyrics.SongTitle.Should().Be(request.SongTitle);
         body.Lyrics.ArtistName.Should().Be(request.ArtistName);
-        body.Lyrics.Slug.Should().Be(request.Slug);
+        body.Lyrics.Slug.Should().Be(SlugHelper.ToSlug(request.SongTitle));
         body.Lyrics.CategoryId.Should().Be(category.Id);
         body.Lyrics.Language.Should().Be(request.Language);
         body.Lyrics.Status.Should().Be(EnumContentStatus.Draft);
@@ -87,7 +85,7 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         persisted.Should().NotBeNull();
         persisted!.SongTitle.Should().Be(request.SongTitle);
         persisted.ArtistName.Should().Be(request.ArtistName);
-        persisted.Slug.Value.Should().Be(request.Slug);
+        persisted.Slug.Value.Should().Be(SlugHelper.ToSlug(request.SongTitle));
         persisted.Status.Should().Be(EnumContentStatus.Draft);
     }
 
@@ -95,10 +93,7 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     public async Task CreateLyrics_AsSuperAdmin_WithNonExistentCategory_ReturnsNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
-        AdminCreateLyricsRequest request = new AdminCreateLyricsRequestBuilder()
-            .WithCategoryId(Guid.NewGuid())
-            .WithSlug("non-existent-category-lyrics")
-            .Build();
+        AdminCreateLyricsRequest request = new AdminCreateLyricsRequestBuilder().WithCategoryId(Guid.NewGuid()).Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Lyrics, request);
 
@@ -128,7 +123,7 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         );
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
-        (await ctx.Lyrics.FirstOrDefaultAsync(l => l.Slug == request.Slug)).Should().BeNull();
+        (await ctx.Lyrics.FirstOrDefaultAsync(l => l.SongTitle == request.SongTitle)).Should().BeNull();
     }
 
     [Fact]
@@ -140,7 +135,6 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         AdminCreateLyricsRequest request = new AdminCreateLyricsRequestBuilder()
             .WithCategoryId(category.Id)
             .WithSongTitle(string.Empty)
-            .WithSlug("empty-song-title-lyrics")
             .Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Lyrics, request);
@@ -160,7 +154,6 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         AdminCreateLyricsRequest request = new AdminCreateLyricsRequestBuilder()
             .WithCategoryId(category.Id)
             .WithLyricsText(string.Empty)
-            .WithSlug("empty-lyrics-text-lyrics")
             .Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Lyrics, request);
@@ -168,34 +161,6 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         await response.ShouldBeValidationProblem(
             "LyricsText",
             Localized<LyricsErrorMessage>(m => m.LyricsTextRequired())
-        );
-    }
-
-    [Fact]
-    public async Task CreateLyrics_AsSuperAdmin_WithDuplicateSlug_ReturnsConflict()
-    {
-        LyricsEntity existingLyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
-        {
-            ContentTypeEntity contentType = ContentTypeFactory.Create();
-            CategoryEntity category = CategoryFactory.Create(contentType.Id);
-            LyricsEntity lyrics = LyricsFactory.Create(category.Id);
-            ctx.ContentTypes.Add(contentType);
-            ctx.Categories.Add(category);
-            ctx.Lyrics.Add(lyrics);
-            return lyrics;
-        });
-
-        Client.AuthenticateAsSuperAdmin();
-        AdminCreateLyricsRequest request = new AdminCreateLyricsRequestBuilder()
-            .WithCategoryId(existingLyrics.CategoryId)
-            .WithSlug(existingLyrics.Slug)
-            .Build();
-
-        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Lyrics, request);
-
-        await response.ShouldBeProblem<ConflictException>(
-            HttpStatusCode.Conflict,
-            Localized<LyricsErrorMessage>(m => m.SlugAlreadyExists(existingLyrics.Slug))
         );
     }
 
@@ -220,7 +185,6 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         Guid orderItemId = Guid.NewGuid();
         AdminCreateLyricsRequest request = new AdminCreateLyricsRequestBuilder()
             .WithCategoryId(categoryId)
-            .WithSlug(slug)
             .WithCustomerId(customer.Id)
             .WithOrderItemId(orderItemId)
             .Build();
