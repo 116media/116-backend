@@ -32,9 +32,9 @@ public class PublicSubmitLyricsServiceTests
         );
     }
 
-    private static PublicSubmitLyricsCommand Command(Guid userId, string? slug = "song-slug")
+    private static PublicSubmitLyricsCommand Command(Guid userId)
     {
-        return new PublicSubmitLyricsCommand("Song", null, "Text", "en", slug, userId);
+        return new PublicSubmitLyricsCommand("Song", null, "Text", "en", userId);
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class PublicSubmitLyricsServiceTests
         ArtistEntity artist = ArtistFactory.Create();
         CategoryEntity category = CategoryFactory.CreateDefaultForLyrics(Guid.NewGuid());
         _categoryRepositoryMock.SetupGetDefaultLyricsCategory(category);
-        _lyricsRepositoryMock.SetupGetBySlug("song-slug", null);
+        _lyricsRepositoryMock.SetupGetBySlug(It.IsAny<string>(), null);
 
         // Act
         LyricsEntity lyrics = await _service.CreateForArtistAsync(Command(userId), artist, CancellationToken.None);
@@ -70,40 +70,5 @@ public class PublicSubmitLyricsServiceTests
         lyrics.ArtistName.Should().Be(artist.Name);
         lyrics.AuthorId.Should().Be(userId);
         _lyricsRepositoryMock.VerifyAddCalled();
-    }
-
-    [Fact]
-    public async Task CreateForArtistAsync_WithoutASlug_ShouldThrowBadRequestException()
-    {
-        // Act
-        Func<Task> act = async () =>
-            await _service.CreateForArtistAsync(
-                Command(Guid.NewGuid(), slug: null),
-                ArtistFactory.Create(),
-                CancellationToken.None
-            );
-
-        // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
-    }
-
-    [Fact]
-    public async Task CreateForArtistAsync_WhenTheSlugIsTaken_ShouldThrowConflictException()
-    {
-        // Arrange
-        CategoryEntity category = CategoryFactory.CreateDefaultForLyrics(Guid.NewGuid());
-        _categoryRepositoryMock.SetupGetDefaultLyricsCategory(category);
-        _lyricsRepositoryMock.SetupGetBySlug("song-slug", LyricsFactory.Create(category.Id));
-
-        // Act
-        Func<Task> act = async () =>
-            await _service.CreateForArtistAsync(
-                Command(Guid.NewGuid()),
-                ArtistFactory.Create(),
-                CancellationToken.None
-            );
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
     }
 }
