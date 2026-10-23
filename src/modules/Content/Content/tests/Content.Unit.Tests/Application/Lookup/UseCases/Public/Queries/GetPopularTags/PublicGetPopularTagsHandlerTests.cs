@@ -25,7 +25,7 @@ public class PublicGetPopularTagsHandlerTests : BaseContentHandlerTest
     public PublicGetPopularTagsHandlerTests()
     {
         _tagRepositoryMock = MockTagRepository.Create();
-        _handler = new PublicGetPopularTagsHandler(_tagRepositoryMock.Object, Mapper);
+        _handler = new PublicGetPopularTagsHandler(_tagRepositoryMock.Object);
     }
 
     #region Success Cases
@@ -62,7 +62,13 @@ public class PublicGetPopularTagsHandlerTests : BaseContentHandlerTest
         result.Tags.Should().HaveCount(12);
 
         _tagRepositoryMock.Verify(
-            x => x.GetPopularAsync((int?)null, (EnumCoreContentType?)null, It.IsAny<CancellationToken>()),
+            x =>
+                x.GetPopularAsync(
+                    (int?)null,
+                    (EnumCoreContentType?)null,
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()
+                ),
             Times.Once
         );
     }
@@ -95,7 +101,8 @@ public class PublicGetPopularTagsHandlerTests : BaseContentHandlerTest
 
         // Assert
         _tagRepositoryMock.Verify(
-            x => x.GetPopularAsync((int?)7, (EnumCoreContentType?)null, It.IsAny<CancellationToken>()),
+            x =>
+                x.GetPopularAsync((int?)7, (EnumCoreContentType?)null, It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once
         );
     }
@@ -113,7 +120,13 @@ public class PublicGetPopularTagsHandlerTests : BaseContentHandlerTest
 
         // Assert
         _tagRepositoryMock.Verify(
-            x => x.GetPopularAsync(It.IsAny<int?>(), EnumCoreContentType.Article, It.IsAny<CancellationToken>()),
+            x =>
+                x.GetPopularAsync(
+                    It.IsAny<int?>(),
+                    EnumCoreContentType.Article,
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()
+                ),
             Times.Once
         );
     }
@@ -131,7 +144,13 @@ public class PublicGetPopularTagsHandlerTests : BaseContentHandlerTest
 
         // Assert
         _tagRepositoryMock.Verify(
-            x => x.GetPopularAsync(It.IsAny<int?>(), EnumCoreContentType.Video, It.IsAny<CancellationToken>()),
+            x =>
+                x.GetPopularAsync(
+                    It.IsAny<int?>(),
+                    EnumCoreContentType.Video,
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()
+                ),
             Times.Once
         );
     }

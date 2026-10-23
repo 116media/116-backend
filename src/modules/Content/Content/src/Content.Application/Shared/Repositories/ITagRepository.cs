@@ -66,11 +66,15 @@ public interface ITagRepository
     /// <param name="contentType">Restricts to tags used by the supplied content type when set.</param>
     /// <param name="limit">Maximum number of tags to return, or null for all.</param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>The matching tags ordered by name.</returns>
-    Task<IReadOnlyList<TagEntity>> GetAllAsync(
+    /// <param name="publishedOnly">
+    /// Counts published content only when true, every association when false.
+    /// </param>
+    /// <returns>The matching tags ordered by name, each with its content count.</returns>
+    Task<IReadOnlyList<TagCountRow>> GetAllAsync(
         string? search = null,
         EnumCoreContentType? contentType = null,
         int? limit = null,
+        bool publishedOnly = false,
         CancellationToken cancellationToken = default
     );
 
@@ -80,10 +84,14 @@ public interface ITagRepository
     /// <param name="limit">Maximum number of tags to return, or null for all.</param>
     /// <param name="contentType">Restricts the ranking to one content type when set.</param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>The tags ordered by usage count descending.</returns>
-    Task<IReadOnlyList<TagEntity>> GetPopularAsync(
+    /// <param name="publishedOnly">
+    /// Ranks and counts published content only when true, every association when false.
+    /// </param>
+    /// <returns>The tags ordered by usage count descending, each with that count.</returns>
+    Task<IReadOnlyList<TagCountRow>> GetPopularAsync(
         int? limit,
         EnumCoreContentType? contentType = null,
+        bool publishedOnly = false,
         CancellationToken cancellationToken = default
     );
 
@@ -104,3 +112,13 @@ public interface ITagRepository
         CancellationToken cancellationToken = default
     );
 }
+
+/// <summary>
+/// One tag of a listing together with how much content of each kind carries it, counted in
+/// the same statement as the tag itself so a page of tags never becomes a query per tag.
+/// </summary>
+/// <param name="Tag">The tag.</param>
+/// <param name="Articles">Articles carrying it, within the caller's scope.</param>
+/// <param name="Videos">Videos carrying it, within the caller's scope.</param>
+/// <param name="Lyrics">Lyrics pages carrying it, within the caller's scope.</param>
+public record TagCountRow(TagEntity Tag, int Articles, int Videos, int Lyrics);

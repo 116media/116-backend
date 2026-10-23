@@ -2,8 +2,6 @@ using _116.BuildingBlocks.Application.CQRS;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
-using _116.Content.Domain.Entities;
-using MapsterMapper;
 
 namespace _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllTags;
 
@@ -11,19 +9,18 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllTags;
 /// Handles the <see cref="AdminGetAllTagsQuery" /> to retrieve all tags.
 /// </summary>
 /// <param name="tagRepository">Repository for tag data access operations.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminGetAllTagsHandler(ITagRepository tagRepository, IMapper mapper)
+public class AdminGetAllTagsHandler(ITagRepository tagRepository)
     : IQueryHandler<AdminGetAllTagsQuery, AdminGetAllTagsResult>
 {
     /// <inheritdoc />
     public async Task<AdminGetAllTagsResult> Handle(AdminGetAllTagsQuery query, CancellationToken cancellationToken)
     {
-        IReadOnlyList<TagEntity> tags = await tagRepository.GetAllAsync(
+        IReadOnlyList<TagCountRow> rows = await tagRepository.GetAllAsync(
             search: query.Search,
+            publishedOnly: false,
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<TagDto> dtoList = tags.ToTagDtos(mapper);
-        return new AdminGetAllTagsResult(Tags: dtoList);
+        return new AdminGetAllTagsResult(Tags: rows.ToTagWithCountDtos());
     }
 }

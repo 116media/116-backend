@@ -124,8 +124,8 @@ public class TagRepositoryTests : BaseRepositoryTest
 
         var result = await repo.GetAllAsync(search: null, contentType: EnumCoreContentType.Article);
 
-        result.Should().Contain(t => t.Id == articleTag.Id);
-        result.Should().NotContain(t => t.Id == videoTag.Id);
+        result.Should().Contain(r => r.Tag.Id == articleTag.Id);
+        result.Should().NotContain(r => r.Tag.Id == videoTag.Id);
     }
 
     [Fact]
@@ -151,8 +151,8 @@ public class TagRepositoryTests : BaseRepositoryTest
 
         var result = await repo.GetAllAsync(search: null, contentType: EnumCoreContentType.Video);
 
-        result.Should().Contain(t => t.Id == videoTag.Id);
-        result.Should().NotContain(t => t.Id == articleTag.Id);
+        result.Should().Contain(r => r.Tag.Id == videoTag.Id);
+        result.Should().NotContain(r => r.Tag.Id == articleTag.Id);
     }
 
     [Fact]
@@ -180,8 +180,8 @@ public class TagRepositoryTests : BaseRepositoryTest
 
         var result = await repo.GetAllAsync(search: "Afro", contentType: EnumCoreContentType.Article);
 
-        result.Should().Contain(t => t.Id == matching.Id);
-        result.Should().NotContain(t => t.Id == searchMismatch.Id);
-        result.Should().NotContain(t => t.Id == associationMismatch.Id);
+        result.Should().Contain(r => r.Tag.Id == matching.Id);
+        result.Should().NotContain(r => r.Tag.Id == searchMismatch.Id);
+        result.Should().NotContain(r => r.Tag.Id == associationMismatch.Id);
     }
 }

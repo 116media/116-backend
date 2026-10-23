@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using Mapster;
 using MapsterMapper;
@@ -41,5 +42,26 @@ public static class TagMapper
     public static IReadOnlyList<TagDto> ToTagDtos(this IReadOnlyList<TagEntity> entities, IMapper mapper)
     {
         return mapper.Map<IReadOnlyList<TagDto>>(entities);
+    }
+
+    /// <summary>
+    /// Maps tag rows read with their content counts to a list of <see cref="TagWithCountDto" />.
+    /// </summary>
+    /// <param name="rows">The tag rows to map.</param>
+    /// <returns>A read-only list of <see cref="TagWithCountDto" />.</returns>
+    public static IReadOnlyList<TagWithCountDto> ToTagWithCountDtos(this IReadOnlyList<TagCountRow> rows)
+    {
+        return rows.Select(row => new TagWithCountDto(
+                Id: row.Tag.Id,
+                Name: row.Tag.Name,
+                Slug: row.Tag.Slug,
+                Counts: new TagContentCountsDto(
+                    Articles: row.Articles,
+                    Videos: row.Videos,
+                    Lyrics: row.Lyrics,
+                    Total: row.Articles + row.Videos + row.Lyrics
+                )
+            ))
+            .ToList();
     }
 }

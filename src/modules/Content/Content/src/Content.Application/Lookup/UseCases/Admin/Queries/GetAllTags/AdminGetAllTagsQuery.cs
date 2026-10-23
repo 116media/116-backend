@@ -15,4 +15,4 @@ public record AdminGetAllTagsQuery(string? Search = null) : IQuery<AdminGetAllTa
 /// Result of the <see cref="AdminGetAllTagsQuery" /> containing all tags.
 /// </summary>
 /// <param name="Tags">The list of all tags.</param>
-public record AdminGetAllTagsResult(IReadOnlyList<TagDto> Tags);
+public record AdminGetAllTagsResult(IReadOnlyList<TagWithCountDto> Tags);

@@ -16,7 +16,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllTags.V1;
 /// Response model for listing all tags (admin).
 /// </summary>
 /// <param name="Tags">The list of tags.</param>
-public record AdminGetAllTagsResponse(IReadOnlyList<TagDto> Tags);
+public record AdminGetAllTagsResponse(IReadOnlyList<TagWithCountDto> Tags);
 
 /// <summary>
 /// Defines the admin get all tags endpoint.

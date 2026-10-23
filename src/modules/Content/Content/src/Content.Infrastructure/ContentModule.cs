@@ -244,6 +244,11 @@ public static class ContentModule
         services.AddScoped<IDomainEventHandler<VideoUnpublishedEvent>, PopularVideosCacheHandler>();
         services.AddScoped<IDomainEventHandler<VideoDeletedEvent>, PopularVideosCacheHandler>();
         services.AddScoped<IDomainEventHandler<TagGraphChangedEvent>, PopularTagsCacheHandler>();
+        services.AddScoped<IDomainEventHandler<ArticlePublishedEvent>, PopularTagsCacheHandler>();
+        services.AddScoped<IDomainEventHandler<ArticleUnpublishedEvent>, PopularTagsCacheHandler>();
+        services.AddScoped<IDomainEventHandler<VideoPublishedEvent>, PopularTagsCacheHandler>();
+        services.AddScoped<IDomainEventHandler<VideoUnpublishedEvent>, PopularTagsCacheHandler>();
+        services.AddScoped<IDomainEventHandler<CommissionedContentPublishedEvent>, PopularTagsCacheHandler>();
         services.AddScoped<IDomainEventHandler<ShortVideoChangedEvent>, ContentFeedCacheHandler>();
         services.AddScoped<IDomainEventHandler<ShortVideoDeletedEvent>, ContentFeedCacheHandler>();
         services.AddScoped<IDomainEventHandler<ArtistChangedEvent>, ContentFeedCacheHandler>();

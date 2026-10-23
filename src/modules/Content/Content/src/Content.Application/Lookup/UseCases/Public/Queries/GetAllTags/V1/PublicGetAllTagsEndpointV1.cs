@@ -16,7 +16,7 @@ namespace _116.Content.Application.Lookup.UseCases.Public.Queries.GetAllTags.V1;
 /// Response model for listing all public tags.
 /// </summary>
 /// <param name="Tags">The list of tags.</param>
-public record PublicGetAllTagsResponse(IReadOnlyList<TagDto> Tags);
+public record PublicGetAllTagsResponse(IReadOnlyList<TagWithCountDto> Tags);
 
 /// <summary>
 /// Defines the public get all tags endpoint.

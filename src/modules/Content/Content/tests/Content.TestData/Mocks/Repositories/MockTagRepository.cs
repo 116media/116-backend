@@ -47,10 +47,11 @@ public static class MockTagRepository
                     It.IsAny<string?>(),
                     It.IsAny<EnumCoreContentType?>(),
                     It.IsAny<int?>(),
+                    It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()
                 )
             )
-            .ReturnsAsync(new List<TagEntity>());
+            .ReturnsAsync(new List<TagCountRow>());
         return mock;
     }
 
@@ -102,11 +103,20 @@ public static class MockTagRepository
 
     public static Mock<ITagRepository> SetupGetAllTags(this Mock<ITagRepository> mock, IReadOnlyList<TagEntity> list)
     {
+        return mock.SetupGetAllTags(list.Select(tag => new TagCountRow(tag, 0, 0, 0)).ToList());
+    }
+
+    /// <summary>
+    /// Arranges the tag listing to resolve exactly the supplied rows, counts included.
+    /// </summary>
+    public static Mock<ITagRepository> SetupGetAllTags(this Mock<ITagRepository> mock, IReadOnlyList<TagCountRow> list)
+    {
         mock.Setup(x =>
                 x.GetAllAsync(
                     It.IsAny<string?>(),
                     It.IsAny<EnumCoreContentType?>(),
                     It.IsAny<int?>(),
+                    It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()
                 )
             )
@@ -119,8 +129,24 @@ public static class MockTagRepository
         IReadOnlyList<TagEntity> list
     )
     {
+        return mock.SetupGetPopularTags(list.Select(tag => new TagCountRow(tag, 0, 0, 0)).ToList());
+    }
+
+    /// <summary>
+    /// Arranges the popular ranking to resolve exactly the supplied rows, counts included.
+    /// </summary>
+    public static Mock<ITagRepository> SetupGetPopularTags(
+        this Mock<ITagRepository> mock,
+        IReadOnlyList<TagCountRow> list
+    )
+    {
         mock.Setup(x =>
-                x.GetPopularAsync(It.IsAny<int?>(), It.IsAny<EnumCoreContentType?>(), It.IsAny<CancellationToken>())
+                x.GetPopularAsync(
+                    It.IsAny<int?>(),
+                    It.IsAny<EnumCoreContentType?>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()
+                )
             )
             .ReturnsAsync(list);
         return mock;
