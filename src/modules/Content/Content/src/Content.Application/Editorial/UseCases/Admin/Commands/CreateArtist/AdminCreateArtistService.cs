@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtist.Contracts;
 using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 
@@ -17,20 +18,17 @@ public class AdminCreateArtistService(IArtistRepository artistRepository, Conten
     /// <inheritdoc />
     public async Task<ArtistEntity> CreateAsync(AdminCreateArtistCommand command, CancellationToken cancellationToken)
     {
-        ArtistEntity? existing = await artistRepository.GetBySlugAsync(
-            slug: command.Slug,
+        string slug = await SlugHelper.ToAvailableSlugAsync(
+            name: command.Name,
+            isTakenAsync: async (candidate, ct) =>
+                await artistRepository.GetBySlugAsync(slug: candidate, cancellationToken: ct) is not null,
             cancellationToken: cancellationToken
         );
-
-        if (existing is not null)
-        {
-            throw i18n.Artist.SlugAlreadyExists(slug: command.Slug);
-        }
 
         ArtistEntity artist = ArtistEntity.Create(
             id: Guid.NewGuid(),
             name: command.Name,
-            slug: command.Slug,
+            slug: slug,
             bio: command.Bio,
             realName: command.RealName,
             aliases: command.Aliases,
