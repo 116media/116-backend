@@ -2,6 +2,7 @@ using _116.BuildingBlocks.Application.Exceptions;
 using _116.BuildingBlocks.Application.Exceptions.Messages;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo.V1;
 using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
@@ -63,11 +64,7 @@ public class AdminCreateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     {
         CategoryEntity category = await SeedCategoryAsync();
         Client.AuthenticateAsSuperAdmin();
-        string slug = $"test-video-{Guid.NewGuid():N}"[..18];
-        AdminCreateVideoRequest request = new AdminCreateVideoRequestBuilder()
-            .WithCategoryId(category.Id)
-            .WithSlug(slug)
-            .Build();
+        AdminCreateVideoRequest request = new AdminCreateVideoRequestBuilder().WithCategoryId(category.Id).Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Videos, request);
 
@@ -76,14 +73,14 @@ public class AdminCreateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         AdminCreateVideoResponse body = await response.ReadAsAsync<AdminCreateVideoResponse>();
         body.Video.Id.Should().NotBeEmpty();
         body.Video.Title.Should().Be(request.Title);
-        body.Video.Slug.Should().Be(slug);
+        body.Video.Slug.Should().MatchRegex($"^{SlugHelper.ToSlug(request.Title)}-[a-z0-9]{{8}}$");
         body.Video.CategoryId.Should().Be(category.Id);
         body.Video.Status.Should().Be(EnumContentStatus.Draft);
 
         await using ContentDbContext verifyContext = CreateDbContext<ContentDbContext>();
         VideoEntity? persisted = await verifyContext.Videos.FindAsync(body.Video.Id);
         persisted.Should().NotBeNull();
-        persisted!.Slug.Value.Should().Be(slug);
+        persisted!.Slug.Value.Should().MatchRegex($"^{SlugHelper.ToSlug(request.Title)}-[a-z0-9]{{8}}$");
         persisted.CategoryId.Should().Be(category.Id);
     }
 
@@ -91,10 +88,7 @@ public class AdminCreateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     public async Task CreateVideo_AsSuperAdmin_WithNonExistentCategory_ReturnsNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
-        AdminCreateVideoRequest request = new AdminCreateVideoRequestBuilder()
-            .WithCategoryId(Guid.NewGuid())
-            .WithSlug("non-existent-category-video")
-            .Build();
+        AdminCreateVideoRequest request = new AdminCreateVideoRequestBuilder().WithCategoryId(Guid.NewGuid()).Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Videos, request);
 
@@ -112,39 +106,10 @@ public class AdminCreateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         AdminCreateVideoRequest request = new AdminCreateVideoRequestBuilder()
             .WithCategoryId(category.Id)
             .WithTitle(string.Empty)
-            .WithSlug("empty-title-video")
             .Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Videos, request);
 
         await response.ShouldBeValidationProblem("Title", Localized<VideoErrorMessage>(m => m.TitleRequired()));
-    }
-
-    [Fact]
-    public async Task CreateVideo_AsSuperAdmin_WithDuplicateSlug_ReturnsConflict()
-    {
-        VideoEntity existingVideo = await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
-        {
-            ContentTypeEntity contentType = ContentTypeFactory.Create();
-            CategoryEntity category = CategoryFactory.Create(contentType.Id);
-            VideoEntity video = VideoFactory.Create(category.Id);
-            ctx.ContentTypes.Add(contentType);
-            ctx.Categories.Add(category);
-            ctx.Videos.Add(video);
-            return video;
-        });
-
-        Client.AuthenticateAsSuperAdmin();
-        AdminCreateVideoRequest request = new AdminCreateVideoRequestBuilder()
-            .WithCategoryId(existingVideo.CategoryId)
-            .WithSlug(existingVideo.Slug)
-            .Build();
-
-        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Videos, request);
-
-        await response.ShouldBeProblem<ConflictException>(
-            HttpStatusCode.Conflict,
-            Localized<VideoErrorMessage>(m => m.SlugAlreadyExists(existingVideo.Slug))
-        );
     }
 }
