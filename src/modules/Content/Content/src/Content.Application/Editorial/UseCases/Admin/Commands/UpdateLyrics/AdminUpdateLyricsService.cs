@@ -26,21 +26,8 @@ public class AdminUpdateLyricsService(
         LyricsEntity lyrics = await lyricsRepository.GetByIdOrThrowAsync(id: id, cancellationToken: cancellationToken);
         await categoryRepository.GetByIdOrThrowAsync(id: command.CategoryId, cancellationToken: cancellationToken);
 
-        if (command.Slug != lyrics.Slug)
-        {
-            LyricsEntity? slugConflict = await lyricsRepository.GetBySlugAsync(
-                slug: command.Slug,
-                cancellationToken: cancellationToken
-            );
-
-            if (slugConflict is not null && slugConflict.Id != lyrics.Id)
-            {
-                throw i18n.Lyrics.SlugAlreadyExists(slug: command.Slug);
-            }
-        }
-
         lyrics.Recategorize(categoryId: command.CategoryId);
-        lyrics.Retitle(songTitle: command.SongTitle, artistName: command.ArtistName, slug: command.Slug);
+        lyrics.Retitle(songTitle: command.SongTitle, artistName: command.ArtistName);
         lyrics.ReviseText(lyricsText: command.LyricsText, language: command.Language);
         lyrics.Relink(videoId: command.VideoId);
         lyrics.AssignCommission(customerId: command.CustomerId, orderItemId: command.OrderItemId);
