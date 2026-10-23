@@ -8,7 +8,6 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategor
 /// </summary>
 /// <param name="Id">The unique identifier of the category to update.</param>
 /// <param name="Name">The new display name for the category.</param>
-/// <param name="Slug">The new URL-safe slug for the category.</param>
 /// <param name="Description">The new description.</param>
 /// <param name="IsGossip">Whether this is the gossip category used for homepage feed fallbacks and the gossip strip.</param>
 /// <param name="IsExclusive">Whether this category is the exclusive show featured on the homepage.</param>
@@ -19,7 +18,6 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategor
 public record AdminUpdateCategoryCommand(
     string Id,
     string Name,
-    string Slug,
     string Description,
     bool IsGossip,
     bool IsExclusive,
