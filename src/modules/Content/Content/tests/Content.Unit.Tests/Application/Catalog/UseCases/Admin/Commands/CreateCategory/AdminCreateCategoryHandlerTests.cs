@@ -1,5 +1,6 @@
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategory;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -63,7 +64,6 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: contentType.Id.ToString(),
             Name: name,
-            Slug: slug,
             Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
@@ -71,7 +71,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
         );
 
         _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
-        _categoryRepositoryMock.SetupGetBySlug(slug, null);
+        _categoryRepositoryMock.SetupGetBySlug(It.IsAny<string>(), null);
 
         CategoryEntity created = CategoryFactory.Create(contentType.Id, name, slug);
         _categoryRepositoryMock
@@ -83,7 +83,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.Category.Name.Should().Be(name);
-        result.Category.Slug.Should().Be(slug);
+        result.Category.Slug.Should().Be(SlugHelper.ToSlug(command.Name));
 
         _categoryRepositoryMock.VerifyAddCalled();
         _unitOfWorkMock.VerifyCommitCalled();
@@ -99,7 +99,6 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: contentType.Id.ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: slug,
             Description: TestConstants.Category.ValidDescription,
             IsFree: true,
             IsGossip: false,
@@ -107,7 +106,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
         );
 
         _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
-        _categoryRepositoryMock.SetupGetBySlug(slug, null);
+        _categoryRepositoryMock.SetupGetBySlug(It.IsAny<string>(), null);
 
         CategoryEntity created = CategoryFactory.Create(contentType.Id);
         _categoryRepositoryMock.SetupGetByIdOrThrow(created);
@@ -129,7 +128,6 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: contentType.Id.ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: slug,
             Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
@@ -137,7 +135,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
         );
 
         _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
-        _categoryRepositoryMock.SetupGetBySlug(slug, null);
+        _categoryRepositoryMock.SetupGetBySlug(It.IsAny<string>(), null);
 
         CategoryEntity reloaded = CategoryFactory.Create(contentType.Id);
         _categoryRepositoryMock
@@ -169,7 +167,6 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: videoType.Id.ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
@@ -201,7 +198,6 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: contentType.Id.ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
@@ -232,7 +228,6 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: videoType.Id.ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
@@ -264,7 +259,6 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: articleType.Id.ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
@@ -294,7 +288,6 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: nonExistentId.ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
@@ -309,69 +302,5 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
     }
-
-    [Fact]
-    public async Task Handle_WhenSlugAlreadyExists_ShouldThrowConflictException()
-    {
-        // Arrange
-        ContentTypeEntity contentType = ContentTypeFactory.Create();
-        const string slug = TestConstants.Category.ValidSlug;
-
-        var command = new AdminCreateCategoryCommand(
-            ContentTypeId: contentType.Id.ToString(),
-            Name: TestConstants.Category.ValidName,
-            Slug: slug,
-            Description: TestConstants.Category.ValidDescription,
-            IsFree: false,
-            IsGossip: false,
-            IsExclusive: false
-        );
-
-        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
-
-        CategoryEntity existing = CategoryFactory.Create(contentType.Id, "Other Name", slug);
-        _categoryRepositoryMock.SetupGetBySlug(slug, existing);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenSlugAlreadyExists_ShouldNotAddOrCommit()
-    {
-        // Arrange
-        ContentTypeEntity contentType = ContentTypeFactory.Create();
-        string slug = TestConstants.Category.ValidSlug;
-
-        var command = new AdminCreateCategoryCommand(
-            ContentTypeId: contentType.Id.ToString(),
-            Name: TestConstants.Category.ValidName,
-            Slug: slug,
-            Description: TestConstants.Category.ValidDescription,
-            IsFree: false,
-            IsGossip: false,
-            IsExclusive: false
-        );
-
-        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
-
-        CategoryEntity existing = CategoryFactory.Create(contentType.Id, "Other Name", slug);
-        _categoryRepositoryMock.SetupGetBySlug(slug, existing);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
-        _categoryRepositoryMock.Verify(
-            x => x.AddAsync(It.IsAny<CategoryEntity>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
-        _unitOfWorkMock.VerifyCommitNotCalled();
-    }
-
     #endregion
 }
