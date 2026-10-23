@@ -16,6 +16,5 @@ public class AdminCreateTagValidator : AbstractValidator<AdminCreateTagCommand>
     public AdminCreateTagValidator(ContentI18n i18n)
     {
         RuleFor(x => x.Name).ValidTagName(i18n.Tag.Msg);
-        RuleFor(x => x.Slug).ValidTagSlug(i18n.Tag.Msg);
     }
 }
