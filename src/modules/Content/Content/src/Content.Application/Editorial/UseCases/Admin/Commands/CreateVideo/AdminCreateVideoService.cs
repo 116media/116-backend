@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo.Contracts;
 using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 
@@ -22,15 +23,13 @@ public class AdminCreateVideoService(
     {
         await categoryRepository.GetByIdOrThrowAsync(id: command.CategoryId, cancellationToken: cancellationToken);
 
-        VideoEntity? existing = await videoRepository.GetBySlugAsync(
-            slug: command.Slug,
+        string slug = await SlugHelper.ToAvailableSlugAsync(
+            name: command.Title,
+            isTakenAsync: async (candidate, ct) =>
+                await videoRepository.GetBySlugAsync(slug: candidate, cancellationToken: ct) is not null,
+            unique: true,
             cancellationToken: cancellationToken
         );
-
-        if (existing is not null)
-        {
-            throw i18n.Video.SlugAlreadyExists(slug: command.Slug);
-        }
 
         VideoEntity video = command.CustomerId.HasValue
             ? VideoEntity.CreatePaid(
@@ -39,7 +38,7 @@ public class AdminCreateVideoService(
                 orderItemId: command.OrderItemId!.Value,
                 categoryId: command.CategoryId,
                 title: command.Title,
-                slug: command.Slug,
+                slug: slug,
                 authorId: command.AuthorId,
                 description: command.Description
             )
@@ -47,7 +46,7 @@ public class AdminCreateVideoService(
                 id: Guid.NewGuid(),
                 categoryId: command.CategoryId,
                 title: command.Title,
-                slug: command.Slug,
+                slug: slug,
                 authorId: command.AuthorId,
                 description: command.Description
             );
