@@ -18,6 +18,5 @@ public class AdminUpdateTagValidator : AbstractValidator<AdminUpdateTagCommand>
     {
         RuleFor(x => x.Id).IsValidGuid(i18n.Tag.Msg.Localizer);
         RuleFor(x => x.Name).ValidTagName(i18n.Tag.Msg);
-        RuleFor(x => x.Slug).ValidTagSlug(i18n.Tag.Msg);
     }
 }
