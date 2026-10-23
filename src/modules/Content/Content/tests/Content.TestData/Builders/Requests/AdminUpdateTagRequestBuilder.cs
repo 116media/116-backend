@@ -57,6 +57,6 @@ public class AdminUpdateTagRequestBuilder
     /// <returns>A configured AdminUpdateTagRequest instance.</returns>
     public AdminUpdateTagRequest Build()
     {
-        return new AdminUpdateTagRequest(Name: _name, Slug: _slug);
+        return new AdminUpdateTagRequest(Name: _name);
     }
 }
