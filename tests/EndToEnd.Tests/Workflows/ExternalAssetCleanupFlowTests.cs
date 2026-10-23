@@ -100,7 +100,6 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         var request = new AdminUpdateArticleRequestBuilder()
             .WithCategoryId(article.CategoryId)
-            .WithSlug(article.Slug)
             .WithBody("<p>New body without the previous image.</p>")
             .Build();
 
