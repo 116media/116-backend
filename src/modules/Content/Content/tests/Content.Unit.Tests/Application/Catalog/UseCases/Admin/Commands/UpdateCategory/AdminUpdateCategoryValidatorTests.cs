@@ -30,7 +30,6 @@ public class AdminUpdateCategoryValidatorTests
         var command = new AdminUpdateCategoryCommand(
             Id: Guid.NewGuid().ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
@@ -56,7 +55,6 @@ public class AdminUpdateCategoryValidatorTests
         var command = new AdminUpdateCategoryCommand(
             Id: "",
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
@@ -87,7 +85,6 @@ public class AdminUpdateCategoryValidatorTests
         var command = new AdminUpdateCategoryCommand(
             Id: Guid.NewGuid().ToString(),
             Name: string.Empty,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
@@ -114,7 +111,6 @@ public class AdminUpdateCategoryValidatorTests
         var command = new AdminUpdateCategoryCommand(
             Id: Guid.NewGuid().ToString(),
             Name: new string('a', TestConstants.Category.NameMaxLength + 1),
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsGossip: false,
             IsExclusive: false,
@@ -131,37 +127,6 @@ public class AdminUpdateCategoryValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateCategoryCommand.Name)
                 && e.ErrorMessage == _i18n.Category.Msg.NameTooLong(TestConstants.Category.NameMaxLength)
-            );
-    }
-
-    #endregion
-
-    #region Slug Validation Tests
-
-    [Fact]
-    public async Task Validate_WithInvalidSlugFormat_ShouldHaveError()
-    {
-        // Arrange
-        var command = new AdminUpdateCategoryCommand(
-            Id: Guid.NewGuid().ToString(),
-            Name: TestConstants.Category.ValidName,
-            Slug: "Invalid Slug",
-            Description: TestConstants.Category.ValidDescription,
-            IsGossip: false,
-            IsExclusive: false,
-            IsDefaultForLyrics: false
-        );
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateCategoryCommand.Slug)
-                && e.ErrorMessage == _i18n.Category.Msg.SlugInvalidFormat()
             );
     }
 
