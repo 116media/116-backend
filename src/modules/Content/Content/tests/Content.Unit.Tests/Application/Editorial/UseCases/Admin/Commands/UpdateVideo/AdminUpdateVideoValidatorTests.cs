@@ -27,7 +27,6 @@ public class AdminUpdateVideoValidatorTests
             Id: Guid.NewGuid().ToString(),
             CategoryId: Guid.NewGuid(),
             Title: TestConstants.Video.ValidTitle,
-            Slug: TestConstants.Video.ValidSlug,
             Description: TestConstants.Video.ValidDescription,
             CustomerId: null,
             OrderItemId: null,
@@ -171,54 +170,6 @@ public class AdminUpdateVideoValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateVideoCommand.Title)
                 && e.ErrorMessage == _i18n.Video.Msg.TitleTooLong(TestConstants.Video.TitleMaxLength)
-            );
-    }
-
-    #endregion
-
-    #region Slug Validation Tests
-
-    [Fact]
-    public async Task Validate_WithEmptySlug_ShouldHaveError()
-    {
-        // Arrange
-        var command = ValidCommand() with
-        {
-            Slug = string.Empty,
-        };
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateVideoCommand.Slug)
-                && e.ErrorMessage == _i18n.Video.Msg.SlugRequired()
-            );
-    }
-
-    [Fact]
-    public async Task Validate_WithUppercaseSlug_ShouldHaveError()
-    {
-        // Arrange
-        var command = ValidCommand() with
-        {
-            Slug = "Invalid-Slug",
-        };
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateVideoCommand.Slug)
-                && e.ErrorMessage == _i18n.Video.Msg.SlugInvalidFormat()
             );
     }
 
