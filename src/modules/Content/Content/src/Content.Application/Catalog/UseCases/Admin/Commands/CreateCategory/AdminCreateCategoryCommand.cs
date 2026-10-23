@@ -8,7 +8,6 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategor
 /// </summary>
 /// <param name="ContentTypeId">The identifier of the content type this category belongs to.</param>
 /// <param name="Name">The display name of the category.</param>
-/// <param name="Slug">The URL-safe slug for the category.</param>
 /// <param name="Description">The description of the category.</param>
 /// <param name="IsFree">Whether content in this category requires no payment.</param>
 /// <param name="IsGossip">Whether this is the gossip category used for homepage feed fallbacks and the gossip strip.</param>
@@ -16,7 +15,6 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategor
 public record AdminCreateCategoryCommand(
     string ContentTypeId,
     string Name,
-    string Slug,
     string Description,
     bool IsFree,
     bool IsGossip,
