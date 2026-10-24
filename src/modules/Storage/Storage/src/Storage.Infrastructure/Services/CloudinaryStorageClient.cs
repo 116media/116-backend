@@ -58,7 +58,7 @@ public class CloudinaryStorageClient(
         CancellationToken cancellationToken = default
     )
     {
-        var file = new FileDescription(upload.FileName, upload.Content);
+        using var file = new FileDescription(upload.FileName, upload.Content);
 
         return upload.Kind switch
         {
@@ -111,7 +111,7 @@ public class CloudinaryStorageClient(
 
             return result.Result == "ok";
         }
-        catch (Exception exception)
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(exception, "Unexpected error deleting Cloudinary resource {PublicId}", publicId);
 
@@ -184,7 +184,7 @@ public class CloudinaryStorageClient(
 
             return true;
         }
-        catch (Exception exception)
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(
                 exception,
