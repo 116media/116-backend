@@ -7,14 +7,17 @@
 # from the code-scanning API rather than re-parsed — the comment then shows exactly what
 # the Security tab shows, including anything a reviewer has dismissed.
 #
-# Usage: security-comment.sh <repo> <sha> <codeql> <trivy> <sarif-dir> <output.md>
+# Usage: security-comment.sh <repo> <ref> <codeql> <trivy> <sarif-dir> <output.md>
+#   <ref>           a full git ref such as refs/heads/develop or refs/pull/12/merge.
+#                   The code-scanning API rejects a bare commit SHA and answers with an
+#                   empty list, which reads as a clean bill of health.
 #   <codeql|trivy>  job results: success | failure | cancelled | skipped
 #   <sarif-dir>     directory holding the downloaded trivy-*.sarif, may be absent
 
 set -euo pipefail
 
 REPO="${1}"
-SHA="${2}"
+REF="${2}"
 CODEQL_RESULT="${3}"
 TRIVY_RESULT="${4}"
 SARIF_DIR="${5:-sarif}"
@@ -42,15 +45,15 @@ icon() {
 
 # ---------------------------------------------------------------- code scanning alerts
 ALERTS_JSON="$(mktemp)"
-if gh api "repos/${REPO}/code-scanning/alerts?ref=${SHA}&state=open&per_page=100" \
+if gh api "repos/${REPO}/code-scanning/alerts?ref=${REF}&state=open&per_page=100" \
     > "$ALERTS_JSON" 2>/dev/null; then
-    python3 - "$ALERTS_JSON" "$OUT" "$REPO" <<'PY'
+    python3 - "$ALERTS_JSON" "$OUT" "$REPO" "$REF" <<'PY'
 import json
 import pathlib
 import sys
 from collections import Counter
 
-alerts_path, out_path, repo = sys.argv[1], sys.argv[2], sys.argv[3]
+alerts_path, out_path, repo, ref = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 
 try:
     alerts = json.loads(pathlib.Path(alerts_path).read_text())
@@ -62,7 +65,8 @@ if not isinstance(alerts, list):
 
 lines = []
 if not alerts:
-    lines += ["No open code-scanning alerts on this commit. ✅", ""]
+    lines += [f"No open code-scanning alerts for `{ref}`. ✅", "",
+              "If a scanner has not analysed this ref yet, that shows as zero here too.", ""]
 else:
     by_severity = Counter(
         (alert.get("rule") or {}).get("security_severity_level")
