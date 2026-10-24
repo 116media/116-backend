@@ -100,14 +100,9 @@ public sealed class ExceptionHandler(ILogger<ExceptionHandler> logger, Exception
     /// <returns>The value with control characters removed, truncated to a sane length.</returns>
     private static string Sanitize(string? value)
     {
-        if (string.IsNullOrEmpty(value))
-        {
-            return string.Empty;
-        }
-
         // A request path is attacker-controlled: newlines in a flat sink would let one request
         // forge extra log entries.
-        var cleaned = new string([.. value.Where(character => !char.IsControl(character))]);
+        var cleaned = new string([.. (value ?? string.Empty).Where(character => !char.IsControl(character))]);
 
         return cleaned.Length <= MaxLoggedPathLength ? cleaned : cleaned[..MaxLoggedPathLength];
     }
