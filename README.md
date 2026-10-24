@@ -3,6 +3,12 @@
 [![Build](https://github.com/116media/116-backend/actions/workflows/build.yml/badge.svg?branch=develop)](https://github.com/116media/116-backend/actions/workflows/build.yml)
 [![Unit Tests](https://img.shields.io/codecov/c/github/116media/116-backend/develop?token=2U0DTBWF9D&flag=unit&label=Unit%20Tests)](https://app.codecov.io/github/116media/116-backend/flags?flags%5B0%5D=unit)
 [![Integration Tests](https://img.shields.io/codecov/c/github/116media/116-backend/develop?token=2U0DTBWF9D&flag=integration&label=Integration%20Tests)](https://app.codecov.io/github/116media/116-backend/flags?flags%5B0%5D=integration)
+[![End-to-End Tests](https://img.shields.io/codecov/c/github/116media/116-backend/develop?token=2U0DTBWF9D&flag=e2e&label=End-to-End%20Tests)](https://app.codecov.io/github/116media/116-backend/flags?flags%5B0%5D=e2e)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=116media_116-backend&metric=alert_status&branch=develop)](https://sonarcloud.io/summary/new_code?id=116media_116-backend&branch=develop)
+[![Maintainability](https://sonarcloud.io/api/project_badges/measure?project=116media_116-backend&metric=sqale_rating&branch=develop)](https://sonarcloud.io/summary/new_code?id=116media_116-backend&branch=develop)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=116media_116-backend&metric=bugs&branch=develop)](https://sonarcloud.io/summary/new_code?id=116media_116-backend&branch=develop)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=116media_116-backend&metric=code_smells&branch=develop)](https://sonarcloud.io/summary/new_code?id=116media_116-backend&branch=develop)
+[![Duplication](https://sonarcloud.io/api/project_badges/measure?project=116media_116-backend&metric=duplicated_lines_density&branch=develop)](https://sonarcloud.io/summary/new_code?id=116media_116-backend&branch=develop)
 
 116 (Cent-Seize) is a bold digital platform that promotes music and hip-hop culture in DR and beyond. Through articles, video shows, and exclusive behind-the-scenes content, it connects fans with artists, highlights emerging talent, and tells the stories shaping the culture.
 
