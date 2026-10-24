@@ -757,27 +757,58 @@ A pull request description is read by people. Write it the way a colleague would
 
 ## Code Quality & Security Gates
 
-Three checks run locally, all of them through `scripts/ai-precheck.sh`. They are wired as
-Claude Code hooks in `.claude/settings.json`, so they fire without being asked for, but the
-script is the contract — run it by hand whenever the hooks are off.
+Not advisory. These steps run on every task that touches `.cs`, whether or not any hook is
+installed. Git hooks are deliberately not used for this: they would slow every commit and
+`--no-verify` bypasses them anyway.
 
-| Check | Tool | Runs |
-| --- | --- | --- |
-| Formatting | CSharpier | On the changed files, before every commit |
-| CRAP | crap4dotnet (`dotnet-crap`) | On every edited `.cs` file, and before every commit |
-| Vulnerable packages | `dotnet list package --vulnerable` | Before a commit that touches a `.csproj` or `Directory.Packages.props` |
+### Before writing any code
+
+Read what the analysers already object to, so the same rule is not broken again:
 
 ```bash
-scripts/ai-precheck.sh                 # the changed files
-scripts/ai-precheck.sh --staged        # what is about to be committed
-scripts/ai-precheck.sh --file Foo.cs   # one file, silent unless it breaches
-scripts/ai-precheck.sh --baseline      # capture crap/baseline.json before a refactor
+scripts/ai-ci-findings.sh              # open CodeQL and Trivy alerts on this branch
 ```
 
-The gate needs coverage on disk. Run `scripts/run-tests-with-coverage.sh` first; without it
-every method reads as uncovered and the CRAP numbers mean nothing. A `COVERAGE_STALE` warning
-in the output means the coverage predates the current source and the numbers are not
-trustworthy yet.
+Then write to the rule table below. Those rules are the ones SonarQube and CodeQL actually
+enforce on this repository, and neither runs locally, so the only chance to honour them is
+while the code is being written.
+
+### After editing a file
+
+```bash
+scripts/ai-precheck.sh --file <the file>   # silent unless that file breaches
+```
+
+### Before every commit
+
+This is the one that is not optional. Run it, read the output, and fix what it reports
+before staging anything:
+
+```bash
+scripts/run-tests-with-coverage.sh all     # only when source changed since the last run
+scripts/ai-precheck.sh --staged            # formatting, CRAP, vulnerable packages
+```
+
+The order matters. CRAP is complexity weighed against coverage, so coverage older than the
+source describes nothing: the gate refuses to score stale coverage and says so rather than
+inventing breaches. A run that prints `coverage is older than ...` has not checked anything
+yet.
+
+| Check | Tool | Scope |
+| --- | --- | --- |
+| Formatting | CSharpier | the changed files |
+| CRAP | crap4dotnet (`dotnet-crap`) | whole solution, blocking only on changed files |
+| Vulnerable packages | `dotnet list package --vulnerable` | only when a project or package file changed |
+| SonarQube, CodeQL | CI only | read their last verdict with `ai-ci-findings.sh` |
+
+### Other entry points
+
+```bash
+scripts/ai-precheck.sh                 # the working tree rather than the index
+scripts/ai-precheck.sh --all           # every tracked file, for a backlog sweep
+scripts/ai-precheck.sh --baseline      # capture crap/baseline.json before a refactor
+scripts/ai-precheck.sh --force-deps    # audit packages even with no package file changed
+```
 
 ### Rules the analysers enforce
 
