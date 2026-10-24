@@ -54,7 +54,7 @@ public class PublicUpdateProfileAuthService(
         bool isPhoneUpdated = !string.IsNullOrWhiteSpace(value: partialPhoneNumber);
         bool isUsernameUpdated = !string.IsNullOrWhiteSpace(value: userName) && user!.UserName != userName;
         bool isEmailUpdated =
-            !string.IsNullOrWhiteSpace(value: email) && user!.Email?.Value != email?.ToLowerInvariant();
+            !string.IsNullOrWhiteSpace(value: email) && user!.Email?.Value != email.ToLowerInvariant();
 
         if (isEmailUpdated)
         {
