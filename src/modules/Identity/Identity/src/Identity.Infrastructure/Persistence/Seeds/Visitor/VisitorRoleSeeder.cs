@@ -38,7 +38,7 @@ public class VisitorRoleSeeder(IdentityDbContext context, ILogger<VisitorRoleSee
             await ExecuteSeedingAsync();
             logger.LogInformation("Visitor role seeding completed successfully!");
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             logger.LogError(exception: ex, "Failed to seed Visitor role data");
             throw;
