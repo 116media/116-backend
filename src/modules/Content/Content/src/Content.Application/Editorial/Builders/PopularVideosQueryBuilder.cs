@@ -74,7 +74,11 @@ public class PopularVideosQueryBuilder : IPopularVideosQueryBuilder
         }
 
         query = query
-            .OrderByDescending(v => (ratingWeight * (v.RatingAverage * v.RatingCount)) + (shareWeight * v.ShareCount))
+            // The cast is load-bearing: without it EF has to translate mixed decimal and int
+            // arithmetic in ORDER BY, which Npgsql rejects at runtime.
+            .OrderByDescending(v =>
+                (ratingWeight * ((double)v.RatingAverage * v.RatingCount)) + (shareWeight * v.ShareCount)
+            )
             .ThenByDescending(v => v.PublishedAt);
 
         if (_limit.HasValue)
