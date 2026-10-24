@@ -156,8 +156,6 @@ jobs:
     e2e-tests:
         name: End-to-End Tests
         runs-on: ubuntu-latest
-        # No README badge depends on this suite, so a merge to develop skips it.
-        if: github.event_name == 'pull_request'
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
