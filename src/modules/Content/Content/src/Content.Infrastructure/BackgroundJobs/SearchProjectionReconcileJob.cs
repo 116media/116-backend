@@ -40,7 +40,7 @@ public class SearchProjectionReconcileJob(
                 written.Count
             );
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             logger.LogError(ex, "SearchProjectionReconcileJob encountered an unexpected error.");
         }
