@@ -55,10 +55,10 @@ FAILED=0
 # clean edit produces no output at all.
 if [ -n "$SINGLE_FILE" ]; then
     COV_ARGS=()
-    for suite in unit integration; do
-        cov="$(find "coverage/$suite" -name 'coverage.cobertura.xml' -print0 2>/dev/null \
-            | xargs -0 ls -t 2>/dev/null | head -1)"
-        if [ -n "$cov" ]; then COV_ARGS+=(--coverage "$cov"); fi
+    for suite in unit integration e2e; do
+        while IFS= read -r cov; do
+            [ -n "$cov" ] && COV_ARGS+=(--coverage "$cov")
+        done < <(find "coverage/$suite" -name 'coverage.cobertura.xml' 2>/dev/null)
     done
     if [ ${#COV_ARGS[@]} -eq 0 ]; then exit 0; fi
 
@@ -109,9 +109,10 @@ changed_files() {
     } | sort -u
 }
 
-newest_coverage() {
-    find "coverage/$1" -name 'coverage.cobertura.xml' -print0 2>/dev/null \
-        | xargs -0 ls -t 2>/dev/null | head -1
+# Every test project writes its own report, so one file per suite covers only that
+# project. Passing a subset reads as uncovered everywhere else and invents breaches.
+suite_coverage() {
+    find "coverage/$1" -name 'coverage.cobertura.xml' 2>/dev/null
 }
 
 # CRAP is complexity weighed against coverage, so coverage older than the source it
@@ -149,9 +150,10 @@ echo "▸ crap"
 mkdir -p "$CRAP_DIR"
 
 COV_ARGS=()
-for suite in unit integration; do
-    cov="$(newest_coverage "$suite")"
-    if [ -n "$cov" ]; then COV_ARGS+=(--coverage "$cov"); fi
+for suite in unit integration e2e; do
+    while IFS= read -r cov; do
+        [ -n "$cov" ] && COV_ARGS+=(--coverage "$cov")
+    done < <(suite_coverage "$suite")
 done
 
 NEWEST_SRC="$(newest_source)"
