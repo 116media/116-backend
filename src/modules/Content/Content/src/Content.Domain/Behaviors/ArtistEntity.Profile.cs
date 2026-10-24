@@ -111,10 +111,8 @@ public sealed partial class ArtistEntity
 
         var seen = new HashSet<string>(comparer: StringComparer.OrdinalIgnoreCase);
 
-        foreach (string alias in aliases)
+        foreach (string trimmed in aliases.Select(alias => alias?.Trim() ?? string.Empty))
         {
-            string trimmed = alias?.Trim() ?? string.Empty;
-
             if (trimmed.Length == 0 || !seen.Add(item: trimmed))
             {
                 continue;
@@ -179,12 +177,13 @@ public sealed partial class ArtistEntity
 
         var builder = new StringBuilder(capacity: decomposed.Length);
 
-        foreach (char character in decomposed)
+        foreach (
+            char character in decomposed.Where(character =>
+                CharUnicodeInfo.GetUnicodeCategory(ch: character) != UnicodeCategory.NonSpacingMark
+            )
+        )
         {
-            if (CharUnicodeInfo.GetUnicodeCategory(ch: character) != UnicodeCategory.NonSpacingMark)
-            {
-                builder.Append(value: character);
-            }
+            builder.Append(value: character);
         }
 
         return builder.ToString().Normalize(normalizationForm: NormalizationForm.FormC).ToUpperInvariant();
