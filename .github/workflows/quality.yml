@@ -1,10 +1,11 @@
 name: Quality
 
-# SonarQube Cloud: maintainability, bugs, duplication and the new-code gate, plus the CRAP
-# metric. Security scanning lives in `security.yml`.
+# The CRAP metric, computed from the coverage the `Tests` run produced and downloaded
+# here as an artifact. Security scanning lives in `security.yml`.
 #
-# CRAP is computed from the coverage the `Tests` run produced, downloaded here as an
-# artifact — the same files Sonar is given.
+# SonarQube Cloud runs as Automatic Analysis rather than from CI: it covers
+# maintainability, bugs and duplication, and cannot ingest coverage anyway. Running both
+# at once is refused by SonarQube, so there is no scanner job here.
 #
 # Gated on `Tests` completing: a PR whose suites are red gets its test failures reported
 # first, not buried under scanner output.
@@ -27,7 +28,11 @@ jobs:
     context:
         name: Resolve PR context
         runs-on: ubuntu-latest
-        if: github.event.workflow_run.conclusion == 'success'
+        # Only follows a Tests run from a pull request. A merge to develop re-runs
+        # nothing here: the same commit was already scanned on its pull request.
+        if: >-
+            github.event.workflow_run.conclusion == 'success' &&
+            github.event.workflow_run.event == 'pull_request'
         outputs:
             pr: ${{ steps.pr.outputs.number }}
             sha: ${{ github.event.workflow_run.head_sha }}
@@ -46,70 +51,6 @@ jobs:
                   echo "number=$(echo "$pr" | jq -r '.number // empty')" >> "$GITHUB_OUTPUT"
                   echo "base=$(echo "$pr" | jq -r '.baseRefName // "develop"')" >> "$GITHUB_OUTPUT"
                   echo "Pull request: ${pr:-none}"
-
-    sonar:
-        name: SonarQube Cloud
-        runs-on: ubuntu-latest
-        needs: [context]
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-              with:
-                  ref: ${{ needs.context.outputs.sha }}
-                  # Sonar needs full history to attribute blame and compute new-code periods.
-                  fetch-depth: 0
-
-            - name: Setup .NET
-              uses: actions/setup-dotnet@v4
-              with:
-                  dotnet-version: ${{ env.DOTNET_VERSION }}
-
-            - name: Setup Java
-              uses: actions/setup-java@v4
-              with:
-                  distribution: temurin
-                  java-version: '17'
-
-            - name: Download unit coverage
-              uses: actions/download-artifact@v4
-              with:
-                  name: unit-coverage
-                  path: coverage/unit
-                  run-id: ${{ github.event.workflow_run.id }}
-                  github-token: ${{ github.token }}
-
-            - name: Download integration coverage
-              uses: actions/download-artifact@v4
-              with:
-                  name: integration-coverage
-                  path: coverage/integration
-                  run-id: ${{ github.event.workflow_run.id }}
-                  github-token: ${{ github.token }}
-
-            # The scanner must wrap the build: it attaches a Roslyn analyser, so a cached
-            # or `--no-build` compile produces an empty analysis.
-            - name: Install SonarScanner
-              run: dotnet tool install --global dotnet-sonarscanner
-
-            - name: Analyse
-              env:
-                  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-              run: |
-                  dotnet sonarscanner begin \
-                    /k:"116media_116-backend" \
-                    /o:"116media" \
-                    /d:sonar.host.url="https://sonarcloud.io" \
-                    /d:sonar.token="${SONAR_TOKEN}" \
-                    /d:sonar.cs.opencover.reportsPaths="coverage/**/coverage.opencover.xml" \
-                    /d:sonar.coverage.exclusions="**/Migrations/**,**/*Tests*/**,**/TestData/**" \
-                    /d:sonar.scanner.scanAll=false \
-                    ${{ needs.context.outputs.pr && format('/d:sonar.pullrequest.key={0}', needs.context.outputs.pr) || '' }} \
-                    ${{ needs.context.outputs.pr && format('/d:sonar.pullrequest.branch={0}', needs.context.outputs.branch) || '' }} \
-                    ${{ needs.context.outputs.pr && '/d:sonar.pullrequest.base=develop' || '' }}
-
-                  dotnet build --configuration Release --no-incremental
-
-                  dotnet sonarscanner end /d:sonar.token="${SONAR_TOKEN}"
 
     crap:
         name: CRAP
@@ -147,6 +88,14 @@ jobs:
                   run-id: ${{ github.event.workflow_run.id }}
                   github-token: ${{ github.token }}
 
+            - name: Download end-to-end coverage
+              uses: actions/download-artifact@v4
+              with:
+                  name: e2e-coverage
+                  path: coverage/e2e
+                  run-id: ${{ github.event.workflow_run.id }}
+                  github-token: ${{ github.token }}
+
             - name: Compute changed source files
               run: |
                   mkdir -p crap
@@ -168,7 +117,7 @@ jobs:
                   args=()
                   while IFS= read -r file; do
                     args+=(--coverage "$file")
-                  done < <(find coverage/unit coverage/integration -name 'coverage.cobertura.xml')
+                  done < <(find coverage/unit coverage/integration coverage/e2e -name 'coverage.cobertura.xml')
 
                   dotnet tool run dotnet-crap -- analyze ./116_backend.sln \
                     "${args[@]}" \
@@ -185,7 +134,7 @@ jobs:
     report:
         name: Quality Report
         runs-on: ubuntu-latest
-        needs: [context, sonar, crap]
+        needs: [context, crap]
         if: always() && needs.context.outputs.pr != ''
         permissions:
             contents: read
@@ -205,7 +154,6 @@ jobs:
             - name: Build the report
               run: |
                   bash scripts/quality-comment.sh \
-                    "${{ needs.sonar.result }}" \
                     "${{ needs.crap.result }}" \
                     quality-comment.md
 
