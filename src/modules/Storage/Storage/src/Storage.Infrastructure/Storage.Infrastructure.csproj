@@ -6,7 +6,8 @@
     <ItemGroup>
         <PackageReference Include="CloudinaryDotNet" />
         <PackageReference Include="Polly.Core" />
-        <PackageReference Include="SixLabors.ImageSharp" />
+        <PackageReference Include="SkiaSharp" />
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
     </ItemGroup>
 
     <ItemGroup>
