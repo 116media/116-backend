@@ -745,6 +745,16 @@ Examples:
 - `docs-git-workflow`
 - `refactor-session-factory`
 
+## Pull Requests
+
+A pull request description is read by people. Write it the way a colleague would.
+
+- Never mention AI, Claude, or assistants, and never append a "Generated with" line.
+- No em dashes and no en dashes. Use a comma, a colon, a full stop, or parentheses.
+- Plain sentences over marketing voice. No emoji headings, no exclamation marks.
+- Say what changed and why, then what a reviewer should look at.
+- Link the issue with `Closes #<number>` so merging the pull request closes it.
+
 ## Code Quality & Security Gates
 
 Three checks run locally, all of them through `scripts/ai-precheck.sh`. They are wired as
