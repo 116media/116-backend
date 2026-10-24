@@ -66,7 +66,6 @@ public sealed class UrlSafetyGuard(IHostEnvironment environment, StorageI18n i18
         octets[0] switch
         {
             10 => true, // 10.0.0.0/8
-            127 => true, // 127.0.0.0/8 loopback
             172 => octets[1] is >= 16 and <= 31, // 172.16.0.0/12
             192 => octets[1] == 168, // 192.168.0.0/16
             169 => octets[1] == 254, // 169.254.0.0/16 link-local
