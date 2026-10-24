@@ -1,18 +1,20 @@
 name: Quality
 
-# The CRAP metric, computed from the coverage the `Tests` run produced and downloaded
-# here as an artifact. Security scanning lives in `security.yml`.
+# SonarQube Cloud and the CRAP metric. Security scanning lives in `security.yml`.
 #
-# SonarQube Cloud runs as Automatic Analysis rather than from CI: it covers
-# maintainability, bugs and duplication, and cannot ingest coverage anyway. Running both
-# at once is refused by SonarQube, so there is no scanner job here.
+# Both analysers start as soon as a pull request opens, rather than waiting for Tests.
+# Sonar needs no coverage at all; CRAP runs its own unit suite for the coverage half of
+# the metric, so its scores are conservative but arrive early. Only `security.yml` waits
+# for the suites.
 #
-# Gated on `Tests` completing: a PR whose suites are red gets its test failures reported
-# first, not buried under scanner output.
+# Sonar also runs on develop, because new-code gating on a pull request is measured
+# against the main branch analysis. Automatic Analysis must stay disabled in the project
+# settings: SonarQube refuses a CI analysis while it is on.
 on:
-    workflow_run:
-        workflows: [Tests]
-        types: [completed]
+    pull_request:
+        branches: [main, develop]
+    push:
+        branches: [develop]
 
 permissions:
     contents: read
@@ -23,44 +25,75 @@ env:
     DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 jobs:
-    # `workflow_run` fires in the context of the default branch, so the pull request behind
-    # the triggering run has to be looked up rather than read from `github.event`.
-    context:
-        name: Resolve PR context
+    sonar:
+        name: SonarQube Cloud
         runs-on: ubuntu-latest
-        # Only follows a Tests run from a pull request. A merge to develop re-runs
-        # nothing here: the same commit was already scanned on its pull request.
-        if: >-
-            github.event.workflow_run.conclusion == 'success' &&
-            github.event.workflow_run.event == 'pull_request'
-        outputs:
-            pr: ${{ steps.pr.outputs.number }}
-            sha: ${{ github.event.workflow_run.head_sha }}
-            branch: ${{ github.event.workflow_run.head_branch }}
-            base: ${{ steps.pr.outputs.base }}
-        steps:
-            - name: Find the pull request
-              id: pr
-              env:
-                  GH_TOKEN: ${{ github.token }}
-              run: |
-                  pr=$(gh pr list \
-                    --repo "${{ github.repository }}" \
-                    --head "${{ github.event.workflow_run.head_branch }}" \
-                    --state open --json number,baseRefName --jq '.[0] // empty')
-                  echo "number=$(echo "$pr" | jq -r '.number // empty')" >> "$GITHUB_OUTPUT"
-                  echo "base=$(echo "$pr" | jq -r '.baseRefName // "develop"')" >> "$GITHUB_OUTPUT"
-                  echo "Pull request: ${pr:-none}"
-
-    crap:
-        name: CRAP
-        runs-on: ubuntu-latest
-        needs: [context]
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
               with:
-                  ref: ${{ needs.context.outputs.sha }}
+                  # Sonar needs full history to attribute blame and compute new-code periods.
+                  fetch-depth: 0
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: ${{ env.DOTNET_VERSION }}
+
+            - name: Setup Java
+              uses: actions/setup-java@v4
+              with:
+                  distribution: temurin
+                  java-version: '17'
+
+            - name: Cache the scanner and its analysis data
+              uses: actions/cache@v4
+              with:
+                  path: |
+                      ~/.sonar/cache
+                      ~/.dotnet/tools
+                  key: sonar-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+                  restore-keys: sonar-${{ runner.os }}-
+
+            # The scanner must wrap the build: it attaches a Roslyn analyser, so a cached
+            # or `--no-build` compile produces an empty analysis.
+            - name: Install SonarScanner
+              run: dotnet tool install --global dotnet-sonarscanner || true
+
+            - name: Analyse
+              env:
+                  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+              run: |
+                  args=()
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    args+=(/d:sonar.pullrequest.key="${{ github.event.pull_request.number }}")
+                    args+=(/d:sonar.pullrequest.branch="${{ github.event.pull_request.head.ref }}")
+                    args+=(/d:sonar.pullrequest.base="${{ github.event.pull_request.base.ref }}")
+                  fi
+
+                  dotnet sonarscanner begin \
+                    /k:"116media_116-backend" \
+                    /o:"116media" \
+                    /d:sonar.host.url="https://sonarcloud.io" \
+                    /d:sonar.token="${SONAR_TOKEN}" \
+                    /d:sonar.scanner.scanAll=false \
+                    "${args[@]}"
+
+                  dotnet build --configuration Release --no-incremental
+
+                  dotnet sonarscanner end /d:sonar.token="${SONAR_TOKEN}"
+
+    crap:
+        name: CRAP
+        runs-on: ubuntu-latest
+        # Runs its own unit suite rather than waiting for Tests, so the metric lands on the
+        # pull request immediately. Coverage is therefore unit-only, which makes the scores
+        # conservative: a method covered solely by integration tests reads as uncovered.
+        if: github.event_name == 'pull_request'
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
                   # The changed-file list is a diff against the base branch.
                   fetch-depth: 0
 
@@ -69,44 +102,27 @@ jobs:
               with:
                   dotnet-version: ${{ env.DOTNET_VERSION }}
 
+            - name: Restore dependencies
+              run: dotnet restore
+
             - name: Restore tools
               run: dotnet tool restore
 
-            - name: Download unit coverage
-              uses: actions/download-artifact@v4
-              with:
-                  name: unit-coverage
-                  path: coverage/unit
-                  run-id: ${{ github.event.workflow_run.id }}
-                  github-token: ${{ github.token }}
-
-            - name: Download integration coverage
-              uses: actions/download-artifact@v4
-              with:
-                  name: integration-coverage
-                  path: coverage/integration
-                  run-id: ${{ github.event.workflow_run.id }}
-                  github-token: ${{ github.token }}
-
-            - name: Download end-to-end coverage
-              uses: actions/download-artifact@v4
-              with:
-                  name: e2e-coverage
-                  path: coverage/e2e
-                  run-id: ${{ github.event.workflow_run.id }}
-                  github-token: ${{ github.token }}
+            - name: Run Unit Tests with Coverage
+              run: |
+                  dotnet test tests/unit.slnf \
+                    --configuration Release \
+                    --no-restore \
+                    --settings tests/coverage.unit.runsettings \
+                    --collect:"XPlat Code Coverage" \
+                    --results-directory ./coverage/unit
 
             - name: Compute changed source files
               run: |
                   mkdir -p crap
-                  base="${{ needs.context.outputs.base }}"
-                  if [ -n "${{ needs.context.outputs.pr }}" ]; then
-                    git fetch --no-tags --depth=1 origin "$base"
-                    git diff --name-only --diff-filter=ACMR FETCH_HEAD HEAD -- src \
-                      > crap/changed-src.txt || true
-                  else
-                    : > crap/changed-src.txt
-                  fi
+                  git fetch --no-tags --depth=1 origin "${{ github.event.pull_request.base.ref }}"
+                  git diff --name-only --diff-filter=ACMR FETCH_HEAD HEAD -- src \
+                    > crap/changed-src.txt || true
                   echo "Changed source files:"
                   cat crap/changed-src.txt
 
@@ -117,7 +133,7 @@ jobs:
                   args=()
                   while IFS= read -r file; do
                     args+=(--coverage "$file")
-                  done < <(find coverage/unit coverage/integration coverage/e2e -name 'coverage.cobertura.xml')
+                  done < <(find coverage/unit -name 'coverage.cobertura.xml')
 
                   dotnet tool run dotnet-crap -- analyze ./116_backend.sln \
                     "${args[@]}" \
@@ -134,8 +150,8 @@ jobs:
     report:
         name: Quality Report
         runs-on: ubuntu-latest
-        needs: [context, crap]
-        if: always() && needs.context.outputs.pr != ''
+        needs: [crap]
+        if: always() && github.event_name == 'pull_request'
         permissions:
             contents: read
             pull-requests: write
@@ -160,20 +176,15 @@ jobs:
                   bash scripts/crap-comment.sh \
                     crap/crap-report.json \
                     crap/changed-src.txt \
-                    quality-comment.md
-
-                  {
-                    echo ""
-                    echo "---"
-                    echo "<sub>Runs after the Tests workflow completes. Machine-readable output:"
-                    echo "the \`quality-report-md\` and \`crap-report\` artifacts on this run.</sub>"
-                  } >> quality-comment.md
+                    quality-comment.md \
+                    "${{ github.repository }}" \
+                    "${{ github.event.pull_request.head.sha }}"
 
             - name: Post the report
               uses: marocchino/sticky-pull-request-comment@v2
               with:
                   header: quality-report
-                  number: ${{ needs.context.outputs.pr }}
+                  number: ${{ github.event.pull_request.number }}
                   path: quality-comment.md
 
             - name: Upload the report for downstream tooling
