@@ -94,10 +94,8 @@ public static partial class CredentialValidation
         bool isRequired = true
     )
     {
-        IRuleBuilderOptions<T, string?> builder;
-        if (isRequired)
-        {
-            builder = ruleBuilder
+        return isRequired
+            ? ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
                 .WithMessage(i18n.UsernameRequired())
@@ -106,11 +104,8 @@ public static partial class CredentialValidation
                 .MaximumLength(maximumLength: UserConstants.MaxUserNameLength)
                 .WithMessage(i18n.UsernameTooLong(UserConstants.MaxUserNameLength))
                 .Matches(UsernameRegex())
-                .WithMessage(i18n.UsernameInvalidChars());
-        }
-        else
-        {
-            builder = ruleBuilder
+                .WithMessage(i18n.UsernameInvalidChars())
+            : ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .MinimumLength(minimumLength: UserConstants.MinUserNameLength)
                 .WithMessage(i18n.UsernameTooShort(UserConstants.MinUserNameLength))
@@ -119,9 +114,6 @@ public static partial class CredentialValidation
                 .Matches(UsernameRegex())
                 .WithMessage(i18n.UsernameInvalidChars())
                 .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "UserName")));
-        }
-
-        return builder;
     }
 
     /// <summary>
