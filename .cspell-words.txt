@@ -2,6 +2,7 @@ aaaaaaceeeeiiiinooooouuuuyy
 àáâãäåçèéêëìíîïñòóôõöùúûüýÿ
 accéder
 accountratelimited
+ACMR
 actioned
 actr
 administrateur
@@ -28,6 +29,7 @@ attribuée
 authentifié
 authorised
 authorises
+Autobuild
 autoplays
 autorisé
 autorisées
@@ -334,8 +336,10 @@ propuesto
 publiées
 publiés
 puisse
+pullrequest
 qrtz
 Quartier
+Qube
 queryables
 rcvry
 rearchitecting
@@ -389,6 +393,7 @@ Salut
 sameusername
 sandboxed
 sargable
+SARIF
 sched
 schemaname
 scriptable
@@ -417,6 +422,7 @@ société
 softwareengineering
 soit
 somebase
+sonarscanner
 Sonodisc
 sont
 splittable
@@ -447,6 +453,7 @@ TAILMARKER
 targetdir
 téléchargement
 téléversement
+temurin
 tentatives
 Testcontainer
 testexample
