@@ -745,6 +745,67 @@ Examples:
 - `docs-git-workflow`
 - `refactor-session-factory`
 
+## Code Quality & Security Gates
+
+Three checks run locally, all of them through `scripts/ai-precheck.sh`. They are wired as
+Claude Code hooks in `.claude/settings.json`, so they fire without being asked for, but the
+script is the contract — run it by hand whenever the hooks are off.
+
+| Check | Tool | Runs |
+| --- | --- | --- |
+| Formatting | CSharpier | On the changed files, before every commit |
+| CRAP | crap4dotnet (`dotnet-crap`) | On every edited `.cs` file, and before every commit |
+| Vulnerable packages | `dotnet list package --vulnerable` | Before a commit that touches a `.csproj` or `Directory.Packages.props` |
+
+```bash
+scripts/ai-precheck.sh                 # the changed files
+scripts/ai-precheck.sh --staged        # what is about to be committed
+scripts/ai-precheck.sh --file Foo.cs   # one file, silent unless it breaches
+scripts/ai-precheck.sh --baseline      # capture crap/baseline.json before a refactor
+```
+
+The gate needs coverage on disk. Run `scripts/run-tests-with-coverage.sh` first; without it
+every method reads as uncovered and the CRAP numbers mean nothing. A `COVERAGE_STALE` warning
+in the output means the coverage predates the current source and the numbers are not
+trustworthy yet.
+
+### Reacting to a CRAP breach
+
+The threshold is 30, set once in `crap4dotnet-config.json` so a local run and CI agree. When a
+method in your change is over it:
+
+1. Open the `filePath` and `lineNumber` the report names.
+2. Above complexity 30, tests alone cannot bring CRAP under the threshold — split the method.
+3. At or below it, add targeted unit tests for the uncovered branches.
+4. Re-run until the change reports zero methods over threshold.
+
+Debt that predates your change is reported but does not block. Only methods in the files you
+touched are blocking.
+
+### Before and after a refactor
+
+```bash
+scripts/ai-precheck.sh --baseline      # before touching anything
+# refactor, add tests
+scripts/ai-precheck.sh                 # reports the delta against the baseline
+```
+
+The delta line confirms total CRAP load went down and that nothing newly crossed the threshold.
+
+### CodeQL and Trivy
+
+Neither runs locally: the CodeQL CLI is a ~500MB download whose database build takes minutes
+across 39 projects, and Trivy's image scan needs a Docker build. Both run in `security.yml` and
+publish SARIF to GitHub code scanning. CRAP and SonarQube run in `quality.yml`, which reports
+both in one pull-request comment. Read the security findings with:
+
+```bash
+scripts/ai-ci-findings.sh              # open alerts on the current branch
+```
+
+`dotnet list package --vulnerable`, already in the pre-check, is the part of Trivy's coverage
+that works locally and needs nothing installed. The image and Dockerfile halves stay in CI.
+
 ## Key Files Reference
 
 | File | Purpose |
