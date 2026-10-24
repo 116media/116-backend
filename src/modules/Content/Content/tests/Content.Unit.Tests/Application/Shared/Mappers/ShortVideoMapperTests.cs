@@ -152,6 +152,65 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
+    public async Task ToShortVideoDtosAsync_WithManualThumbnails_ShouldResolveThemInOneLookup()
+    {
+        // Arrange
+        ShortVideoEntity entity = ShortVideoFactory.CreateWithThumbnail();
+        const string thumbnailUrl = "https://cdn.example.com/thumb.jpg";
+
+        // The batch path resolves every file in one call, not one at a time.
+        _fileStorageMock.SetupResolveMany(
+            new Dictionary<Guid, FileReferenceDto>
+            {
+                [entity.ThumbnailFileId!.Value] = FileReferenceDtoFactory.CreateWithStorageUrl(thumbnailUrl),
+            }
+        );
+
+        // Act
+        IReadOnlyList<ShortVideoDto> dtos = await new List<ShortVideoEntity> { entity }.ToShortVideoDtosAsync(
+            Mapper,
+            _fileStorageMock.Object,
+            _videoRepositoryMock.Object,
+            CancellationToken.None
+        );
+
+        // Assert
+        dtos.Should().ContainSingle();
+        dtos[0].ThumbnailUrl.Should().Be(thumbnailUrl);
+    }
+
+    [Fact]
+    public async Task ToShortVideoDtosAsync_WithAParentVideo_ShouldCarryTheParentSlug()
+    {
+        // Arrange
+        VideoEntity parent = VideoFactory.Create(Guid.NewGuid());
+        ShortVideoEntity entity = ShortVideoEntity.CreateTeaser(
+            Guid.NewGuid(),
+            "A short with a parent",
+            "a-short-with-a-parent",
+            parent.Id,
+            Guid.NewGuid()
+        );
+
+        _fileStorageMock.SetupResolveMany(new Dictionary<Guid, FileReferenceDto>());
+        _videoRepositoryMock
+            .Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, VideoEntity> { [parent.Id] = parent });
+
+        // Act
+        IReadOnlyList<ShortVideoDto> dtos = await new List<ShortVideoEntity> { entity }.ToShortVideoDtosAsync(
+            Mapper,
+            _fileStorageMock.Object,
+            _videoRepositoryMock.Object,
+            CancellationToken.None
+        );
+
+        // Assert
+        dtos.Should().ContainSingle();
+        dtos[0].VideoSlug.Should().Be(parent.Slug.Value);
+    }
+
+    [Fact]
     public async Task ToShortVideoDtosAsync_WhenEmpty_ShouldReturnEmptyList()
     {
         // Arrange
@@ -310,6 +369,49 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         dtos.Should().OnlyContain(dto => dto.Author != null && dto.Author.UserName == "kinix_editor");
         dtos.Single(dto => dto.Id == liked.Id).IsLiked.Should().BeTrue();
         dtos.Single(dto => dto.Id == other.Id).IsLiked.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ToShortVideoDtosAsync_WithAnAuthorAvatar_ShouldResolveItInTheSameLookup()
+    {
+        // Arrange — the avatar joins the video and thumbnail ids in one file lookup.
+        ShortVideoEntity entity = ShortVideoFactory.Create();
+        var avatarFileId = Guid.NewGuid();
+        const string avatarUrl = "https://cdn.example.com/avatar.png";
+
+        var authors = new Dictionary<Guid, UserProfileDto>
+        {
+            [entity.AuthorId] = new UserProfileDto(
+                "kinix_editor",
+                null,
+                avatarFileId,
+                "Admin",
+                LocaleConstants.DefaultLocale
+            ),
+        };
+        Mock<IUserLookupService> userLookup = MockUserLookupService.Create().SetupGetUserProfilesByIds(authors);
+
+        _fileStorageMock.SetupResolveMany(
+            new Dictionary<Guid, FileReferenceDto>
+            {
+                [avatarFileId] = FileReferenceDtoFactory.CreateWithStorageUrl(avatarUrl),
+            }
+        );
+
+        // Act
+        IReadOnlyList<ShortVideoDto> dtos = await new List<ShortVideoEntity> { entity }.ToShortVideoDtosAsync(
+            Mapper,
+            userLookup.Object,
+            _fileStorageMock.Object,
+            _videoRepositoryMock.Object,
+            new HashSet<Guid>(),
+            new HashSet<Guid>(),
+            CancellationToken.None
+        );
+
+        // Assert
+        dtos.Should().ContainSingle();
+        dtos[0].Author!.AvatarUrl.Should().Be(avatarUrl);
     }
 
     [Fact]
