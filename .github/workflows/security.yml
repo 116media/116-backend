@@ -1,0 +1,186 @@
+name: Security
+
+# CodeQL and Trivy. Both publish SARIF to GitHub code scanning, so their findings land in
+# the Security tab rather than being re-reported here.
+#
+# Gated on `Tests` completing: a PR whose suites are red gets its test failures reported
+# first, not buried under scanner output.
+on:
+    workflow_run:
+        workflows: [Tests]
+        types: [completed]
+
+permissions:
+    contents: read
+
+env:
+    DOTNET_VERSION: '9.0.x'
+    DOTNET_NOLOGO: true
+    DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+    # `workflow_run` fires in the context of the default branch, so the pull request behind
+    # the triggering run has to be looked up rather than read from `github.event`.
+    context:
+        name: Resolve PR context
+        runs-on: ubuntu-latest
+        if: github.event.workflow_run.conclusion == 'success'
+        outputs:
+            pr: ${{ steps.pr.outputs.number }}
+            sha: ${{ github.event.workflow_run.head_sha }}
+        steps:
+            - name: Find the pull request
+              id: pr
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  number=$(gh pr list \
+                    --repo "${{ github.repository }}" \
+                    --head "${{ github.event.workflow_run.head_branch }}" \
+                    --state open --json number --jq '.[0].number // empty')
+                  echo "number=${number}" >> "$GITHUB_OUTPUT"
+                  echo "Pull request: ${number:-none}"
+
+    codeql:
+        name: CodeQL
+        runs-on: ubuntu-latest
+        needs: [context]
+        permissions:
+            contents: read
+            security-events: write
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ needs.context.outputs.sha }}
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: ${{ env.DOTNET_VERSION }}
+
+            - name: Initialise CodeQL
+              uses: github/codeql-action/init@v3
+              with:
+                  languages: csharp
+                  queries: security-and-quality
+
+            # Autobuild is unreliable across 39 projects, so the build is explicit.
+            - name: Build
+              run: dotnet build --configuration Release
+
+            - name: Analyse
+              uses: github/codeql-action/analyze@v3
+              with:
+                  category: /language:csharp
+
+    trivy:
+        name: Trivy
+        runs-on: ubuntu-latest
+        needs: [context]
+        permissions:
+            contents: read
+            security-events: write
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ needs.context.outputs.sha }}
+
+            # The deployed artefact is the image, so that is what gets scanned — this is
+            # also the only job that compiles the Dockerfile, catching a broken image build
+            # before a release does.
+            - name: Build runtime image
+              run: docker build -t 116-backend:${{ needs.context.outputs.sha }} .
+
+            - name: Scan image
+              uses: aquasecurity/trivy-action@v0.36.0
+              with:
+                  image-ref: 116-backend:${{ needs.context.outputs.sha }}
+                  format: sarif
+                  output: trivy-image.sarif
+                  severity: HIGH,CRITICAL
+                  # SARIF reports every severity unless this is set.
+                  limit-severities-for-sarif: true
+                  # A CVE with no published fix is not actionable in a PR.
+                  ignore-unfixed: true
+
+            - name: Scan Dockerfile and manifests
+              uses: aquasecurity/trivy-action@v0.36.0
+              with:
+                  scan-type: config
+                  scan-ref: .
+                  format: sarif
+                  output: trivy-config.sarif
+                  severity: HIGH,CRITICAL
+                  limit-severities-for-sarif: true
+
+            - name: Publish image findings
+              uses: github/codeql-action/upload-sarif@v3
+              if: always()
+              with:
+                  sarif_file: trivy-image.sarif
+                  category: trivy-image
+
+            - name: Publish configuration findings
+              uses: github/codeql-action/upload-sarif@v3
+              if: always()
+              with:
+                  sarif_file: trivy-config.sarif
+                  category: trivy-config
+
+            - name: Upload SARIF for downstream tooling
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: trivy-sarif
+                  path: trivy-*.sarif
+                  retention-days: 30
+
+    report:
+        name: Security Report
+        runs-on: ubuntu-latest
+        needs: [context, codeql, trivy]
+        if: always() && needs.context.outputs.pr != ''
+        permissions:
+            contents: read
+            pull-requests: write
+            security-events: read
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Download Trivy findings
+              uses: actions/download-artifact@v4
+              if: always()
+              continue-on-error: true
+              with:
+                  name: trivy-sarif
+                  path: sarif
+
+            - name: Build the report
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  bash scripts/security-comment.sh \
+                    "${{ github.repository }}" \
+                    "${{ needs.context.outputs.sha }}" \
+                    "${{ needs.codeql.result }}" \
+                    "${{ needs.trivy.result }}" \
+                    sarif \
+                    security-comment.md
+
+            - name: Post the report
+              uses: marocchino/sticky-pull-request-comment@v2
+              with:
+                  header: security-report
+                  number: ${{ needs.context.outputs.pr }}
+                  path: security-comment.md
+
+            - name: Upload the report for downstream tooling
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: security-report-md
+                  path: security-comment.md
+                  retention-days: 30
