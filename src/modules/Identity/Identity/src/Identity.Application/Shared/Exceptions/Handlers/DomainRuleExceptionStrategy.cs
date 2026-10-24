@@ -45,20 +45,9 @@ public sealed class DomainRuleExceptionStrategy : BaseExceptionStrategy<Identity
     /// <inheritdoc />
     public override ProblemDetails CreateProblemDetails(IdentityRuleException exception, HttpContext context)
     {
-        RuleProblem ruleProblem;
-
-        if (Problems.TryGetValue(exception.Code, out RuleProblem? mapped))
-        {
-            ruleProblem = mapped;
-        }
-        else
-        {
-            ruleProblem = new RuleProblem(
-                StatusCodes.Status400BadRequest,
-                nameof(DomainRuleException),
-                (_, _) => exception.Code
-            );
-        }
+        RuleProblem ruleProblem = Problems.TryGetValue(exception.Code, out RuleProblem? mapped)
+            ? mapped
+            : new RuleProblem(StatusCodes.Status400BadRequest, nameof(DomainRuleException), (_, _) => exception.Code);
 
         ProblemDetails problem = CreateStandardProblemDetails(
             title: ruleProblem.Title,
