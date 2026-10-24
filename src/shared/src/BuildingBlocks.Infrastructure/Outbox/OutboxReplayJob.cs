@@ -68,7 +68,7 @@ public abstract class OutboxReplayJob<TContext>(IServiceScopeFactory scopeFactor
                 await publisher.Publish(domainEvent, context.CancellationToken);
                 row.MarkDispatched();
             }
-            catch (Exception exception)
+            catch (Exception exception) when (exception is not OperationCanceledException)
             {
                 logger.LogError(exception, "Replaying domain event {EventId} failed.", row.Id);
                 row.MarkFailed(exception.Message);
