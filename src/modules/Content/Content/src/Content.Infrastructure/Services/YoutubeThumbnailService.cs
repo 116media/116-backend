@@ -32,10 +32,8 @@ public class YoutubeThumbnailService(HttpClient httpClient) : IYoutubeThumbnailS
             imageBytes = await httpClient.GetByteArrayAsync(fallbackUrl, cancellationToken);
         }
 
-        var memStream = new MemoryStream(imageBytes);
-
         return new FormFile(
-            baseStream: memStream,
+            baseStream: new MemoryStream(imageBytes),
             baseStreamOffset: 0,
             length: imageBytes.Length,
             name: "thumbnail",
