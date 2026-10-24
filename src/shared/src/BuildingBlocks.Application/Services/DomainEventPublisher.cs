@@ -101,7 +101,7 @@ public class DomainEventPublisher(
 
                     await dispatchPlan.InvokeHandler(handler, domainEvent, cancellationToken);
                 }
-                catch (Exception exception)
+                catch (Exception exception) when (exception is not OperationCanceledException)
                 {
                     logger.LogError(
                         exception,
@@ -135,7 +135,7 @@ public class DomainEventPublisher(
         {
             return serviceProvider.GetServices(handlerServiceType).OfType<object>().ToArray();
         }
-        catch (Exception exception)
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(
                 exception,
@@ -179,7 +179,7 @@ public class DomainEventPublisher(
                     handlers.Add(handler);
                 }
             }
-            catch (Exception exception)
+            catch (Exception exception) when (exception is not OperationCanceledException)
             {
                 logger.LogError(
                     exception,
