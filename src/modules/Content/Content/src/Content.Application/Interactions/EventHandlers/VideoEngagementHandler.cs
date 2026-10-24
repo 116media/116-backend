@@ -31,22 +31,16 @@ public class VideoEngagementHandler(
     /// <inheritdoc />
     public async Task Handle(VideoEngagedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        int? updated;
-
         // A rating is a recomputed average, never a delta, so it takes its own set-based write.
-        if (domainEvent.Kind == EnumEngagementKind.Rating)
-        {
-            updated = await RefreshRatingAsync(videoId: domainEvent.VideoId, cancellationToken: cancellationToken);
-        }
-        else
-        {
-            updated = await videoRepository.ApplyEngagementDeltaAsync(
-                videoId: domainEvent.VideoId,
-                kind: domainEvent.Kind,
-                delta: domainEvent.Delta,
-                cancellationToken: cancellationToken
-            );
-        }
+        int? updated =
+            domainEvent.Kind == EnumEngagementKind.Rating
+                ? await RefreshRatingAsync(videoId: domainEvent.VideoId, cancellationToken: cancellationToken)
+                : await videoRepository.ApplyEngagementDeltaAsync(
+                    videoId: domainEvent.VideoId,
+                    kind: domainEvent.Kind,
+                    delta: domainEvent.Delta,
+                    cancellationToken: cancellationToken
+                );
 
         if (updated == 0)
         {
