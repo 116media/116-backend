@@ -110,12 +110,9 @@ public class OrderPaidEffectsHandler(
             return false;
         }
 
-        bool changed = false;
-
         if (effect.SocialBoost && !article.SocialBoost)
         {
             article.StampSocialBoost();
-            changed = true;
         }
 
         bool promotionStamped =
@@ -131,12 +128,9 @@ public class OrderPaidEffectsHandler(
         )
         {
             article.StampPromotion(promotionLevelId: effect.PromotionLevelId.Value, until: effect.PromotionUntil.Value);
-            changed = true;
         }
 
-        changed |= article.MarkPendingReview();
-
-        if (changed) { }
+        article.MarkPendingReview();
 
         return true;
     }
@@ -165,12 +159,9 @@ public class OrderPaidEffectsHandler(
             return false;
         }
 
-        bool changed = false;
-
         if (effect.SocialBoost && !video.SocialBoost)
         {
             video.StampSocialBoost();
-            changed = true;
         }
 
         bool promotionStamped =
@@ -186,12 +177,9 @@ public class OrderPaidEffectsHandler(
         )
         {
             video.StampPromotion(promotionLevelId: effect.PromotionLevelId.Value, until: effect.PromotionUntil.Value);
-            changed = true;
         }
 
-        changed |= video.MarkPendingReview();
-
-        if (changed) { }
+        video.MarkPendingReview();
 
         return true;
     }
@@ -222,8 +210,6 @@ public class OrderPaidEffectsHandler(
             return false;
         }
 
-        bool changed = false;
-
         bool promotionStamped = lyrics.IsPromoted && lyrics.PromotedUntil == effect.PromotionUntil;
 
         if (
@@ -234,12 +220,9 @@ public class OrderPaidEffectsHandler(
         )
         {
             lyrics.StampPromotion(promotionLevelId: effect.PromotionLevelId.Value, until: effect.PromotionUntil.Value);
-            changed = true;
         }
 
-        changed |= lyrics.MarkPendingReview();
-
-        if (changed) { }
+        lyrics.MarkPendingReview();
 
         return true;
     }
