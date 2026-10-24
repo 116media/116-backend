@@ -32,7 +32,7 @@ public partial class SwaggerDescriptionMiddleware(RequestDelegate next)
         // Read the generated Swagger JSON
         memoryStream.Seek(0, SeekOrigin.Begin);
         using var reader = new StreamReader(memoryStream, leaveOpen: true);
-        string json = await reader.ReadToEndAsync();
+        string json = await reader.ReadToEndAsync(context.RequestAborted);
 
         // Replace \\n (4 chars: backslash-backslash-n) with \n (2 chars: backslash-n)
         // This converts escaped newlines in C# strings to proper JSON newline escapes
