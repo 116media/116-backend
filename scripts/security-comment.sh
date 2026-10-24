@@ -153,11 +153,4 @@ with pathlib.Path(out_path).open("a", encoding="utf-8") as handle:
 PY
 fi
 
-{
-    echo ""
-    echo "---"
-    echo "<sub>Runs after the Tests workflow completes. Machine-readable output: the"
-    echo "\`security-report-md\` and \`trivy-sarif\` artifacts on this run.</sub>"
-} >> "$OUT"
-
 echo "Security comment written to $OUT"
