@@ -40,7 +40,7 @@ public class OtpIsNotUsedSpecification : Specification<OtpEntity>
 {
     public override Expression<Func<OtpEntity, bool>> ToExpression()
     {
-        return otp => otp.IsUsed == false;
+        return otp => !otp.IsUsed;
     }
 }
 
@@ -52,7 +52,7 @@ public class OtpIsUsedSpecification : Specification<OtpEntity>
 {
     public override Expression<Func<OtpEntity, bool>> ToExpression()
     {
-        return otp => otp.IsUsed == true;
+        return otp => otp.IsUsed;
     }
 }
 
