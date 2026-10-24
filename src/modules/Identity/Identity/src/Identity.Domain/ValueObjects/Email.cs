@@ -65,7 +65,7 @@ public record Email
             var addr = new MailAddress(address: email);
             return addr.Address == email;
         }
-        catch
+        catch (Exception exception) when (exception is FormatException or ArgumentException)
         {
             return false;
         }
