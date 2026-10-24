@@ -52,6 +52,8 @@ public class ImageColorService : IImageColorService
     /// <inheritdoc />
     public async Task<ImageColors?> ExtractAsync(IFormFile file, CancellationToken cancellationToken = default)
     {
+        ImageColors? result;
+
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -63,26 +65,26 @@ public class ImageColorService : IImageColorService
                 return null;
             }
 
-            using SKBitmap? analysed = Downscale(decoded);
-            if (analysed is null)
-            {
-                return null;
-            }
+            // Analyzing at full size is slower but still correct,
+            // so a refused resize is not a reason to abandon extraction.
+            using SKBitmap? resized = Downscale(decoded);
 
-            string? dominant = FindDominantColor(analysed);
+            string? dominant = FindDominantColor(resized ?? decoded);
             if (dominant is null)
             {
                 return null;
             }
 
             string? foreground = ColorContrastHelper.ForegroundFor(dominant);
-            return foreground is null ? null : new ImageColors(dominant, foreground);
+            result = foreground is null ? null : new ImageColors(dominant, foreground);
         }
-        catch (Exception)
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
             // Color extraction is best-effort and must never block the upload.
             return null;
         }
+
+        return result;
     }
 
     /// <summary>
