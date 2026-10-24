@@ -1,10 +1,7 @@
 using _116.BuildingBlocks.Application.Exceptions.Problems;
 using _116.BuildingBlocks.Presentation.Exceptions.Handlers.Contracts;
-using _116.Shared.Domain.Exceptions;
 using _116.Storage.Application.Exceptions.Problems;
 using _116.Storage.Domain.Exceptions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 
 namespace _116.Storage.Application.Exceptions.Handlers;
 
@@ -13,7 +10,7 @@ namespace _116.Storage.Application.Exceptions.Handlers;
 /// culture-free code, and the per-aggregate catalogs under <c>Problems/</c> own each rule's
 /// status, title and phrasing. The response also carries the code and args as extensions.
 /// </summary>
-public sealed class DomainRuleExceptionStrategy : BaseExceptionStrategy<StorageRuleException>
+public sealed class DomainRuleExceptionStrategy : DomainRuleExceptionStrategyBase<StorageRuleException>
 {
     /// <summary>
     /// The module's problem catalog, merged from one catalog per aggregate. A duplicate code
@@ -33,24 +30,5 @@ public sealed class DomainRuleExceptionStrategy : BaseExceptionStrategy<StorageR
     }
 
     /// <inheritdoc />
-    public override ProblemDetails CreateProblemDetails(StorageRuleException exception, HttpContext context)
-    {
-        // An unmapped code degrades to the code string — a catalog gap, never a 500.
-        RuleProblem ruleProblem = Problems.TryGetValue(exception.Code, out RuleProblem? mapped)
-            ? mapped
-            : new RuleProblem(StatusCodes.Status400BadRequest, nameof(DomainRuleException), (_, _) => exception.Code);
-
-        ProblemDetails problem = CreateStandardProblemDetails(
-            title: ruleProblem.Title,
-            detail: ruleProblem.Detail(context, exception.Args),
-            statusCode: ruleProblem.Status,
-            context: context
-        );
-
-        problem.Type = ProblemTypes.ForRule(exception.Code);
-        problem.Extensions["code"] = exception.Code;
-        problem.Extensions["args"] = exception.Args;
-
-        return problem;
-    }
+    protected override IReadOnlyDictionary<string, RuleProblem> Catalog => Problems;
 }
