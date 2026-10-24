@@ -3,6 +3,7 @@ using _116.Storage.Infrastructure.Services;
 using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
+using Moq;
 using SkiaSharp;
 using Xunit;
 
@@ -129,5 +130,28 @@ public class ImageColorServiceTests
         ImageColors? colors = await _service.ExtractAsync(file);
 
         colors.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ExtractAsync_WhenTheStreamThrows_ShouldReturnNullAndNotThrow()
+    {
+        var file = new Mock<IFormFile>();
+        file.Setup(f => f.OpenReadStream()).Throws(new IOException("the upload stream died"));
+
+        ImageColors? colors = await _service.ExtractAsync(file.Object);
+
+        colors.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ExtractAsync_WhenCancelled_ShouldPropagateTheCancellation()
+    {
+        IFormFile file = ImageFile(SolidColorPng(new SKColor(255, 235, 59)));
+        using var cancelled = new CancellationTokenSource();
+        await cancelled.CancelAsync();
+
+        Func<Task> act = () => _service.ExtractAsync(file, cancelled.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
     }
 }
