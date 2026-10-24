@@ -1,0 +1,15 @@
+name: 116 backend
+
+# The security-and-quality suite applies maintainability rules as well as security ones.
+# Pointed at test projects those rules police builders and fixtures for missing `readonly`
+# modifiers and redundant upcasts, which is noise rather than risk: 415 of the first 501
+# alerts came from test code. Security analysis of production code is the point here, so
+# the test projects are out of scope.
+paths-ignore:
+    - '**/tests/**'
+    - '**/*.Tests/**'
+    - '**/*.TestData/**'
+    - tests/**
+    - '**/Migrations/**'
+    # Emitted by the [GeneratedRegex] source generator.
+    - '**/*.g.cs'
