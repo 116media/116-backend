@@ -779,6 +779,35 @@ every method reads as uncovered and the CRAP numbers mean nothing. A `COVERAGE_S
 in the output means the coverage predates the current source and the numbers are not
 trustworthy yet.
 
+### Rules the analysers enforce
+
+SonarQube and CodeQL run only in CI, so nothing blocks a bad pattern locally. Write to these
+rules the first time rather than waiting for the pull-request comment. Each one below has
+actually fired on this codebase.
+
+| Rule | Write instead |
+| --- | --- |
+| S2077 | Parameterise every SQL string. Never interpolate into a command |
+| S5122 | Scope CORS to named origins, never `AllowAnyOrigin` |
+| S2092 | Set `Secure` on every auth cookie |
+| S6444 | Pass a timeout to `Regex` and to any HTTP call |
+| S8949 | Pass `context.RequestAborted` to async calls on the request path |
+| S2699 | Every test asserts something |
+| S6966 | Prefer the async overload, `RunAsync` over `Run` |
+| S3453 | A class EF materialises needs an accessible constructor |
+| `cs/catch-of-all-exceptions` | Give every `catch (Exception)` a `when (...)` filter, at minimum `when (ex is not OperationCanceledException)` |
+| `cs/log-forging` | Strip control characters from caller-supplied values before logging |
+| `cs/exposure-of-sensitive-information` | Log the user id, never the name or email |
+| `cs/local-not-disposed` | `using` every `IDisposable` local, or hand ownership to the return value |
+| `cs/complex-condition` | Coalesce rather than null-guard to keep a disjunction flat |
+| `cs/useless-assignment-to-local` | No variable written and never read |
+
+Read what the last run found before starting on a file:
+
+```bash
+scripts/ai-ci-findings.sh              # open CodeQL and Trivy alerts on this branch
+```
+
 ### Reacting to a CRAP breach
 
 The threshold is 30, set once in `crap4dotnet-config.json` so a local run and CI agree. When a
