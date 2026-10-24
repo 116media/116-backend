@@ -74,9 +74,7 @@ public class PopularVideosQueryBuilder : IPopularVideosQueryBuilder
         }
 
         query = query
-            .OrderByDescending(v =>
-                (ratingWeight * ((double)v.RatingAverage * v.RatingCount)) + (shareWeight * v.ShareCount)
-            )
+            .OrderByDescending(v => (ratingWeight * (v.RatingAverage * v.RatingCount)) + (shareWeight * v.ShareCount))
             .ThenByDescending(v => v.PublishedAt);
 
         if (_limit.HasValue)
