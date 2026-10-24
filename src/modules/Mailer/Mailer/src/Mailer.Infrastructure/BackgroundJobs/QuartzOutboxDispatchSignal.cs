@@ -25,7 +25,7 @@ public class QuartzOutboxDispatchSignal(ISchedulerFactory schedulerFactory, ILog
             IScheduler scheduler = await schedulerFactory.GetScheduler(cancellationToken);
             await scheduler.TriggerJob(DispatcherKey, cancellationToken);
         }
-        catch (Exception exception)
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
             // The row is committed, so the cron still delivers it.
             logger.LogWarning(exception, "Immediate outbox dispatch could not be signalled.");
