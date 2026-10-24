@@ -22,14 +22,15 @@ public class SessionExportBase
         return sessions
             .Select(session =>
             {
-                IDictionary<string, object?> expando = new ExpandoObject();
+                var expando = new ExpandoObject();
+                IDictionary<string, object?> columnValues = expando;
 
                 foreach (PropertyInfo property in properties)
                 {
-                    expando[property.Name] = property.GetValue(obj: session);
+                    columnValues[property.Name] = property.GetValue(obj: session);
                 }
 
-                return (ExpandoObject)expando;
+                return expando;
             })
             .ToList();
     }
