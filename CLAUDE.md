@@ -806,8 +806,10 @@ The delta line confirms total CRAP load went down and that nothing newly crossed
 
 Neither runs locally: the CodeQL CLI is a ~500MB download whose database build takes minutes
 across 39 projects, and Trivy's image scan needs a Docker build. Both run in `security.yml` and
-publish SARIF to GitHub code scanning. CRAP runs in `quality.yml`. SonarQube Cloud runs as
-Automatic Analysis, which covers maintainability, bugs and duplication but not coverage. Read the security findings with:
+publish SARIF to GitHub code scanning. CRAP runs in `quality.yml`, after Tests, because it needs coverage.
+SonarQube Cloud runs in `sonar.yml`, which needs no coverage and so starts as soon as a
+pull request opens. Automatic Analysis must stay off: SonarQube refuses a CI analysis
+while it is enabled. Read the security findings with:
 
 ```bash
 scripts/ai-ci-findings.sh              # open alerts on the current branch
