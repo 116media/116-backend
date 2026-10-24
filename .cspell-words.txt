@@ -412,6 +412,7 @@ sigmacool
 signups
 silenceable
 simprop
+Skia
 slnf
 slugifies
 slugifying
@@ -506,6 +507,8 @@ unmutated
 unnegotiated
 unpadded
 unpooled
+Unpremul
+unpremultiplied
 unpromote
 unpromoted
 unpromoting
