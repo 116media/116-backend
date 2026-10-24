@@ -109,11 +109,12 @@ public class VideoSearchSpecification(string search) : Specification<VideoEntity
     public override Expression<Func<VideoEntity, bool>> ToExpression()
     {
         string pattern = $"%{search}%";
+        // Coalescing keeps this flat: an absent column matches nothing, and becomes COALESCE in SQL.
         return video =>
             EF.Functions.ILike(video.Title, pattern)
-            || (video.Description != null && EF.Functions.ILike(video.Description, pattern))
-            || (video.MetaTitle != null && EF.Functions.ILike(video.MetaTitle, pattern))
-            || (video.MetaDescription != null && EF.Functions.ILike(video.MetaDescription, pattern));
+            || EF.Functions.ILike(video.Description ?? string.Empty, pattern)
+            || EF.Functions.ILike(video.MetaTitle ?? string.Empty, pattern)
+            || EF.Functions.ILike(video.MetaDescription ?? string.Empty, pattern);
     }
 }
 
