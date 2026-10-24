@@ -114,6 +114,20 @@ newest_coverage() {
         | xargs -0 ls -t 2>/dev/null | head -1
 }
 
+# CRAP is complexity weighed against coverage, so coverage older than the source it
+# describes produces numbers that look like findings but are not. Refuse to score those
+# rather than report them.
+coverage_is_stale() {
+    local newest_cov newest_src
+    newest_cov="$(find coverage -name 'coverage.cobertura.xml' -newer "$1" -print -quit 2>/dev/null)"
+    [ -z "$newest_cov" ]
+}
+
+newest_source() {
+    find src -name '*.cs' -not -path '*/obj/*' -not -path '*/bin/*' -print0 2>/dev/null \
+        | xargs -0 ls -t 2>/dev/null | head -1
+}
+
 FILES="$(changed_files)"
 FILE_COUNT=$(printf '%s' "$FILES" | grep -c . || true)
 
@@ -140,9 +154,16 @@ for suite in unit integration; do
     if [ -n "$cov" ]; then COV_ARGS+=(--coverage "$cov"); fi
 done
 
+NEWEST_SRC="$(newest_source)"
+
 if [ ${#COV_ARGS[@]} -eq 0 ]; then
     echo "${YELLOW}  no local coverage — run scripts/run-tests-with-coverage.sh first${NC}"
     echo "  (without coverage every method reads as uncovered, so CRAP is meaningless)"
+    FAILED=1
+elif [ -n "$NEWEST_SRC" ] && coverage_is_stale "$NEWEST_SRC"; then
+    echo "${RED}  coverage is older than ${NEWEST_SRC}${NC}"
+    echo "  Scoring against it invents breaches. Run scripts/run-tests-with-coverage.sh all"
+    FAILED=1
 else
     dotnet tool run dotnet-crap -- analyze "$SOLUTION" \
         "${COV_ARGS[@]}" --output "$CURRENT" > /dev/null 2>&1
