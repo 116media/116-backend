@@ -35,21 +35,10 @@ public sealed class DomainRuleExceptionStrategy : BaseExceptionStrategy<StorageR
     /// <inheritdoc />
     public override ProblemDetails CreateProblemDetails(StorageRuleException exception, HttpContext context)
     {
-        RuleProblem ruleProblem;
-
-        if (Problems.TryGetValue(exception.Code, out RuleProblem? mapped))
-        {
-            ruleProblem = mapped;
-        }
-        else
-        {
-            // An unmapped code degrades to the code string — a catalog gap, never a 500.
-            ruleProblem = new RuleProblem(
-                StatusCodes.Status400BadRequest,
-                nameof(DomainRuleException),
-                (_, _) => exception.Code
-            );
-        }
+        // An unmapped code degrades to the code string — a catalog gap, never a 500.
+        RuleProblem ruleProblem = Problems.TryGetValue(exception.Code, out RuleProblem? mapped)
+            ? mapped
+            : new RuleProblem(StatusCodes.Status400BadRequest, nameof(DomainRuleException), (_, _) => exception.Code);
 
         ProblemDetails problem = CreateStandardProblemDetails(
             title: ruleProblem.Title,
