@@ -24,7 +24,11 @@ jobs:
     context:
         name: Resolve PR context
         runs-on: ubuntu-latest
-        if: github.event.workflow_run.conclusion == 'success'
+        # Only follows a Tests run from a pull request. A merge to develop re-runs
+        # nothing here: the same commit was already scanned on its pull request.
+        if: >-
+            github.event.workflow_run.conclusion == 'success' &&
+            github.event.workflow_run.event == 'pull_request'
         outputs:
             pr: ${{ steps.pr.outputs.number }}
             sha: ${{ github.event.workflow_run.head_sha }}
