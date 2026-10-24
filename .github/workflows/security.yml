@@ -78,6 +78,7 @@ jobs:
               with:
                   languages: csharp
                   queries: security-and-quality
+                  config-file: ./.github/codeql/codeql-config.yml
 
             # Autobuild is unreliable across 39 projects, so the build is explicit.
             - name: Build
