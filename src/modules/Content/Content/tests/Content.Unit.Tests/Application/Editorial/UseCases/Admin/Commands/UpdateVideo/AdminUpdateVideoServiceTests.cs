@@ -22,11 +22,7 @@ public class AdminUpdateVideoServiceTests
 
     public AdminUpdateVideoServiceTests()
     {
-        _service = new AdminUpdateVideoService(
-            _categoryRepositoryMock.Object,
-            _videoRepositoryMock.Object,
-            TestErrorsFactory.CreateContentI18n()
-        );
+        _service = new AdminUpdateVideoService(_categoryRepositoryMock.Object, _videoRepositoryMock.Object);
     }
 
     private static AdminUpdateVideoCommand Command(VideoEntity video, string slug)
