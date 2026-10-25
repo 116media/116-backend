@@ -253,8 +253,8 @@ public class ShortVideoRepositoryTests(PostgresFixture postgres) : BaseRepositor
         long afterKey = firstPage[^1].FeedRank ^ seed;
         var secondPage = await repo.GetRandomizedFeedAsync(seed, afterKey, limit: 3);
 
-        firstPage.Select(s => s.Id).Should().Equal(full.Take(3).Select(s => s.Id));
-        secondPage.Select(s => s.Id).Should().Equal(full.Skip(3).Take(3).Select(s => s.Id));
+        firstPage.Should().Equal(full.Take(3), (actual, expected) => actual.Id == expected.Id);
+        secondPage.Should().Equal(full.Skip(3).Take(3), (actual, expected) => actual.Id == expected.Id);
         firstPage.Select(s => s.Id).Should().NotIntersectWith(secondPage.Select(s => s.Id));
     }
 
@@ -271,7 +271,7 @@ public class ShortVideoRepositoryTests(PostgresFixture postgres) : BaseRepositor
         var first = await repo.GetRandomizedFeedAsync(seed: 42, afterSortKey: null, limit: 5);
         var second = await repo.GetRandomizedFeedAsync(seed: 42, afterSortKey: null, limit: 5);
 
-        first.Select(s => s.Id).Should().Equal(second.Select(s => s.Id));
+        first.Should().Equal(second, (actual, expected) => actual.Id == expected.Id);
     }
 
     [Fact]
