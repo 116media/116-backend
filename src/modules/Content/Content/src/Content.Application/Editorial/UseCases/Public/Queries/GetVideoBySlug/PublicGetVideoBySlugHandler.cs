@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.DTOs;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -14,13 +14,11 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoByS
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="artistRepository">Repository used to resolve the linked artist's slug.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 /// <param name="videoDtoService">Builds video projections with their thumbnails resolved.</param>
 public class PublicGetVideoBySlugHandler(
     IVideoRepository videoRepository,
     IArtistRepository artistRepository,
-    IVideoDtoService videoDtoService,
-    ContentI18n i18n
+    IVideoDtoService videoDtoService
 ) : IQueryHandler<PublicGetVideoBySlugQuery, PublicGetVideoBySlugResult>
 {
     /// <inheritdoc />
@@ -36,7 +34,7 @@ public class PublicGetVideoBySlugHandler(
 
         if (video is null || video.Status != EnumContentStatus.Published)
         {
-            throw i18n.Video.NotFound(Guid.Empty);
+            throw VideoErrors.NotFound(Guid.Empty);
         }
 
         short? ratedStars = null;
