@@ -49,7 +49,7 @@ public class ArticleInteractionErrors(ArticleInteractionErrorMessage i18n)
     /// <summary>
     /// Throws when a comment is not found by its identifier.
     /// </summary>
-    public NotFoundException CommentNotFound(Guid commentId)
+    public static NotFoundException CommentNotFound(Guid commentId)
     {
         return new NotFoundException("ArticleComment", "id", keyValue: commentId);
     }
