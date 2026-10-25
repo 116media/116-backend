@@ -122,7 +122,7 @@ public class AdminUpsertArtistSocialLinkEndpointV1Tests(PostgresFixture db) : Ba
             .ArtistSocialLinks.Where(link => link.ArtistId == artist.Id)
             .ToListAsync();
 
-        rows.Should().HaveCount(1);
+        rows.Should().ContainSingle();
         rows[0].Url.Should().Be(ReplacementUrl);
     }
 
