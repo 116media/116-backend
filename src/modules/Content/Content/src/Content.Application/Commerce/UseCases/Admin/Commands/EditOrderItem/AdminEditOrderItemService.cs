@@ -1,5 +1,5 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrderItem.Contracts;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 
@@ -11,12 +11,10 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrderIte
 /// <param name="contentOrderRepository">Repository loading the order with its items.</param>
 /// <param name="categoryRepository">Repository validating the new category.</param>
 /// <param name="promotionLevelRepository">Repository validating the new promotion level.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminEditOrderItemService(
     IContentOrderRepository contentOrderRepository,
     ICategoryRepository categoryRepository,
-    IPromotionLevelRepository promotionLevelRepository,
-    ContentI18n i18n
+    IPromotionLevelRepository promotionLevelRepository
 ) : IAdminEditOrderItemService
 {
     /// <inheritdoc />
@@ -35,7 +33,7 @@ public class AdminEditOrderItemService(
 
         if (order is null)
         {
-            throw i18n.ContentOrder.NotFound(id: orderId);
+            throw ContentOrderErrors.NotFound(id: orderId);
         }
 
         order.EnsureDraft();
@@ -43,7 +41,7 @@ public class AdminEditOrderItemService(
 
         if (item is null)
         {
-            throw i18n.ContentOrder.ItemNotFound(itemId: itemId);
+            throw ContentOrderErrors.ItemNotFound(itemId: itemId);
         }
 
         Guid? newCategoryId = command.CategoryId is not null ? Guid.Parse(command.CategoryId) : null;
