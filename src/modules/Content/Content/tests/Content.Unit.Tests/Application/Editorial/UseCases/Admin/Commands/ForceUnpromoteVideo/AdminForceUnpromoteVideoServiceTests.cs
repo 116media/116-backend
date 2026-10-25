@@ -24,12 +24,7 @@ public class AdminForceUnpromoteVideoServiceTests
     public AdminForceUnpromoteVideoServiceTests()
     {
         ICurrentActor currentActor = Mock.Of<ICurrentActor>(actor => actor.UserId == _adminId);
-        _service = new AdminForceUnpromoteVideoService(
-            _videoRepositoryMock.Object,
-            currentActor,
-            TestErrorsFactory.CreateContentI18n(),
-            TimeProvider.System
-        );
+        _service = new AdminForceUnpromoteVideoService(_videoRepositoryMock.Object, currentActor, TimeProvider.System);
     }
 
     [Fact]
