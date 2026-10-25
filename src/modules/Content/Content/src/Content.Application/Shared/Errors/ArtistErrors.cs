@@ -17,7 +17,7 @@ public class ArtistErrors(ArtistErrorMessage i18n)
     /// <summary>
     /// Throws when an artist profile is not found by its identifier.
     /// </summary>
-    public NotFoundException NotFound(Guid id)
+    public static NotFoundException NotFound(Guid id)
     {
         return new NotFoundException("Artist", "id", keyValue: id);
     }
@@ -42,7 +42,7 @@ public class ArtistErrors(ArtistErrorMessage i18n)
     /// <summary>
     /// Throws when no social link exists for the requested platform on this artist.
     /// </summary>
-    public NotFoundException SocialLinkNotFound(string platform)
+    public static NotFoundException SocialLinkNotFound(string platform)
     {
         return new NotFoundException("ArtistSocialLink", "platform", keyValue: platform);
     }
