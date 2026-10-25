@@ -1,6 +1,6 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.Content.Application.Editorial.Services;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -13,12 +13,10 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticleB
 /// <param name="articleRepository">Repository resolving the article.</param>
 /// <param name="articleInteractionRepository">Repository resolving the reader's like and bookmark state.</param>
 /// <param name="articleDtoService">Service assembling the public article detail.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetArticleBySlugHandler(
     IArticleRepository articleRepository,
     IArticleInteractionRepository articleInteractionRepository,
-    IArticleDtoService articleDtoService,
-    ContentI18n i18n
+    IArticleDtoService articleDtoService
 ) : IQueryHandler<PublicGetArticleBySlugQuery, PublicGetArticleBySlugResult>
 {
     /// <inheritdoc />
@@ -34,7 +32,7 @@ public class PublicGetArticleBySlugHandler(
 
         if (article is null || article.Status != EnumContentStatus.Published)
         {
-            throw i18n.Article.NotFound(Guid.Empty);
+            throw ArticleErrors.NotFound(Guid.Empty);
         }
 
         bool isLiked = false;
