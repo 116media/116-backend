@@ -209,7 +209,7 @@ public class PublicGetPopularArticlesEndpointV1Tests(PostgresFixture db) : BaseA
         body.Articles.Should().ContainSingle();
         body.Articles.Should().OnlyContain(a => a.CategoryId == categoryA);
         body.Articles.Should().NotContain(a => a.Id == excluded.Id);
-        body.Articles.First().Id.Should().Be(topKept.Id);
+        body.Articles[0].Id.Should().Be(topKept.Id);
     }
 
     [Fact]
@@ -224,12 +224,12 @@ public class PublicGetPopularArticlesEndpointV1Tests(PostgresFixture db) : BaseA
 
         var first = await Client.GetAsync($"{Routes.Public.Articles.Popular()}?limit=10");
         PublicGetPopularArticlesResponse firstBody = await first.ReadAsAsync<PublicGetPopularArticlesResponse>();
-        firstBody.Articles.First().Id.Should().Be(leader.Id);
+        firstBody.Articles[0].Id.Should().Be(leader.Id);
 
         await Client.PostAsync(Routes.Public.Articles.Shares(quiet.Id), null);
 
         var second = await Client.GetAsync($"{Routes.Public.Articles.Popular()}?limit=10");
         PublicGetPopularArticlesResponse secondBody = await second.ReadAsAsync<PublicGetPopularArticlesResponse>();
-        secondBody.Articles.First().Id.Should().Be(quiet.Id);
+        secondBody.Articles[0].Id.Should().Be(quiet.Id);
     }
 }
