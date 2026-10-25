@@ -99,22 +99,22 @@ public static class ArticleMapper
     /// <param name="entity">The article to map.</param>
     /// <param name="mapper">The Mapster mapper used for images and tags.</param>
     /// <param name="fileStorage">Storage's file contract.</param>
-    /// <param name="ct">Token to observe for cancellation requests.</param>
     /// <param name="isLiked">
     /// Whether the current user has liked this article. False when anonymous.
     /// </param>
     /// <param name="isBookmarked">
     /// Whether the current user has bookmarked this article. False when anonymous.
     /// </param>
+    /// <param name="ct">Token to observe for cancellation requests.</param>
     /// <returns>The mapped detail DTO.</returns>
     public static async Task<ArticleDetailDto> ToArticleDetailDtoAsync(
         this ArticleEntity entity,
         IMapper mapper,
         ContentLookups lookups,
         IFileStorageService fileStorage,
-        CancellationToken ct = default,
         bool isLiked = false,
-        bool isBookmarked = false
+        bool isBookmarked = false,
+        CancellationToken ct = default
     )
     {
         string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileStorage, ct);
@@ -324,9 +324,9 @@ public static class ArticleMapper
         IMapper mapper,
         ContentLookups lookups,
         IFileStorageService fileStorage,
-        CancellationToken ct = default,
         bool isLiked = false,
-        bool isBookmarked = false
+        bool isBookmarked = false,
+        CancellationToken ct = default
     )
     {
         string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileStorage, ct);
