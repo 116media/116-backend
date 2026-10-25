@@ -82,7 +82,7 @@ public class PublicLyricsPageService(
         );
     }
 
-    private static IReadOnlyList<StreamingLinkDto> Links(
+    private static List<StreamingLinkDto> Links(
         string artistName,
         string releaseName,
         IReadOnlyDictionary<EnumStreamingPlatform, string> curated
