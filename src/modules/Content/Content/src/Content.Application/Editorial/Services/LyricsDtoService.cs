@@ -27,7 +27,7 @@ public class LyricsDtoService(
     {
         ContentLookups lookups = await contentLookupService.ResolveForLyricsAsync([lyrics], ct);
 
-        return await lyrics.ToLyricsDetailDtoAsync(lookups, mapper, userLookup, fileStorage, ct);
+        return await lyrics.ToLyricsDetailDtoAsync(lookups, mapper, userLookup, fileStorage, ct: ct);
     }
 
     /// <inheritdoc />
@@ -39,7 +39,14 @@ public class LyricsDtoService(
     {
         ContentLookups lookups = await contentLookupService.ResolveForLyricsAsync([lyrics], ct);
 
-        return await lyrics.ToPublicLyricsDetailDtoAsync(lookups, mapper, userLookup, fileStorage, ct, isLiked);
+        return await lyrics.ToPublicLyricsDetailDtoAsync(
+            lookups,
+            mapper,
+            userLookup,
+            fileStorage,
+            isLiked: isLiked,
+            ct: ct
+        );
     }
 
     /// <inheritdoc />
