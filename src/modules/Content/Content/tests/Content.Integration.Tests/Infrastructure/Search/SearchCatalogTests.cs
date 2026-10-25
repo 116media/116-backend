@@ -73,7 +73,8 @@ public class SearchCatalogTests(PostgresFixture postgres) : BaseRepositoryTest(p
     /// Projects the seeded rows into the search documents. Seeding writes straight to the
     /// context, so the domain events that normally drive the projection never fire.
     /// </summary>
-    private Task RebuildSearchAsync() => Resolve<ISearchProjection>().RebuildAllAsync();
+    private Task<IReadOnlyDictionary<EnumCoreContentType, int>> RebuildSearchAsync() =>
+        Resolve<ISearchProjection>().RebuildAllAsync();
 
     /// <summary>
     /// Sets the engagement figures on a seeded row. They are raised by interactions rather than by a
@@ -116,7 +117,7 @@ public class SearchCatalogTests(PostgresFixture postgres) : BaseRepositoryTest(p
 
         hits.Should().ContainSingle();
         hits[0].Slug.Should().Be("rumba-congolaise-racines");
-        hits[0].Score.Should().BeGreaterThan(0);
+        hits[0].Score.Should().BePositive();
         hits[0].CategoryId.Should().Be(category.Id);
     }
 
@@ -263,7 +264,7 @@ public class SearchCatalogTests(PostgresFixture postgres) : BaseRepositoryTest(p
         hits.Should().ContainSingle();
         hits[0].Slug.Should().Be("teaser-mutuashi");
         hits[0].Type.Should().Be(EnumCoreContentType.Short);
-        hits[0].Score.Should().BeGreaterThan(0);
+        hits[0].Score.Should().BePositive();
     }
 
     [Fact]
