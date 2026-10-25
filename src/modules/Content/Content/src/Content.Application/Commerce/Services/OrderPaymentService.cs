@@ -14,12 +14,10 @@ namespace _116.Content.Application.Commerce.Services;
 /// Service implementation for fetching and validating order payment records.
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
-/// <param name="contentOrderErrors">Content order domain error service.</param>
 /// <param name="fileStorage">Storage contract uploading and recording the proof file.</param>
 /// <param name="unitOfWork">Unit of Work committing the proof row and the attachment together.</param>
 public class OrderPaymentService(
     IContentOrderRepository contentOrderRepository,
-    ContentOrderErrors contentOrderErrors,
     IFileStorageService fileStorage,
     IContentUnitOfWork unitOfWork
 ) : IOrderPaymentService
@@ -67,6 +65,6 @@ public class OrderPaymentService(
             return order.Payment;
         }
 
-        throw contentOrderErrors.PaymentNotFound(orderId: orderId);
+        throw ContentOrderErrors.PaymentNotFound(orderId: orderId);
     }
 }
