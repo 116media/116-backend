@@ -231,8 +231,8 @@ else
 app.Use(
     async (context, next) =>
     {
-        context.Response.Headers["X-Content-Type-Options"] = "nosniff";
-        context.Response.Headers["X-Frame-Options"] = "DENY";
+        context.Response.Headers.XContentTypeOptions = "nosniff";
+        context.Response.Headers.XFrameOptions = "DENY";
         context.Response.Headers["Referrer-Policy"] = "no-referrer";
         await next();
     }
@@ -265,7 +265,7 @@ app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => fa
 app.MapHealthChecks("/health/ready");
 app.UseResourceNotFoundHandler();
 
-app.Run();
+await app.RunAsync();
 
 // Required for WebApplicationFactory<Program> in integration tests
 public partial class Program;
