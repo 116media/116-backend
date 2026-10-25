@@ -35,7 +35,7 @@ public class CommerceCustomerNotifierTests
     /// <summary>
     /// The resolved category rows the invoice summary reads, keyed by id.
     /// </summary>
-    private static IReadOnlyDictionary<Guid, CategoryEntity> CategoryMap(params CategoryEntity[] categories) =>
+    private static Dictionary<Guid, CategoryEntity> CategoryMap(params CategoryEntity[] categories) =>
         categories.ToDictionary(category => category.Id);
 
     [Fact]
