@@ -37,8 +37,7 @@ public class AdminUpdateCategoryPricingHandlerTests : BaseContentHandlerTest
         _handler = new AdminUpdateCategoryPricingHandler(
             _categoryRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            new CategoryPricingDtoService(Mapper, _pricingTierRepositoryMock.Object),
-            TestErrorsFactory.CreateContentI18n()
+            new CategoryPricingDtoService(Mapper, _pricingTierRepositoryMock.Object)
         );
     }
 
