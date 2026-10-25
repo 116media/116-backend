@@ -20,7 +20,7 @@ public class ContentOrderErrorsTests
     {
         Guid id = Guid.NewGuid();
 
-        NotFoundException ex = _errors.NotFound(id);
+        NotFoundException ex = ContentOrderErrors.NotFound(id);
 
         ex.Should().NotBeNull();
         ex.Should().BeOfType<NotFoundException>();
@@ -31,7 +31,7 @@ public class ContentOrderErrorsTests
     {
         Guid itemId = Guid.NewGuid();
 
-        NotFoundException ex = _errors.ItemNotFound(itemId);
+        NotFoundException ex = ContentOrderErrors.ItemNotFound(itemId);
 
         ex.Should().NotBeNull();
         ex.Should().BeOfType<NotFoundException>();
@@ -42,7 +42,7 @@ public class ContentOrderErrorsTests
     {
         Guid orderId = Guid.NewGuid();
 
-        NotFoundException ex = _errors.PaymentNotFound(orderId);
+        NotFoundException ex = ContentOrderErrors.PaymentNotFound(orderId);
 
         ex.Should().NotBeNull();
         ex.Should().BeOfType<NotFoundException>();
