@@ -1,6 +1,7 @@
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AttachPaymentProof;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Enums;
 using _116.Content.TestData;
@@ -92,7 +93,7 @@ public class AdminAttachPaymentProofHandlerTests : BaseContentHandlerTest
                     It.IsAny<CancellationToken>()
                 )
             )
-            .ThrowsAsync(TestErrorsFactory.CreateContentOrderErrors().PaymentNotFound(orderId));
+            .ThrowsAsync(ContentOrderErrors.PaymentNotFound(orderId));
 
         // Act
         Func<Task> act = async () => await _handler.Handle(Command(orderId), CancellationToken.None);
