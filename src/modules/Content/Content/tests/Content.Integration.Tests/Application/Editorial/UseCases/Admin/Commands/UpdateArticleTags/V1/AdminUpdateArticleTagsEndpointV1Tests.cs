@@ -58,6 +58,9 @@ public class AdminUpdateArticleTagsEndpointV1Tests(PostgresFixture db) : BaseApi
         );
     }
 
+    private static readonly string[] OldTagName = ["OldTag"];
+    private static readonly string[] NewTagName = ["NewTag"];
+
     [Fact]
     public async Task UpdateArticle_WithTags_ReplacesExistingTags()
     {
@@ -78,7 +81,7 @@ public class AdminUpdateArticleTagsEndpointV1Tests(PostgresFixture db) : BaseApi
         Client.AuthenticateAsSuperAdmin();
 
         AdminUpdateArticleTagsRequest assignRequest = new AdminUpdateArticleTagsRequestBuilder()
-            .WithTagNames(new[] { "OldTag" })
+            .WithTagNames(OldTagName)
             .Build();
         await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Tags(EditorialRouteConstants.Articles, article.Id),
@@ -86,7 +89,7 @@ public class AdminUpdateArticleTagsEndpointV1Tests(PostgresFixture db) : BaseApi
         );
 
         AdminUpdateArticleTagsRequest replaceRequest = new AdminUpdateArticleTagsRequestBuilder()
-            .WithTagNames(new[] { "NewTag" })
+            .WithTagNames(NewTagName)
             .Build();
         var response = await Client.PutAsJsonAsync(
             Routes.Admin.Editorial.Tags(EditorialRouteConstants.Articles, article.Id),
