@@ -17,7 +17,7 @@ public class LyricsErrors(LyricsErrorMessage i18n)
     /// <summary>
     /// Throws when a lyrics record is not found by its identifier.
     /// </summary>
-    public NotFoundException NotFound(Guid id)
+    public static NotFoundException NotFound(Guid id)
     {
         return new NotFoundException("Lyrics", "id", keyValue: id);
     }
