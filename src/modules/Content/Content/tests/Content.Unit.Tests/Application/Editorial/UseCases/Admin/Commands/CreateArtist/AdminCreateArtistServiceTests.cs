@@ -21,11 +21,7 @@ public class AdminCreateArtistServiceTests
 
     public AdminCreateArtistServiceTests()
     {
-        _service = new AdminCreateArtistService(
-            _artistRepositoryMock.Object,
-            TestErrorsFactory.CreateContentI18n(),
-            TimeProvider.System
-        );
+        _service = new AdminCreateArtistService(_artistRepositoryMock.Object, TimeProvider.System);
     }
 
     private static AdminCreateArtistCommand Command() => new("Name", null, null, null, null, null);
