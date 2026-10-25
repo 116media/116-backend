@@ -28,11 +28,7 @@ public class AdminAddOrderItemHandlerTests
     {
         _orderRepositoryMock = MockContentOrderRepository.Create();
         _serviceMock = MockAddOrderItemService.Create();
-        _handler = new AdminAddOrderItemHandler(
-            _orderRepositoryMock.Object,
-            _serviceMock.Object,
-            TestErrorsFactory.CreateContentI18n()
-        );
+        _handler = new AdminAddOrderItemHandler(_orderRepositoryMock.Object, _serviceMock.Object);
     }
 
     #region Success Cases
