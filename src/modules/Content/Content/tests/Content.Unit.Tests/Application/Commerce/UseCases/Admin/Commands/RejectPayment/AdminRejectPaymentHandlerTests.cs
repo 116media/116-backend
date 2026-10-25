@@ -34,11 +34,7 @@ public class AdminRejectPaymentHandlerTests
     {
         _orderRepositoryMock = MockContentOrderRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new AdminRejectPaymentHandler(
-            _orderRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentI18n()
-        );
+        _handler = new AdminRejectPaymentHandler(_orderRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
     /// <summary>
