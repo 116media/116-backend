@@ -26,8 +26,7 @@ public class AdminUpdateLyricsServiceTests
         _service = new AdminUpdateLyricsService(
             _categoryRepositoryMock.Object,
             _lyricsRepositoryMock.Object,
-            _videoRepositoryMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            _videoRepositoryMock.Object
         );
     }
 
