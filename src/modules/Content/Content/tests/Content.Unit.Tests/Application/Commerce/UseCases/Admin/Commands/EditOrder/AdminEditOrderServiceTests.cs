@@ -22,11 +22,7 @@ public class AdminEditOrderServiceTests
 
     public AdminEditOrderServiceTests()
     {
-        _service = new AdminEditOrderService(
-            _orderRepositoryMock.Object,
-            _customerRepositoryMock.Object,
-            TestErrorsFactory.CreateContentI18n()
-        );
+        _service = new AdminEditOrderService(_orderRepositoryMock.Object, _customerRepositoryMock.Object);
     }
 
     [Fact]
