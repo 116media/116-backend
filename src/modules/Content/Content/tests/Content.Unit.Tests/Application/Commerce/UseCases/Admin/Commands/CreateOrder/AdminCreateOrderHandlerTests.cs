@@ -51,8 +51,7 @@ public class AdminCreateOrderHandlerTests
                 _packageRepositoryMock.Object,
                 _orderRepositoryMock.Object,
                 MockCategoryRepository.Create().SetupGetByIds([]).Object,
-                MockContentTypeRepository.Create().SetupGetByIds([]).Object,
-                TestErrorsFactory.CreateContentI18n()
+                MockContentTypeRepository.Create().SetupGetByIds([]).Object
             ),
             _unitOfWorkMock.Object
         );
