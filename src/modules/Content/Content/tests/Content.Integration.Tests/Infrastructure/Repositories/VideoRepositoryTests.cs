@@ -21,7 +21,7 @@ public class VideoRepositoryTests : BaseRepositoryTest
     public VideoRepositoryTests(PostgresFixture postgres)
         : base(postgres) { }
 
-    private async Task<(ContentTypeEntity ContentType, CategoryEntity Category)> SeedCategoryChainAsync(
+    private static async Task<(ContentTypeEntity ContentType, CategoryEntity Category)> SeedCategoryChainAsync(
         ContentDbContext context
     )
     {
