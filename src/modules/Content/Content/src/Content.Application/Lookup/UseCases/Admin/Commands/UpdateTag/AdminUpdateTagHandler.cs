@@ -1,5 +1,4 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -14,13 +13,8 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateTag;
 /// <param name="tagRepository">Repository for tag data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
-public class AdminUpdateTagHandler(
-    ITagRepository tagRepository,
-    IContentUnitOfWork unitOfWork,
-    IMapper mapper,
-    ContentI18n i18n
-) : ICommandHandler<AdminUpdateTagCommand, AdminUpdateTagResult>
+public class AdminUpdateTagHandler(ITagRepository tagRepository, IContentUnitOfWork unitOfWork, IMapper mapper)
+    : ICommandHandler<AdminUpdateTagCommand, AdminUpdateTagResult>
 {
     /// <inheritdoc />
     public async Task<AdminUpdateTagResult> Handle(AdminUpdateTagCommand command, CancellationToken cancellationToken)
