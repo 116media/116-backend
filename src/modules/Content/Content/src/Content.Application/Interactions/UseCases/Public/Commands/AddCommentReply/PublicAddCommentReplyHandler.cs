@@ -1,6 +1,7 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.Content.Application.Interactions.Services;
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -40,7 +41,7 @@ public class PublicAddCommentReplyHandler(
 
         if (parent is null || parent.ArticleId != command.ArticleId || parent.IsDeleted)
         {
-            throw i18n.ArticleInteraction.CommentNotFound(command.ParentCommentId);
+            throw ArticleInteractionErrors.CommentNotFound(command.ParentCommentId);
         }
 
         if (parent.ParentCommentId is not null)
