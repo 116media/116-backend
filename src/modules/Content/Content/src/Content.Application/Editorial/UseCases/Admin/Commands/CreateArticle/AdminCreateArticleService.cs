@@ -1,5 +1,4 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArticle.Contracts;
-using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Helpers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -11,12 +10,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtic
 /// </summary>
 /// <param name="categoryRepository">Repository validating the category.</param>
 /// <param name="articleRepository">Repository checking the slug and staging the article.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
-public class AdminCreateArticleService(
-    ICategoryRepository categoryRepository,
-    IArticleRepository articleRepository,
-    ContentI18n i18n
-) : IAdminCreateArticleService
+public class AdminCreateArticleService(ICategoryRepository categoryRepository, IArticleRepository articleRepository)
+    : IAdminCreateArticleService
 {
     /// <inheritdoc />
     public async Task<ArticleEntity> CreateAsync(AdminCreateArticleCommand command, CancellationToken cancellationToken)
