@@ -31,11 +31,7 @@ public class AdminRemoveItemTierHandlerTests
     {
         _orderRepositoryMock = MockContentOrderRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new AdminRemoveItemTierHandler(
-            _orderRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentI18n()
-        );
+        _handler = new AdminRemoveItemTierHandler(_orderRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
     #region Success Cases
