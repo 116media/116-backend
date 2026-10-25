@@ -38,8 +38,7 @@ public class AdminAddItemTierServiceTests
             _categoryRepositoryMock.Object,
             _pricingTierRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentOrderErrors(),
-            TestErrorsFactory.CreateCategoryErrors()
+            TestErrorsFactory.CreateContentOrderErrors()
         );
     }
 
