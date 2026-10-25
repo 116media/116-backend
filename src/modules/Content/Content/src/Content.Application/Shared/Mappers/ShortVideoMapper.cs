@@ -42,9 +42,9 @@ public static class ShortVideoMapper
         IMapper mapper,
         IFileStorageService fileStorage,
         IVideoRepository videoRepository,
-        CancellationToken ct = default,
         bool isLiked = false,
-        bool isBookmarked = false
+        bool isBookmarked = false,
+        CancellationToken ct = default
     )
     {
         var dto = mapper.Map<ShortVideoDto>(entity);
@@ -88,18 +88,18 @@ public static class ShortVideoMapper
         IUserLookupService userLookup,
         IFileStorageService fileStorage,
         IVideoRepository videoRepository,
-        CancellationToken ct = default,
         bool isLiked = false,
-        bool isBookmarked = false
+        bool isBookmarked = false,
+        CancellationToken ct = default
     )
     {
         ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
             mapper,
             fileStorage,
             videoRepository,
-            ct,
             isLiked,
-            isBookmarked
+            isBookmarked,
+            ct: ct
         );
 
         UserProfileDto? authorInfo = await userLookup.GetUserProfileByIdAsync(userId: entity.AuthorId, ct: ct);
@@ -289,9 +289,9 @@ public static class ShortVideoMapper
         IUserLookupService userLookup,
         IFileStorageService fileStorage,
         IVideoRepository videoRepository,
-        CancellationToken ct = default,
         bool isLiked = false,
-        bool isBookmarked = false
+        bool isBookmarked = false,
+        CancellationToken ct = default
     )
     {
         ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
@@ -299,9 +299,9 @@ public static class ShortVideoMapper
             userLookup,
             fileStorage,
             videoRepository,
-            ct,
             isLiked,
-            isBookmarked
+            isBookmarked,
+            ct: ct
         );
 
         return dto.ToPublicShortVideoDto();
