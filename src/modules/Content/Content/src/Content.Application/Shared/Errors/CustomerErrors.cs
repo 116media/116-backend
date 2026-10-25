@@ -25,7 +25,7 @@ public class CustomerErrors(CustomerErrorMessage i18n)
     /// <summary>
     /// Throws when a customer is not found by its identifier.
     /// </summary>
-    public NotFoundException NotFound(Guid id)
+    public static NotFoundException NotFound(Guid id)
     {
         return new NotFoundException("Customer", "id", keyValue: id);
     }
