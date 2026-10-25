@@ -18,7 +18,7 @@ public class SubmissionErrors(SubmissionErrorMessage i18n)
     /// <summary>
     /// Throws when a lyrics submission is not found by its identifier.
     /// </summary>
-    public NotFoundException NotFound(Guid id)
+    public static NotFoundException NotFound(Guid id)
     {
         return new NotFoundException("LyricsSubmission", "id", keyValue: id);
     }
