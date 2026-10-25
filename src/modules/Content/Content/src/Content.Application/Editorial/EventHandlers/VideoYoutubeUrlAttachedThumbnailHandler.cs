@@ -33,7 +33,8 @@ public class VideoYoutubeUrlAttachedThumbnailHandler(
 {
     private static readonly Regex YoutubeIdRegex = new(
         @"(?:youtube\.com/(?:watch\?v=|embed/|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})",
-        RegexOptions.Compiled
+        RegexOptions.Compiled,
+        TimeSpan.FromSeconds(1)
     );
 
     /// <inheritdoc />
