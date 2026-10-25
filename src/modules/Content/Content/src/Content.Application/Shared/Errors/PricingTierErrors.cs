@@ -25,7 +25,7 @@ public class PricingTierErrors(PricingTierErrorMessage i18n)
     /// <summary>
     /// Throws when a pricing tier is not found by its identifier.
     /// </summary>
-    public NotFoundException NotFound(Guid id)
+    public static NotFoundException NotFound(Guid id)
     {
         return new NotFoundException("PricingTier", "id", keyValue: id);
     }
