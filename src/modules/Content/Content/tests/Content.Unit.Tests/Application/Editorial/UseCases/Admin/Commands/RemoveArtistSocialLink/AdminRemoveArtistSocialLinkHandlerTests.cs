@@ -30,11 +30,7 @@ public class AdminRemoveArtistSocialLinkHandlerTests
     {
         _artistRepositoryMock = MockArtistRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new AdminRemoveArtistSocialLinkHandler(
-            _artistRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentI18n()
-        );
+        _handler = new AdminRemoveArtistSocialLinkHandler(_artistRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
     [Fact]
