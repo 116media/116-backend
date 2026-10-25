@@ -23,11 +23,7 @@ public class AdminAddPackageSlotServiceTests
 
     public AdminAddPackageSlotServiceTests()
     {
-        _service = new AdminAddPackageSlotService(
-            _packageRepositoryMock.Object,
-            _categoryRepositoryMock.Object,
-            TestErrorsFactory.CreateContentI18n()
-        );
+        _service = new AdminAddPackageSlotService(_packageRepositoryMock.Object, _categoryRepositoryMock.Object);
     }
 
     [Fact]
