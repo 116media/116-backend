@@ -42,8 +42,7 @@ public class AdminGetOrderByIdHandlerTests : BaseContentHandlerTest
         _handler = new AdminGetOrderByIdHandler(
             _orderRepositoryMock.Object,
             CreateOrderDtoService(),
-            new PaymentDtoService(Mapper, _userLookupMock.Object, CreateOrderDtoService(), _fileStorageMock.Object),
-            TestErrorsFactory.CreateContentI18n()
+            new PaymentDtoService(Mapper, _userLookupMock.Object, CreateOrderDtoService(), _fileStorageMock.Object)
         );
     }
 
