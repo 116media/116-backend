@@ -1,5 +1,6 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.Content.Application.Interactions.Persistence;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -47,7 +48,7 @@ public class PublicAddVideoToPlaylistHandler(
 
             if (video.Status != EnumContentStatus.Published)
             {
-                throw i18n.Video.NotFound(id: command.VideoId);
+                throw VideoErrors.NotFound(id: command.VideoId);
             }
 
             if (!playlist.AddVideo(videoId: command.VideoId, sortOrder: command.SortOrder))
