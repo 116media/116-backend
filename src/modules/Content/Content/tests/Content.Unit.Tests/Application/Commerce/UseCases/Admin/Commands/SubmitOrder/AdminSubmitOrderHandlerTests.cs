@@ -26,11 +26,7 @@ public class AdminSubmitOrderHandlerTests
     {
         _orderRepositoryMock = MockContentOrderRepository.Create();
         _serviceMock = MockSubmitOrderService.Create();
-        _handler = new AdminSubmitOrderHandler(
-            _orderRepositoryMock.Object,
-            _serviceMock.Object,
-            TestErrorsFactory.CreateContentI18n()
-        );
+        _handler = new AdminSubmitOrderHandler(_orderRepositoryMock.Object, _serviceMock.Object);
     }
 
     #region Success Cases
