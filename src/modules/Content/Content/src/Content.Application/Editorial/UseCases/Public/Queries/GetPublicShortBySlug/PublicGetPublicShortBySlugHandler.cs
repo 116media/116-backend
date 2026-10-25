@@ -2,7 +2,7 @@ using _116.BuildingBlocks.Application.CQRS;
 using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.DTOs;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 
@@ -13,11 +13,9 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicSh
 /// </summary>
 /// <param name="shortVideoRepository">Repository resolving the short and the viewer's interaction state.</param>
 /// <param name="shortVideoDtoService">Service assembling the public short DTO.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetPublicShortBySlugHandler(
     IShortVideoRepository shortVideoRepository,
-    IShortVideoDtoService shortVideoDtoService,
-    ContentI18n i18n
+    IShortVideoDtoService shortVideoDtoService
 ) : IQueryHandler<PublicGetPublicShortBySlugQuery, PublicGetPublicShortBySlugResult>
 {
     /// <inheritdoc />
@@ -33,7 +31,7 @@ public class PublicGetPublicShortBySlugHandler(
 
         if (shortVideo is null || !new ActiveShortVideoSpecification().IsSatisfiedBy(shortVideo))
         {
-            throw i18n.ShortVideo.NotFound(Guid.Empty);
+            throw ShortVideoErrors.NotFound(Guid.Empty);
         }
 
         bool isLiked = false;
