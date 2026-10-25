@@ -32,7 +32,7 @@ public class OdesliStreamingLinkResolutionService(HttpClient httpClient, IConfig
     /// vocabulary stays entirely inside this implementation — unknown keys are skipped so
     /// Odesli adding a platform never breaks resolution.
     /// </summary>
-    private static readonly IReadOnlyDictionary<string, EnumStreamingPlatform> PlatformKeys = new Dictionary<
+    private static readonly Dictionary<string, EnumStreamingPlatform> PlatformKeys = new Dictionary<
         string,
         EnumStreamingPlatform
     >(comparer: StringComparer.OrdinalIgnoreCase)
@@ -103,7 +103,7 @@ public class OdesliStreamingLinkResolutionService(HttpClient httpClient, IConfig
     /// </summary>
     /// <param name="payload">The raw Odesli JSON response body.</param>
     /// <returns>The resolved deep links, keyed by platform.</returns>
-    private static IReadOnlyDictionary<EnumStreamingPlatform, string> ParseLinksByPlatform(string payload)
+    private static Dictionary<EnumStreamingPlatform, string> ParseLinksByPlatform(string payload)
     {
         JsonDocument document;
 
