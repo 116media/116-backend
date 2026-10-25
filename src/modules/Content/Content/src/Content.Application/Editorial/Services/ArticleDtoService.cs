@@ -29,7 +29,7 @@ public class ArticleDtoService(
     {
         ContentLookups lookups = await contentLookupService.ResolveForArticlesAsync([article], ct);
 
-        return await article.ToArticleDetailDtoAsync(mapper, lookups, fileStorage, ct);
+        return await article.ToArticleDetailDtoAsync(mapper, lookups, fileStorage, ct: ct);
     }
 
     /// <inheritdoc />
@@ -79,9 +79,9 @@ public class ArticleDtoService(
             mapper,
             lookups,
             fileStorage,
-            ct,
             isLiked: isLiked,
-            isBookmarked: isBookmarked
+            isBookmarked: isBookmarked,
+            ct: ct
         );
     }
 
