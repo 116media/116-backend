@@ -1,6 +1,5 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.Content.Application.Editorial.Services;
-using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Helpers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -14,12 +13,10 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateShort
 /// <param name="shortVideoRepository">Repository checking the slug, staging and reloading the short.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="shortVideoDtoService">Service assembling the short DTO.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminCreateShortVideoHandler(
     IShortVideoRepository shortVideoRepository,
     IContentUnitOfWork unitOfWork,
-    IShortVideoDtoService shortVideoDtoService,
-    ContentI18n i18n
+    IShortVideoDtoService shortVideoDtoService
 ) : ICommandHandler<AdminCreateShortVideoCommand, AdminCreateShortVideoResult>
 {
     /// <inheritdoc />
