@@ -151,10 +151,10 @@ public class PublicSearchEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var body = await response.ReadAsAsync<PublicSearchResponse>();
-        body.Counts["articles"].Should().Be(1);
-        body.Counts["videos"].Should().Be(1);
-        body.Counts["shorts"].Should().Be(1);
-        body.Counts["all"].Should().Be(3);
+        body.Counts.Should().Contain("articles", 1);
+        body.Counts.Should().Contain("videos", 1);
+        body.Counts.Should().Contain("shorts", 1);
+        body.Counts.Should().Contain("all", 3);
         body.Results.Count.Should().Be(3);
     }
 
@@ -261,7 +261,7 @@ public class PublicSearchEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var body = await response.ReadAsAsync<PublicSearchResponse>();
         body.Results.Items.Should().BeEmpty();
-        body.Counts["all"].Should().Be(0);
+        body.Counts.Should().Contain("all", 0);
     }
 
     [Fact]
@@ -298,7 +298,7 @@ public class PublicSearchEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var body = await response.ReadAsAsync<PublicSearchResponse>();
         body.Results.Items.Should().BeEmpty();
-        body.Counts["all"].Should().Be(3, "the counts still report the real totals");
+        body.Counts.Should().Contain("all", 3, "the counts still report the real totals");
     }
 
     [Fact]
