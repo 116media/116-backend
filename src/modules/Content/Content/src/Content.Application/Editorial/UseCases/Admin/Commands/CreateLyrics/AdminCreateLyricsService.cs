@@ -1,5 +1,4 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyrics.Contracts;
-using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Helpers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -12,12 +11,10 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyric
 /// <param name="categoryRepository">Repository validating the category.</param>
 /// <param name="lyricsRepository">Repository checking the slug and staging the lyrics.</param>
 /// <param name="videoRepository">Repository validating the linked video.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminCreateLyricsService(
     ICategoryRepository categoryRepository,
     ILyricsRepository lyricsRepository,
-    IVideoRepository videoRepository,
-    ContentI18n i18n
+    IVideoRepository videoRepository
 ) : IAdminCreateLyricsService
 {
     /// <inheritdoc />
