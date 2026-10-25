@@ -48,11 +48,7 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
         FileReferenceDto coverFile = FileReferenceDtoFactory.CreateImage();
         _fileStorageMock.SetupResolve(coverFile);
         _handler = new AdminUpdateArticleHandler(
-            new AdminUpdateArticleService(
-                _categoryRepositoryMock.Object,
-                _articleRepositoryMock.Object,
-                TestErrorsFactory.CreateContentI18n()
-            ),
+            new AdminUpdateArticleService(_categoryRepositoryMock.Object, _articleRepositoryMock.Object),
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
             CreateArticleDtoService(_fileStorageMock.Object)
