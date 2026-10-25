@@ -26,13 +26,13 @@ public class ShortVideoDtoService(
     /// <inheritdoc />
     public Task<ShortVideoDto> CreateAsync(ShortVideoEntity shortVideo, CancellationToken ct = default)
     {
-        return shortVideo.ToShortVideoDtoAsync(mapper, fileStorage, videoRepository, ct);
+        return shortVideo.ToShortVideoDtoAsync(mapper, fileStorage, videoRepository, ct: ct);
     }
 
     /// <inheritdoc />
     public Task<ShortVideoDto> CreateWithAuthorAsync(ShortVideoEntity shortVideo, CancellationToken ct = default)
     {
-        return shortVideo.ToShortVideoDtoAsync(mapper, userLookup, fileStorage, videoRepository, ct);
+        return shortVideo.ToShortVideoDtoAsync(mapper, userLookup, fileStorage, videoRepository, ct: ct);
     }
 
     /// <inheritdoc />
@@ -57,9 +57,9 @@ public class ShortVideoDtoService(
             userLookup,
             fileStorage,
             videoRepository,
-            ct,
             isLiked: isLiked,
-            isBookmarked: isBookmarked
+            isBookmarked: isBookmarked,
+            ct: ct
         );
     }
 
