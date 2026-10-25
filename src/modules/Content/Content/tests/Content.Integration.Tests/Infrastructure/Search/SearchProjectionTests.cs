@@ -197,9 +197,9 @@ public class SearchProjectionTests(PostgresFixture postgres) : BaseRepositoryTes
         IReadOnlyDictionary<EnumCoreContentType, int> written = await Resolve<ISearchProjection>().RebuildAllAsync();
 
         // Assert
-        written[EnumCoreContentType.Article].Should().Be(1);
-        written[EnumCoreContentType.Video].Should().Be(1);
-        written[EnumCoreContentType.Short].Should().Be(1);
+        written.Should().Contain(EnumCoreContentType.Article, 1);
+        written.Should().Contain(EnumCoreContentType.Video, 1);
+        written.Should().Contain(EnumCoreContentType.Short, 1);
 
         await using var verification = CreateDbContext<ContentDbContext>();
         (await verification.SearchDocuments.CountAsync()).Should().Be(3);
