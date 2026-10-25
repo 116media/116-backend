@@ -203,7 +203,7 @@ public class PublicGetPopularVideosEndpointV1Tests(PostgresFixture db) : BaseApi
         body.Videos.Should().ContainSingle();
         body.Videos.Should().OnlyContain(v => v.CategoryId == categoryA);
         body.Videos.Should().NotContain(v => v.Id == excluded.Id);
-        body.Videos.First().Id.Should().Be(topKept.Id);
+        body.Videos[0].Id.Should().Be(topKept.Id);
     }
 
     [Fact]
@@ -218,12 +218,12 @@ public class PublicGetPopularVideosEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var first = await Client.GetAsync($"{Routes.Public.Videos.Popular()}?limit=10");
         PublicGetPopularVideosResponse firstBody = await first.ReadAsAsync<PublicGetPopularVideosResponse>();
-        firstBody.Videos.First().Id.Should().Be(leader.Id);
+        firstBody.Videos[0].Id.Should().Be(leader.Id);
 
         await Client.PostAsync(Routes.Public.Videos.Shares(quiet.Id), null); // quiet -> 5, now leads
 
         var second = await Client.GetAsync($"{Routes.Public.Videos.Popular()}?limit=10");
         PublicGetPopularVideosResponse secondBody = await second.ReadAsAsync<PublicGetPopularVideosResponse>();
-        secondBody.Videos.First().Id.Should().Be(quiet.Id);
+        secondBody.Videos[0].Id.Should().Be(quiet.Id);
     }
 }
