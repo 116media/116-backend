@@ -1,5 +1,4 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo.Contracts;
-using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 
@@ -10,12 +9,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo
 /// </summary>
 /// <param name="categoryRepository">Repository validating the category.</param>
 /// <param name="videoRepository">Repository loading the video and checking the slug.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
-public class AdminUpdateVideoService(
-    ICategoryRepository categoryRepository,
-    IVideoRepository videoRepository,
-    ContentI18n i18n
-) : IAdminUpdateVideoService
+public class AdminUpdateVideoService(ICategoryRepository categoryRepository, IVideoRepository videoRepository)
+    : IAdminUpdateVideoService
 {
     /// <inheritdoc />
     public async Task<VideoEntity> UpdateAsync(AdminUpdateVideoCommand command, CancellationToken cancellationToken)
