@@ -17,7 +17,7 @@ public class PackageErrors(PackageErrorMessage i18n)
     /// <summary>
     /// Throws when a package is not found by its identifier.
     /// </summary>
-    public NotFoundException NotFound(Guid id)
+    public static NotFoundException NotFound(Guid id)
     {
         return new NotFoundException("Package", "id", keyValue: id);
     }
@@ -49,7 +49,7 @@ public class PackageErrors(PackageErrorMessage i18n)
     /// <summary>
     /// Throws when a package slot is not found.
     /// </summary>
-    public NotFoundException SlotNotFound(Guid slotId)
+    public static NotFoundException SlotNotFound(Guid slotId)
     {
         return new NotFoundException("PackageSlot", "id", keyValue: slotId);
     }
