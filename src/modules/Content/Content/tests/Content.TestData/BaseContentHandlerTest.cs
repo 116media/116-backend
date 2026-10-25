@@ -77,7 +77,7 @@ public abstract class BaseContentHandlerTest
     /// <param name="promotionLevels">The promotion levels the projections should name.</param>
     /// <param name="tags">The tags the projections should carry.</param>
     /// <returns>The resolver.</returns>
-    protected IContentLookupService CreateContentLookupService(
+    protected static IContentLookupService CreateContentLookupService(
         CategoryEntity[]? categories = null,
         CustomerEntity[]? customers = null,
         PromotionLevelEntity[]? promotionLevels = null,
