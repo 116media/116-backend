@@ -41,12 +41,7 @@ public class AdminForceUnpromoteVideoHandlerTests
         );
 
         _handler = new AdminForceUnpromoteVideoHandler(
-            new AdminForceUnpromoteVideoService(
-                _videoRepositoryMock.Object,
-                currentActor,
-                TestErrorsFactory.CreateContentI18n(),
-                TimeProvider.System
-            ),
+            new AdminForceUnpromoteVideoService(_videoRepositoryMock.Object, currentActor, TimeProvider.System),
             _unitOfWorkMock.Object
         );
     }
