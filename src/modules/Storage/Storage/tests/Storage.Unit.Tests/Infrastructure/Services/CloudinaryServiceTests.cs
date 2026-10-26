@@ -101,7 +101,11 @@ public class CloudinaryServiceTests
     /// <param name="target">The entry point to exercise.</param>
     /// <param name="file">The file to upload.</param>
     /// <returns>The running upload.</returns>
-    private static Task Upload(CloudinaryService service, UploadTarget target, IFormFile file) =>
+    private static Task<CloudinaryUploadResult> Upload(
+        CloudinaryService service,
+        UploadTarget target,
+        IFormFile file
+    ) =>
         target switch
         {
             UploadTarget.Image => service.UploadImageAsync(file, PublicId),
