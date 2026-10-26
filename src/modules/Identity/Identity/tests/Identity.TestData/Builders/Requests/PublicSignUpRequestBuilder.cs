@@ -12,8 +12,6 @@ namespace _116.Identity.TestData.Builders.Requests;
 /// </summary>
 public class PublicSignUpRequestBuilder
 {
-    private readonly Faker _faker = TestFaker.Create();
-
     private string _email;
     private string _userName;
     private string _password;
