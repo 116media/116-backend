@@ -113,11 +113,7 @@ public class GetOwnArticleFavoritesHandlersTests : BaseContentHandlerTest
         ArticleCommentEntity reply = ArticleCommentFactory.CreateReply(article.Id, UserId, parent.Id, "My reply");
         _articles.SetupGetByIdAsync(article.Id, article);
         _comments.SetupGetOwnCommentsForArticleAsync([parent, reply], 2);
-        var handler = new PublicGetOwnCommentsForArticleHandler(
-            _articles.Object,
-            _comments.Object,
-            TestErrorsFactory.CreateContentI18n()
-        );
+        var handler = new PublicGetOwnCommentsForArticleHandler(_articles.Object, _comments.Object);
 
         PublicGetOwnCommentsForArticleResult result = await handler.Handle(
             new PublicGetOwnCommentsForArticleQuery(UserId, article.Id, new PaginatedRequest(0, 20)),
@@ -133,11 +129,7 @@ public class GetOwnArticleFavoritesHandlersTests : BaseContentHandlerTest
     {
         ArticleEntity article = ArticleFactory.Create(CategoryId);
         _articles.SetupGetByIdAsync(article.Id, article);
-        var handler = new PublicGetOwnCommentsForArticleHandler(
-            _articles.Object,
-            _comments.Object,
-            TestErrorsFactory.CreateContentI18n()
-        );
+        var handler = new PublicGetOwnCommentsForArticleHandler(_articles.Object, _comments.Object);
 
         Func<Task> act = () =>
             handler.Handle(
