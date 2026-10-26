@@ -14,7 +14,7 @@ namespace _116.Identity.Unit.Tests.Infrastructure.Persistence;
 /// </summary>
 public class EntityConfigurationsTests
 {
-    private DbContextOptions<IdentityDbContext> CreateOptions()
+    private static DbContextOptions<IdentityDbContext> CreateOptions()
     {
         return new DbContextOptionsBuilder<IdentityDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
@@ -38,7 +38,7 @@ public class EntityConfigurationsTests
         IKey? primaryKey = entityType.FindPrimaryKey();
         primaryKey.Should().NotBeNull();
         primaryKey.Properties.Should().ContainSingle();
-        primaryKey.Properties.First().Name.Should().Be("Id");
+        primaryKey.Properties[0].Name.Should().Be("Id");
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public class EntityConfigurationsTests
         IKey? primaryKey = entityType.FindPrimaryKey();
         primaryKey.Should().NotBeNull();
         primaryKey.Properties.Should().ContainSingle();
-        primaryKey.Properties.First().Name.Should().Be("Id");
+        primaryKey.Properties[0].Name.Should().Be("Id");
     }
 
     [Fact]
@@ -130,7 +130,7 @@ public class EntityConfigurationsTests
         IKey? primaryKey = entityType.FindPrimaryKey();
         primaryKey.Should().NotBeNull();
         primaryKey.Properties.Should().ContainSingle();
-        primaryKey.Properties.First().Name.Should().Be("Id");
+        primaryKey.Properties[0].Name.Should().Be("Id");
     }
 
     [Fact]
@@ -168,7 +168,7 @@ public class EntityConfigurationsTests
         IKey? primaryKey = entityType.FindPrimaryKey();
         primaryKey.Should().NotBeNull();
         primaryKey.Properties.Should().ContainSingle();
-        primaryKey.Properties.First().Name.Should().Be("Id");
+        primaryKey.Properties[0].Name.Should().Be("Id");
     }
 
     [Fact]
@@ -206,7 +206,7 @@ public class EntityConfigurationsTests
         IKey? primaryKey = entityType.FindPrimaryKey();
         primaryKey.Should().NotBeNull();
         primaryKey.Properties.Should().ContainSingle();
-        primaryKey.Properties.First().Name.Should().Be("Id");
+        primaryKey.Properties[0].Name.Should().Be("Id");
     }
 
     [Fact]
@@ -246,7 +246,7 @@ public class EntityConfigurationsTests
         IKey? primaryKey = entityType.FindPrimaryKey();
         primaryKey.Should().NotBeNull();
         primaryKey.Properties.Should().ContainSingle();
-        primaryKey.Properties.First().Name.Should().Be("Id");
+        primaryKey.Properties[0].Name.Should().Be("Id");
     }
 
     [Fact]
@@ -300,7 +300,7 @@ public class EntityConfigurationsTests
         IKey? primaryKey = entityType.FindPrimaryKey();
         primaryKey.Should().NotBeNull();
         primaryKey.Properties.Should().ContainSingle();
-        primaryKey.Properties.First().Name.Should().Be("Id");
+        primaryKey.Properties[0].Name.Should().Be("Id");
     }
 
     [Fact]
@@ -347,13 +347,13 @@ public class EntityConfigurationsTests
         using var context = new IdentityDbContext(options);
 
         // Act & Assert
-        context.Model.FindEntityType(typeof(UserEntity))?.GetSchema().Should().Be("identity");
-        context.Model.FindEntityType(typeof(RoleEntity))?.GetSchema().Should().Be("identity");
-        context.Model.FindEntityType(typeof(PermissionEntity))?.GetSchema().Should().Be("identity");
-        context.Model.FindEntityType(typeof(SessionEntity))?.GetSchema().Should().Be("identity");
-        context.Model.FindEntityType(typeof(OtpEntity))?.GetSchema().Should().Be("identity");
-        context.Model.FindEntityType(typeof(UserRoleEntity))?.GetSchema().Should().Be("identity");
-        context.Model.FindEntityType(typeof(RolePermissionEntity))?.GetSchema().Should().Be("identity");
+        context.Model.FindEntityType(typeof(UserEntity))!.GetSchema().Should().Be("identity");
+        context.Model.FindEntityType(typeof(RoleEntity))!.GetSchema().Should().Be("identity");
+        context.Model.FindEntityType(typeof(PermissionEntity))!.GetSchema().Should().Be("identity");
+        context.Model.FindEntityType(typeof(SessionEntity))!.GetSchema().Should().Be("identity");
+        context.Model.FindEntityType(typeof(OtpEntity))!.GetSchema().Should().Be("identity");
+        context.Model.FindEntityType(typeof(UserRoleEntity))!.GetSchema().Should().Be("identity");
+        context.Model.FindEntityType(typeof(RolePermissionEntity))!.GetSchema().Should().Be("identity");
     }
 
     #endregion
