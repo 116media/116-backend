@@ -60,7 +60,7 @@ public class DomainRuleExceptionStrategyTests
     public void ExceptionType_ShouldReturnContentRuleExceptionType()
     {
         // Act & Assert
-        _strategy.ExceptionType.Should().Be(typeof(ContentRuleException));
+        _strategy.ExceptionType.Should().Be<ContentRuleException>();
     }
 
     [Theory]
@@ -199,6 +199,6 @@ public class DomainRuleExceptionStrategyTests
         problem.Detail.Should().NotBeNullOrWhiteSpace(code);
         problem.Detail.Should().NotBe(code, "the catalog must phrase the rule, not echo its code");
         problem.Title.Should().NotBeNullOrWhiteSpace(code);
-        problem.Status.Should().BeGreaterThan(0, code);
+        problem.Status.Should().BePositive(code);
     }
 }
