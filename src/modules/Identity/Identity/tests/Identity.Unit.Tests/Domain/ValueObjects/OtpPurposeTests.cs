@@ -48,7 +48,7 @@ public class OtpPurposeTests
         var invalidEnum = (EnumOtpPurpose)999;
 
         // Act & Assert
-        Action act = () => new OtpPurpose(invalidEnum);
+        Action act = () => _ = new OtpPurpose(invalidEnum);
         act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidOtpPurpose);
     }
 
@@ -99,7 +99,7 @@ public class OtpPurposeTests
     public void Constructor_WithInvalidStringValue_ShouldThrowArgumentException()
     {
         // Act & Assert
-        Action act = () => new OtpPurpose("InvalidPurpose");
+        Action act = () => _ = new OtpPurpose("InvalidPurpose");
         act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidOtpPurpose);
     }
 
@@ -107,7 +107,7 @@ public class OtpPurposeTests
     public void Constructor_WithEmptyString_ShouldThrowArgumentException()
     {
         // Act & Assert
-        Action act = () => new OtpPurpose(string.Empty);
+        Action act = () => _ = new OtpPurpose(string.Empty);
         act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidOtpPurpose);
     }
 
@@ -115,7 +115,7 @@ public class OtpPurposeTests
     public void Constructor_WithNullString_ShouldThrowArgumentException()
     {
         // Act & Assert
-        Action act = () => new OtpPurpose((string)null!);
+        Action act = () => _ = new OtpPurpose((string)null!);
         act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidOtpPurpose);
     }
 
