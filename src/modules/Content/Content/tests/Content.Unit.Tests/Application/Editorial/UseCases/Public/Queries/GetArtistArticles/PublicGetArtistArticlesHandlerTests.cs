@@ -34,8 +34,7 @@ public class PublicGetArtistArticlesHandlerTests : BaseContentHandlerTest
         _handler = new PublicGetArtistArticlesHandler(
             _artistRepositoryMock.Object,
             _articleRepositoryMock.Object,
-            CreateArticleDtoService(fileStorageMock.Object),
-            TestErrorsFactory.CreateContentI18n()
+            CreateArticleDtoService(fileStorageMock.Object)
         );
     }
 
