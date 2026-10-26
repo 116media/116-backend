@@ -22,7 +22,7 @@ public class UnsupportedProviderExceptionHandlerTests
     [Fact]
     public void ExceptionType_ShouldReturnUnsupportedProviderExceptionType()
     {
-        _handler.ExceptionType.Should().Be(typeof(UnsupportedProviderException));
+        _handler.ExceptionType.Should().Be<UnsupportedProviderException>();
     }
 
     [Fact]
