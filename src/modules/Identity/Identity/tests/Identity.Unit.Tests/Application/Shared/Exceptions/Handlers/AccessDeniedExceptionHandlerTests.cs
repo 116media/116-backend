@@ -24,7 +24,7 @@ public class AccessDeniedExceptionHandlerTests
         Type exceptionType = _handler.ExceptionType;
 
         // Assert
-        exceptionType.Should().Be(typeof(AccessDeniedException));
+        exceptionType.Should().Be<AccessDeniedException>();
     }
 
     #endregion
