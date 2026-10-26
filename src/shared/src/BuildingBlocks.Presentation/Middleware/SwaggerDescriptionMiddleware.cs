@@ -50,7 +50,7 @@ public partial class SwaggerDescriptionMiddleware(RequestDelegate next)
 
         byte[] bytes = Encoding.UTF8.GetBytes(processed);
         context.Response.ContentLength = bytes.Length;
-        await context.Response.Body.WriteAsync(bytes);
+        await context.Response.Body.WriteAsync(bytes, context.RequestAborted);
     }
 
     [GeneratedRegex(@"""description""\s*:\s*""[^""]*(?:\\.[^""]*)*""", RegexOptions.Compiled)]
