@@ -41,18 +41,22 @@ public class RouteMetadataFieldsTests
     /// Provides one theory case per <see cref="RouteMetadata"/> field, identified by the
     /// declaring type's assembly-qualified name and the field name.
     /// </summary>
-    public static IEnumerable<object[]> AllRouteMetadataFields()
+    public static TheoryData<string, string> AllRouteMetadataFields()
     {
+        var rows = new TheoryData<string, string>();
+
         foreach (Type type in MetaFieldClasses())
         {
             foreach (FieldInfo field in type.GetFields(BindingFlags.Public | BindingFlags.Static))
             {
                 if (field.FieldType == typeof(RouteMetadata))
                 {
-                    yield return [type.AssemblyQualifiedName!, field.Name];
+                    rows.Add(type.AssemblyQualifiedName!, field.Name);
                 }
             }
         }
+
+        return rows;
     }
 
     /// <summary>
@@ -115,7 +119,7 @@ public class RouteMetadataFieldsTests
     public void RouteMetadataFields_ShouldBeDiscovered()
     {
         // Arrange
-        List<object[]> fields = AllRouteMetadataFields().ToList();
+        TheoryData<string, string> fields = AllRouteMetadataFields();
 
         // Assert
         fields.Should().NotBeEmpty("every *MetaField class should expose at least one RouteMetadata field");
