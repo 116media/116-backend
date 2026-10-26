@@ -44,7 +44,7 @@ public class EmailTests
     public void Constructor_WithNullEmail_ShouldThrowArgumentException()
     {
         // Act & Assert
-        Action act = () => new Email(null!);
+        Action act = () => _ = new Email(null!);
         act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidEmail);
     }
 
@@ -52,7 +52,7 @@ public class EmailTests
     public void Constructor_WithEmptyEmail_ShouldThrowArgumentException()
     {
         // Act & Assert
-        Action act = () => new Email(string.Empty);
+        Action act = () => _ = new Email(string.Empty);
         act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidEmail);
     }
 
@@ -60,7 +60,7 @@ public class EmailTests
     public void Constructor_WithWhitespaceEmail_ShouldThrowArgumentException()
     {
         // Act & Assert
-        Action act = () => new Email("   ");
+        Action act = () => _ = new Email("   ");
         act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidEmail);
     }
 
@@ -68,7 +68,7 @@ public class EmailTests
     public void Constructor_WithInvalidEmailFormat_ShouldThrowArgumentException()
     {
         // Act & Assert
-        Action act = () => new Email("not-an-email");
+        Action act = () => _ = new Email("not-an-email");
         act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidEmail);
     }
 
@@ -76,7 +76,7 @@ public class EmailTests
     public void Constructor_WithEmailMissingAtSign_ShouldThrowArgumentException()
     {
         // Act & Assert
-        Action act = () => new Email("testexample.com");
+        Action act = () => _ = new Email("testexample.com");
         act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidEmail);
     }
 
@@ -84,7 +84,7 @@ public class EmailTests
     public void Constructor_WithEmailMissingDomain_ShouldThrowArgumentException()
     {
         // Act & Assert
-        Action act = () => new Email("test@");
+        Action act = () => _ = new Email("test@");
         act.Should().ThrowExactly<IdentityRuleException>().Which.Code.Should().Be(IdentityRuleCodes.InvalidEmail);
     }
 
