@@ -13,7 +13,6 @@ namespace _116.Content.Unit.Tests.Application.Shared.Errors;
 public class CustomerErrorsTests
 {
     private readonly CustomerErrors _errors = TestErrorsFactory.CreateCustomerErrors();
-    private readonly CustomerErrorMessage _message = LocalizerFactory.CreateMessage<CustomerErrorMessage>();
 
     [Fact]
     public void AlreadyExists_WithEmail_ShouldReturnConflictException()
@@ -36,7 +35,7 @@ public class CustomerErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = _errors.NotFound(id);
+        NotFoundException exception = CustomerErrors.NotFound(id);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
