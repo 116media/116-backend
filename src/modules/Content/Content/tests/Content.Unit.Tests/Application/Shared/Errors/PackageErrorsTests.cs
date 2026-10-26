@@ -22,7 +22,7 @@ public class PackageErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = _errors.NotFound(id);
+        NotFoundException exception = PackageErrors.NotFound(id);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
@@ -63,7 +63,7 @@ public class PackageErrorsTests
         var slotId = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = _errors.SlotNotFound(slotId);
+        NotFoundException exception = PackageErrors.SlotNotFound(slotId);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
