@@ -86,7 +86,7 @@ public class CloudinaryService(ICloudStorageClient client, ILogger<CloudinarySer
 
         // A PDF must go up as a raw asset; anything else in this path is still an image to the
         // provider, and uploading it as raw would lose the derived dimensions.
-        bool isPdf = Path.GetExtension(file.FileName).ToLowerInvariant() == ".pdf";
+        bool isPdf = Path.GetExtension(file.FileName).Equals(".pdf", StringComparison.OrdinalIgnoreCase);
         EnumStoredFileKind kind = isPdf ? EnumStoredFileKind.Raw : EnumStoredFileKind.Image;
 
         try
