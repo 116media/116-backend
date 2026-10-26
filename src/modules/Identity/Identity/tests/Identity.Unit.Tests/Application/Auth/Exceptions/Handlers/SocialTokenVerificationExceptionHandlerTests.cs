@@ -21,7 +21,7 @@ public class SocialTokenVerificationExceptionHandlerTests
     [Fact]
     public void ExceptionType_ShouldReturnSocialTokenVerificationExceptionType()
     {
-        _handler.ExceptionType.Should().Be(typeof(SocialTokenVerificationException));
+        _handler.ExceptionType.Should().Be<SocialTokenVerificationException>();
     }
 
     [Fact]
