@@ -152,5 +152,7 @@ public abstract class BaseRepositoryTest : IAsyncLifetime
         }
 
         _scopes.Clear();
+
+        GC.SuppressFinalize(this);
     }
 }
