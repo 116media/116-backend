@@ -133,6 +133,7 @@ public class PublicUpdateAvatarHandlerTests : BaseHandlerTest
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        _avatarServiceMock.Verify(x => x.UploadAsync(avatarFile, user.Id, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
