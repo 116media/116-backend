@@ -36,7 +36,7 @@ public class PromotionLevelErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = _errors.NotFound(id);
+        NotFoundException exception = PromotionLevelErrors.NotFound(id);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
