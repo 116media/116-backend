@@ -29,7 +29,7 @@ public class AccountStatusRequirementTests
     public void Constructor_WithNullClaimType_ShouldThrowArgumentNullException()
     {
         // Act
-        Action act = () => new AccountStatusRequirement(null!, "true");
+        Action act = () => _ = new AccountStatusRequirement(null!, "true");
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("claimType");
@@ -39,7 +39,7 @@ public class AccountStatusRequirementTests
     public void Constructor_WithNullClaimValue_ShouldThrowArgumentNullException()
     {
         // Act
-        Action act = () => new AccountStatusRequirement(JwtClaimsConstants.IsActive, null!);
+        Action act = () => _ = new AccountStatusRequirement(JwtClaimsConstants.IsActive, null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("claimValue");
