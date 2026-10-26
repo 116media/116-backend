@@ -34,7 +34,7 @@ public class MoneyTests
     public void Constructor_WithNegativeAmount_ShouldThrowNegativeMoneyAmount(decimal amount)
     {
         // Act
-        Action act = () => new Money(amount);
+        Action act = () => _ = new Money(amount);
 
         // Assert
         act.Should().ThrowExactly<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.NegativeMoneyAmount);
