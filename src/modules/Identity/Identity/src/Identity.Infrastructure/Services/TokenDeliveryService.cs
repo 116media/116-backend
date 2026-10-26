@@ -52,7 +52,7 @@ public class TokenDeliveryService(
             options: new CookieOptions
             {
                 HttpOnly = true,
-                Secure = isProduction,
+                Secure = true,
                 SameSite = isProduction ? SameSiteMode.Strict : SameSiteMode.Lax,
                 Path = "/",
                 Expires = authResult.AccessTokenExpiresAt,
@@ -70,7 +70,7 @@ public class TokenDeliveryService(
             options: new CookieOptions
             {
                 HttpOnly = true,
-                Secure = isProduction,
+                Secure = true,
                 SameSite = isProduction ? SameSiteMode.Strict : SameSiteMode.Lax,
                 Path = "/",
                 Expires = authResult.RefreshTokenExpiresAt,
@@ -94,7 +94,7 @@ public class TokenDeliveryService(
             options: new CookieOptions
             {
                 HttpOnly = true,
-                Secure = isProduction,
+                Secure = true,
                 SameSite = isProduction ? SameSiteMode.Strict : SameSiteMode.Lax,
                 Path = "/",
             }
@@ -105,7 +105,7 @@ public class TokenDeliveryService(
             options: new CookieOptions
             {
                 HttpOnly = true,
-                Secure = isProduction,
+                Secure = true,
                 SameSite = isProduction ? SameSiteMode.Strict : SameSiteMode.Lax,
                 Path = "/",
             }
