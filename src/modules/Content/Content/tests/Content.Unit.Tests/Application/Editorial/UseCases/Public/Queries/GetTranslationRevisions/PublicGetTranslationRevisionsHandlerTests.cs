@@ -52,7 +52,7 @@ public class PublicGetTranslationRevisionsHandlerTests
         PublicGetTranslationRevisionsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Revisions.Should().HaveCount(1);
+        result.Revisions.Should().ContainSingle();
         result.Revisions[0].Id.Should().Be(revision.Id);
         result.Revisions[0].ProposedText.Should().Be("Proposed replacement text.");
         result.Revisions[0].ProposedByUserId.Should().Be(proposerId);
