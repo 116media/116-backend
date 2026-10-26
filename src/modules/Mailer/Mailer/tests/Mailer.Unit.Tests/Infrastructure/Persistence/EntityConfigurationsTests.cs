@@ -63,7 +63,7 @@ public class EntityConfigurationsTests
         // Assert
         primaryKey.Should().NotBeNull();
         primaryKey.Properties.Should().ContainSingle();
-        primaryKey.Properties.First().Name.Should().Be("Id");
+        primaryKey.Properties[0].Name.Should().Be("Id");
     }
 
     [Fact]
@@ -164,7 +164,7 @@ public class EntityConfigurationsTests
         // Assert
         primaryKey.Should().NotBeNull();
         primaryKey.Properties.Should().ContainSingle();
-        primaryKey.Properties.First().Name.Should().Be("Id");
+        primaryKey.Properties[0].Name.Should().Be("Id");
     }
 
     [Fact]
@@ -223,6 +223,8 @@ public class EntityConfigurationsTests
         linkPathProperty.GetMaxLength().Should().Be(300);
     }
 
+    private static readonly string[] UnreadCountIndexColumns = ["UserId", "ReadAt"];
+
     [Fact]
     public void NotificationConfiguration_ShouldHaveTheUnreadCountIndex()
     {
@@ -233,13 +235,15 @@ public class EntityConfigurationsTests
         IIndex? unreadCountIndex = GetEntityType<NotificationEntity>(context)
             .GetIndexes()
             .SingleOrDefault(index =>
-                index.Properties.Select(property => property.Name).SequenceEqual(new[] { "UserId", "ReadAt" })
+                index.Properties.Select(property => property.Name).SequenceEqual(UnreadCountIndexColumns)
             );
 
         // Assert
         unreadCountIndex.Should().NotBeNull();
         unreadCountIndex.IsUnique.Should().BeFalse();
     }
+
+    private static readonly string[] UserFeedIndexColumns = ["UserId", "CreatedAt"];
 
     [Fact]
     public void NotificationConfiguration_ShouldHaveTheNewestFirstFeedIndex()
@@ -251,7 +255,7 @@ public class EntityConfigurationsTests
         IIndex? feedIndex = GetEntityType<NotificationEntity>(context)
             .GetIndexes()
             .SingleOrDefault(index =>
-                index.Properties.Select(property => property.Name).SequenceEqual(new[] { "UserId", "CreatedAt" })
+                index.Properties.Select(property => property.Name).SequenceEqual(UserFeedIndexColumns)
             );
 
         // Assert
@@ -288,7 +292,7 @@ public class EntityConfigurationsTests
         // Assert
         primaryKey.Should().NotBeNull();
         primaryKey.Properties.Should().ContainSingle();
-        primaryKey.Properties.First().Name.Should().Be("Id");
+        primaryKey.Properties[0].Name.Should().Be("Id");
     }
 
     [Fact]
@@ -374,6 +378,8 @@ public class EntityConfigurationsTests
         lastErrorProperty.GetMaxLength().Should().Be(MailerConstants.MaxLastErrorLength);
     }
 
+    private static readonly string[] DispatcherScanIndexColumns = ["Status", "NextAttemptAt"];
+
     [Fact]
     public void OutboxEmailConfiguration_ShouldHaveTheDispatcherScanIndex()
     {
@@ -384,7 +390,7 @@ public class EntityConfigurationsTests
         IIndex? scanIndex = GetEntityType<OutboxEmailEntity>(context)
             .GetIndexes()
             .SingleOrDefault(index =>
-                index.Properties.Select(property => property.Name).SequenceEqual(new[] { "Status", "NextAttemptAt" })
+                index.Properties.Select(property => property.Name).SequenceEqual(DispatcherScanIndexColumns)
             );
 
         // Assert
