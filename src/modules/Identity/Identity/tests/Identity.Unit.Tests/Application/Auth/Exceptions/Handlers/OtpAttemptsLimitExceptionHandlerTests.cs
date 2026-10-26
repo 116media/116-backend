@@ -14,7 +14,7 @@ public class OtpAttemptsLimitExceptionHandlerTests
     [Fact]
     public void ExceptionType_ShouldReturnOtpAttemptsLimitExceptionType()
     {
-        _handler.ExceptionType.Should().Be(typeof(OtpAttemptsLimitException));
+        _handler.ExceptionType.Should().Be<OtpAttemptsLimitException>();
     }
 
     [Fact]
