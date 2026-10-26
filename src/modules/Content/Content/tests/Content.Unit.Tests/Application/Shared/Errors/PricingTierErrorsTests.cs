@@ -36,7 +36,7 @@ public class PricingTierErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = _errors.NotFound(id);
+        NotFoundException exception = PricingTierErrors.NotFound(id);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
