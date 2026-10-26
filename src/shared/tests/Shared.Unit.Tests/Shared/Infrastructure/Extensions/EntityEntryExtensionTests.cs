@@ -54,7 +54,7 @@ public class EntityEntryExtensionTests
         }
     }
 
-    private TestDbContext CreateInMemoryContext()
+    private static TestDbContext CreateInMemoryContext()
     {
         DbContextOptions<TestDbContext> options = new DbContextOptionsBuilder<TestDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
