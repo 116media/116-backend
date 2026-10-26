@@ -51,7 +51,7 @@ public class PublicGetLyricsTranslationsHandlerTests
         PublicGetLyricsTranslationsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Translations.Should().HaveCount(1);
+        result.Translations.Should().ContainSingle();
         result.Translations[0].Id.Should().Be(translation.Id);
         result.Translations[0].Language.Should().Be("es");
         result.Translations[0].Text.Should().Be("Texto en espanol.");
