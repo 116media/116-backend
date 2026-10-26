@@ -91,7 +91,7 @@ public class PublicUnsubscribeNewsletterEndpointV1Tests(PostgresFixture db) : Ba
         var response = await Client.GetAsync($"{ApiRoutes.Public.Newsletter}/unsubscribe/{seeded.UnsubscribeToken}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        response.Content.Headers.ContentType?.MediaType.Should().Be("text/html");
+        response.Content.Headers.ContentType!.MediaType.Should().Be("text/html");
 
         string html = await response.Content.ReadAsStringAsync();
         html.Should().Contain("<form method=\"post\"");
