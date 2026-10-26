@@ -14,7 +14,7 @@ namespace _116.Storage.Unit.Tests.Application.Mappers;
 /// </summary>
 public class FileMapperTests
 {
-    private readonly IMapper _mapper;
+    private readonly Mapper _mapper;
 
     /// <summary>
     /// Initializes a new instance of <see cref="FileMapperTests"/>.
