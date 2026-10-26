@@ -14,7 +14,7 @@ public class RefreshTokenExpiryExceptionHandlerTests
     [Fact]
     public void ExceptionType_ShouldReturnRefreshTokenExpiryExceptionType()
     {
-        _handler.ExceptionType.Should().Be(typeof(RefreshTokenExpiryException));
+        _handler.ExceptionType.Should().Be<RefreshTokenExpiryException>();
     }
 
     [Fact]
