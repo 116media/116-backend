@@ -15,7 +15,7 @@ namespace _116.Storage.Integration.Tests.Infrastructure.Mappers;
 [Collection("Database")]
 public class FileMapperTests(PostgresFixture postgres) : BaseRepositoryTest(postgres)
 {
-    private readonly IMapper _mapper = new Mapper(StorageMappingRegistration.CreateConfiguration());
+    private readonly Mapper _mapper = new Mapper(StorageMappingRegistration.CreateConfiguration());
 
     [Fact]
     public async Task ToFileReferenceDto_ShouldMapAllFields()
