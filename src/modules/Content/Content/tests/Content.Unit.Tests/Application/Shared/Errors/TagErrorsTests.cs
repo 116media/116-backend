@@ -13,7 +13,6 @@ namespace _116.Content.Unit.Tests.Application.Shared.Errors;
 public class TagErrorsTests
 {
     private readonly TagErrors _errors = TestErrorsFactory.CreateTagErrors();
-    private readonly TagErrorMessage _message = LocalizerFactory.CreateMessage<TagErrorMessage>();
 
     [Fact]
     public void SlugAlreadyExists_WithSlug_ShouldReturnConflictException()
@@ -36,7 +35,7 @@ public class TagErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = _errors.NotFound(id);
+        NotFoundException exception = TagErrors.NotFound(id);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
