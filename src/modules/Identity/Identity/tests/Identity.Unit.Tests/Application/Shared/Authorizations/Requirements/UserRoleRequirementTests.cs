@@ -26,7 +26,7 @@ public class UserRoleRequirementTests
     public void Constructor_WithNullAllowedRoles_ShouldThrowArgumentNullException()
     {
         // Act
-        Action act = () => new UserRoleRequirement(null!);
+        Action act = () => _ = new UserRoleRequirement(null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("allowedRoles");
