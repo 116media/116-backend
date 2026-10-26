@@ -50,8 +50,7 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
                 _streamingLinkRepositoryMock.Object,
                 _lyricsRepositoryMock.Object
             ),
-            CreateLyricsDtoService(fileStorageMock.Object, userLookupMock.Object),
-            TestErrorsFactory.CreateContentI18n()
+            CreateLyricsDtoService(fileStorageMock.Object, userLookupMock.Object)
         );
     }
 
