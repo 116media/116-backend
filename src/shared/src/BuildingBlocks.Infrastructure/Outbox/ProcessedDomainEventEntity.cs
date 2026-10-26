@@ -24,6 +24,4 @@ public class ProcessedDomainEventEntity
     /// When the handler completed, in UTC.
     /// </summary>
     public DateTime ProcessedAt { get; private set; }
-
-    private ProcessedDomainEventEntity() { }
 }
