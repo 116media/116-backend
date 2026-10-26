@@ -57,7 +57,7 @@ public class UserErrors(
     /// <summary>
     /// Throws when a role is not found using the name.
     /// </summary>
-    public NotFoundException RoleNotFoundByName(string roleName)
+    public static NotFoundException RoleNotFoundByName(string roleName)
     {
         return new NotFoundException("Role", "name", keyValue: roleName);
     }
