@@ -53,7 +53,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
             Mapper,
             _fileStorageMock.Object,
             _videoRepositoryMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert
@@ -71,7 +71,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
             Mapper,
             _fileStorageMock.Object,
             _videoRepositoryMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert
@@ -98,7 +98,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
             Mapper,
             _fileStorageMock.Object,
             _videoRepositoryMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert — screenshot transformation inserted and extension changed to jpg
@@ -121,7 +121,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
             Mapper,
             _fileStorageMock.Object,
             _videoRepositoryMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert — uses the uploaded thumbnail, not a generated one
@@ -243,9 +243,9 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
             Mapper,
             _fileStorageMock.Object,
             _videoRepositoryMock.Object,
-            CancellationToken.None,
             isLiked: true,
-            isBookmarked: true
+            isBookmarked: true,
+            ct: CancellationToken.None
         );
 
         // Assert
@@ -264,7 +264,7 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
             Mapper,
             _fileStorageMock.Object,
             _videoRepositoryMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert
@@ -326,9 +326,9 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
             userLookup.Object,
             _fileStorageMock.Object,
             _videoRepositoryMock.Object,
-            CancellationToken.None,
             isLiked: true,
-            isBookmarked: true
+            isBookmarked: true,
+            ct: CancellationToken.None
         );
 
         // Assert
