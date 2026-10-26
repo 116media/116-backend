@@ -54,7 +54,7 @@ public class DbUpdateExceptionStrategyTests
     public void ExceptionType_ShouldReturnDbUpdateExceptionType()
     {
         // Act & Assert
-        _strategy.ExceptionType.Should().Be(typeof(DbUpdateException));
+        _strategy.ExceptionType.Should().Be<DbUpdateException>();
     }
 
     [Fact]
