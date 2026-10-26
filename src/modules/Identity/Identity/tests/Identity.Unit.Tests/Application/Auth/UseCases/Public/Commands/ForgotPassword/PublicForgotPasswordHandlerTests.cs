@@ -221,6 +221,10 @@ public class PublicForgotPasswordHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        _otpServiceMock.Verify(
+            x => x.CreatePasswordResetOtpAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
     }
 
     [Fact]
