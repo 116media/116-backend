@@ -48,7 +48,7 @@ public class SessionStatusTests
         var invalidEnum = (EnumSessionStatus)999;
 
         // Act & Assert
-        Action act = () => new SessionStatus(invalidEnum);
+        Action act = () => _ = new SessionStatus(invalidEnum);
         act.Should()
             .ThrowExactly<IdentityRuleException>()
             .Which.Code.Should()
@@ -102,7 +102,7 @@ public class SessionStatusTests
     public void Constructor_WithInvalidStringValue_ShouldThrowArgumentException()
     {
         // Act & Assert
-        Action act = () => new SessionStatus("InvalidStatus");
+        Action act = () => _ = new SessionStatus("InvalidStatus");
         act.Should()
             .ThrowExactly<IdentityRuleException>()
             .Which.Code.Should()
@@ -113,7 +113,7 @@ public class SessionStatusTests
     public void Constructor_WithEmptyString_ShouldThrowArgumentException()
     {
         // Act & Assert
-        Action act = () => new SessionStatus(string.Empty);
+        Action act = () => _ = new SessionStatus(string.Empty);
         act.Should()
             .ThrowExactly<IdentityRuleException>()
             .Which.Code.Should()
@@ -124,7 +124,7 @@ public class SessionStatusTests
     public void Constructor_WithNullString_ShouldThrowArgumentException()
     {
         // Act & Assert
-        Action act = () => new SessionStatus((string)null!);
+        Action act = () => _ = new SessionStatus((string)null!);
         act.Should()
             .ThrowExactly<IdentityRuleException>()
             .Which.Code.Should()
