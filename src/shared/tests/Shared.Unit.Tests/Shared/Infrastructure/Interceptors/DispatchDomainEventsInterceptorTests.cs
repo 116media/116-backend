@@ -95,7 +95,7 @@ public class DispatchDomainEventsInterceptorTests
         return (new OutboxTestDbContext(options), publisherMock);
     }
 
-    private (TestDbContext context, Mock<IDomainEventPublisher> publisherMock) CreateTestContext()
+    private static (TestDbContext context, Mock<IDomainEventPublisher> publisherMock) CreateTestContext()
     {
         var publisherMock = new Mock<IDomainEventPublisher>();
         var serviceCollection = new ServiceCollection();
