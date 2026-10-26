@@ -27,8 +27,6 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
     private readonly Mock<IFileStorageService> _fileStorageMock;
     private readonly Mock<IArtistRepository> _artistRepositoryMock;
     private readonly PublicGetVideoBySlugHandler _handler;
-    private readonly VideoErrors _videoErrors = TestErrorsFactory.CreateVideoErrors();
-    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
 
     private static readonly Guid CategoryId = Guid.NewGuid();
 
@@ -45,8 +43,7 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
                 _fileStorageMock.Object,
                 _videoRepositoryMock.Object,
                 CreateContentLookupService()
-            ),
-            _i18n
+            )
         );
     }
 
