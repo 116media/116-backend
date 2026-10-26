@@ -24,8 +24,9 @@ public record Module(string Name, Assembly Assembly)
     /// The module's three layer assemblies. Loaded by name because the module class only identifies the
     /// outermost one, while the rules below filter types across every layer.
     /// </summary>
-    public IEnumerable<Assembly> Assemblies =>
-        new[] { "Domain", "Application", "Infrastructure" }.Select(layer => Assembly.Load($"{Name}.{layer}"));
+    public IEnumerable<Assembly> Assemblies => LayerNames.Select(layer => Assembly.Load($"{Name}.{layer}"));
+
+    private static readonly string[] LayerNames = ["Domain", "Application", "Infrastructure"];
 }
 
 /// <summary>
