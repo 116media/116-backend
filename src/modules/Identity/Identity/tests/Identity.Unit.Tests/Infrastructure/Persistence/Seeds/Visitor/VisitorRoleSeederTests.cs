@@ -27,14 +27,13 @@ public class VisitorRoleSeederCollection { }
 public class VisitorRoleSeederTests
 {
     private readonly Mock<ILogger<VisitorRoleSeeder>> _loggerMock;
-    private readonly UserErrors _userErrors = TestErrorsFactory.CreateUserErrors();
 
     public VisitorRoleSeederTests()
     {
         _loggerMock = new Mock<ILogger<VisitorRoleSeeder>>();
     }
 
-    private DbContextOptions<IdentityDbContext> CreateOptions()
+    private static DbContextOptions<IdentityDbContext> CreateOptions()
     {
         return new DbContextOptionsBuilder<IdentityDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString(), b => b.EnableNullChecks(false))
