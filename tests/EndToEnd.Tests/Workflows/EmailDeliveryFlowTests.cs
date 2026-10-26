@@ -30,7 +30,7 @@ namespace _116.EndToEnd.Tests.Workflows;
 /// through the stubbed provider.
 /// </summary>
 [Collection("Database")]
-public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
+public partial class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
 {
     [Fact]
     public async Task SignUp_OverRealHttp_EnqueuesAVerificationCodeThatVerifiesWhileTheRowStaysHashed()
@@ -241,7 +241,7 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
             .OrderByDescending(o => o.CreatedAt)
             .FirstAsync();
 
-        MatchCollection matches = Regex.Matches(latest.TextBody, @"\b\d{6}\b");
+        MatchCollection matches = OtpCodePattern().Matches(latest.TextBody);
         matches.Should().ContainSingle("the OTP email body should carry exactly one six-digit code");
         return matches[0].Value;
     }
@@ -407,8 +407,15 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
         await using MailerDbContext verify = CreateDbContext<MailerDbContext>();
         OutboxEmailEntity truncated = await verify.OutboxEmails.SingleAsync(o => o.Id == emailId);
         truncated.LastError.Should().NotBeNull();
-        truncated.LastError!.Length.Should().Be(MailerConstants.MaxLastErrorLength);
+        truncated.LastError!.Should().HaveLength(MailerConstants.MaxLastErrorLength);
         truncated.LastError.Should().StartWith(marker);
         truncated.AttemptCount.Should().Be(1);
     }
+
+    /// <summary>
+    /// Matches the six-digit OTP code inside a rendered email body.
+    /// </summary>
+    /// <returns>The compiled matcher.</returns>
+    [GeneratedRegex(@"\b\d{6}\b", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+    private static partial Regex OtpCodePattern();
 }
