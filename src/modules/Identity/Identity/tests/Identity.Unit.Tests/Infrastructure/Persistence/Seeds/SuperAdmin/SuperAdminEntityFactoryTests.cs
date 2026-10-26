@@ -19,7 +19,6 @@ public class SuperAdminEntityFactoryTests : IDisposable
     private const string DefaultPasswordVariable = "DEFAULT_USER_PASSWORD";
 
     private readonly Mock<IPasswordService> _passwordServiceMock;
-    private readonly UserErrors _userErrors = TestErrorsFactory.CreateUserErrors();
     private readonly SuperAdminEntityFactory _factory;
     private readonly string? _originalPassword;
 
@@ -160,7 +159,7 @@ public class SuperAdminEntityFactoryTests : IDisposable
     public void CreateSuperAdminRole_ShouldCreateRoleWithCorrectName()
     {
         // Act
-        RoleEntity result = _factory.CreateSuperAdminRole();
+        RoleEntity result = SuperAdminEntityFactory.CreateSuperAdminRole();
 
         // Assert
         result.Name.Should().Be(SuperAdminConfiguration.RoleName);
@@ -170,7 +169,7 @@ public class SuperAdminEntityFactoryTests : IDisposable
     public void CreateSuperAdminRole_ShouldCreateRoleWithCorrectDescription()
     {
         // Act
-        RoleEntity result = _factory.CreateSuperAdminRole();
+        RoleEntity result = SuperAdminEntityFactory.CreateSuperAdminRole();
 
         // Assert
         result.Description.Should().Be(SuperAdminConfiguration.RoleDescription);
@@ -180,7 +179,7 @@ public class SuperAdminEntityFactoryTests : IDisposable
     public void CreateSuperAdminRole_ShouldGenerateNewGuid()
     {
         // Act
-        RoleEntity result = _factory.CreateSuperAdminRole();
+        RoleEntity result = SuperAdminEntityFactory.CreateSuperAdminRole();
 
         // Assert
         result.Id.Should().NotBe(Guid.Empty);
@@ -190,8 +189,8 @@ public class SuperAdminEntityFactoryTests : IDisposable
     public void CreateSuperAdminRole_MultipleInvocations_ShouldGenerateUniqueIds()
     {
         // Act
-        RoleEntity role1 = _factory.CreateSuperAdminRole();
-        RoleEntity role2 = _factory.CreateSuperAdminRole();
+        RoleEntity role1 = SuperAdminEntityFactory.CreateSuperAdminRole();
+        RoleEntity role2 = SuperAdminEntityFactory.CreateSuperAdminRole();
 
         // Assert
         role1.Id.Should().NotBe(role2.Id);
@@ -205,7 +204,7 @@ public class SuperAdminEntityFactoryTests : IDisposable
     public void CreateSystemAllPermission_ShouldCreatePermissionWithCorrectResource()
     {
         // Act
-        PermissionEntity result = _factory.CreateSystemAllPermission();
+        PermissionEntity result = SuperAdminEntityFactory.CreateSystemAllPermission();
 
         // Assert
         result.Resource.Should().Be(SuperAdminConfiguration.PermissionResource);
@@ -215,7 +214,7 @@ public class SuperAdminEntityFactoryTests : IDisposable
     public void CreateSystemAllPermission_ShouldCreatePermissionWithCorrectAction()
     {
         // Act
-        PermissionEntity result = _factory.CreateSystemAllPermission();
+        PermissionEntity result = SuperAdminEntityFactory.CreateSystemAllPermission();
 
         // Assert
         result.Action.Should().Be(SuperAdminConfiguration.PermissionAction);
@@ -225,7 +224,7 @@ public class SuperAdminEntityFactoryTests : IDisposable
     public void CreateSystemAllPermission_ShouldCreatePermissionWithCorrectDescription()
     {
         // Act
-        PermissionEntity result = _factory.CreateSystemAllPermission();
+        PermissionEntity result = SuperAdminEntityFactory.CreateSystemAllPermission();
 
         // Assert
         result.Description.Should().Be(SuperAdminConfiguration.PermissionDescription);
@@ -235,7 +234,7 @@ public class SuperAdminEntityFactoryTests : IDisposable
     public void CreateSystemAllPermission_ShouldGenerateNewGuid()
     {
         // Act
-        PermissionEntity result = _factory.CreateSystemAllPermission();
+        PermissionEntity result = SuperAdminEntityFactory.CreateSystemAllPermission();
 
         // Assert
         result.Id.Should().NotBe(Guid.Empty);
@@ -245,8 +244,8 @@ public class SuperAdminEntityFactoryTests : IDisposable
     public void CreateSystemAllPermission_MultipleInvocations_ShouldGenerateUniqueIds()
     {
         // Act
-        PermissionEntity permission1 = _factory.CreateSystemAllPermission();
-        PermissionEntity permission2 = _factory.CreateSystemAllPermission();
+        PermissionEntity permission1 = SuperAdminEntityFactory.CreateSystemAllPermission();
+        PermissionEntity permission2 = SuperAdminEntityFactory.CreateSystemAllPermission();
 
         // Assert
         permission1.Id.Should().NotBe(permission2.Id);
