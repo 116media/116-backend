@@ -48,7 +48,7 @@ public class ClientTests
         var invalidEnum = (EnumClient)999;
 
         // Act & Assert
-        Action act = () => new Client(invalidEnum);
+        Action act = () => _ = new Client(invalidEnum);
         act.Should()
             .ThrowExactly<IdentityRuleException>()
             .Which.Code.Should()
@@ -105,7 +105,7 @@ public class ClientTests
     public void Constructor_WithInvalidStringValue_ShouldThrowTheInvalidPlatformRule(string? invalid)
     {
         // Act & Assert
-        Action act = () => new Client(invalid!);
+        Action act = () => _ = new Client(invalid!);
         act.Should()
             .ThrowExactly<IdentityRuleException>()
             .Which.Code.Should()
