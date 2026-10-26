@@ -64,7 +64,7 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
         var warm = await Client.GetAsync($"{ApiRoutes.Public.Tags}/popular");
         warm.StatusCode.Should().Be(HttpStatusCode.OK);
         PublicGetPopularTagsResponse warmBody = await warm.ReadAsAsync<PublicGetPopularTagsResponse>();
-        warmBody.Tags.First().Id.Should().Be(usedTag.Id);
+        warmBody.Tags[0].Id.Should().Be(usedTag.Id);
 
         await using (ContentDbContext ctx = CreateDbContext<ContentDbContext>())
         {
@@ -75,7 +75,7 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
 
         var stale = await Client.GetAsync($"{ApiRoutes.Public.Tags}/popular");
         PublicGetPopularTagsResponse staleBody = await stale.ReadAsAsync<PublicGetPopularTagsResponse>();
-        staleBody.Tags.First().Id.Should().Be(usedTag.Id);
+        staleBody.Tags[0].Id.Should().Be(usedTag.Id);
 
         Client.AuthenticateAsSuperAdmin();
         var setTags = await Client.PutAsJsonAsync(
@@ -87,7 +87,7 @@ public class CacheInvalidationRegressionTests(PostgresFixture db) : BaseApiTest(
         Client.ClearAuthentication();
         var fresh = await Client.GetAsync($"{ApiRoutes.Public.Tags}/popular");
         PublicGetPopularTagsResponse freshBody = await fresh.ReadAsAsync<PublicGetPopularTagsResponse>();
-        freshBody.Tags.First().Id.Should().Be(idleTag.Id);
+        freshBody.Tags[0].Id.Should().Be(idleTag.Id);
     }
 
     [Fact]
