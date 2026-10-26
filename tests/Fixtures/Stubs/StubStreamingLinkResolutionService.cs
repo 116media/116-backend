@@ -61,7 +61,7 @@ public class StubStreamingLinkResolutionService : IStreamingLinkResolutionServic
     /// <summary>
     /// One https deep link per modelled platform.
     /// </summary>
-    private static IReadOnlyDictionary<EnumStreamingPlatform, string> DefaultResult()
+    private static Dictionary<EnumStreamingPlatform, string> DefaultResult()
     {
         return Enum.GetValues<EnumStreamingPlatform>()
             .ToDictionary(platform => platform, platform => $"https://resolved.example/{platform}".ToLowerInvariant());
