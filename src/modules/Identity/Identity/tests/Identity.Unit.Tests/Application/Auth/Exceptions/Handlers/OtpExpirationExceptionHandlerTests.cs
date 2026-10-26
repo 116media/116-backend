@@ -14,7 +14,7 @@ public class OtpExpirationExceptionHandlerTests
     [Fact]
     public void ExceptionType_ShouldReturnOtpExpirationExceptionType()
     {
-        _handler.ExceptionType.Should().Be(typeof(OtpExpirationException));
+        _handler.ExceptionType.Should().Be<OtpExpirationException>();
     }
 
     [Fact]
