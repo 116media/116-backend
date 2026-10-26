@@ -32,7 +32,7 @@ public class AdminRevokeSessionHandlerTests
 
         IdentityI18n identityI18n = TestErrorsFactory.CreateIdentityI18n();
 
-        _handler = new AdminRevokeSessionHandler(_sessionRepositoryMock.Object, _unitOfWorkMock.Object, identityI18n);
+        _handler = new AdminRevokeSessionHandler(_sessionRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
     #region Success Cases
