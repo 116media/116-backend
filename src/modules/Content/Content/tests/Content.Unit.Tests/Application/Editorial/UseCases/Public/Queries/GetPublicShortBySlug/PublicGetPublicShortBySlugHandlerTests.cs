@@ -40,8 +40,7 @@ public class PublicGetPublicShortBySlugHandlerTests : BaseContentHandlerTest
 
         _handler = new PublicGetPublicShortBySlugHandler(
             _shortVideoRepositoryMock.Object,
-            CreateShortVideoDtoService(_fileStorageMock.Object, _userLookupMock.Object),
-            TestErrorsFactory.CreateContentI18n()
+            CreateShortVideoDtoService(_fileStorageMock.Object, _userLookupMock.Object)
         );
     }
 
