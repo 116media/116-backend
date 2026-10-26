@@ -14,7 +14,7 @@ public class AccountInactiveExceptionHandlerTests
     [Fact]
     public void ExceptionType_ShouldReturnAccountInactiveExceptionType()
     {
-        _handler.ExceptionType.Should().Be(typeof(AccountInactiveException));
+        _handler.ExceptionType.Should().Be<AccountInactiveException>();
     }
 
     [Fact]
