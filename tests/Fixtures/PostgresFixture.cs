@@ -86,6 +86,8 @@ public class PostgresFixture : IAsyncLifetime
         _apiFixture?.Dispose();
         TestPostgresContainer.ReleaseDatabase(_connectionString);
 
+        GC.SuppressFinalize(this);
+
         return ValueTask.CompletedTask;
     }
 
