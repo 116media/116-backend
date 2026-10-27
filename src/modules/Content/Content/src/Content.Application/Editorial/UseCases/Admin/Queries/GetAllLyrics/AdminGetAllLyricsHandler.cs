@@ -20,7 +20,10 @@ public class AdminGetAllLyricsHandler(
 ) : IQueryHandler<AdminGetAllLyricsQuery, AdminGetAllLyricsResult>
 {
     /// <inheritdoc />
-    public async Task<AdminGetAllLyricsResult> Handle(AdminGetAllLyricsQuery query, CancellationToken cancellationToken)
+    public async Task<AdminGetAllLyricsResult> Handle(
+        AdminGetAllLyricsQuery query,
+        CancellationToken cancellationToken = default
+    )
     {
         int pageSize = query.PaginatedRequest.PageSize;
         int pageIndex = query.PaginatedRequest.PageIndex;
