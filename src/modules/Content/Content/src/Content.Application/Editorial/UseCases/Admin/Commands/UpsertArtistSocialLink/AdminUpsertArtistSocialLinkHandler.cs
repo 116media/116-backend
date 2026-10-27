@@ -17,7 +17,7 @@ public class AdminUpsertArtistSocialLinkHandler(IArtistRepository artistReposito
     /// <inheritdoc />
     public async Task<AdminUpsertArtistSocialLinkResult> Handle(
         AdminUpsertArtistSocialLinkCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArtistEntity artist = await artistRepository.GetByIdOrThrowAsync(
