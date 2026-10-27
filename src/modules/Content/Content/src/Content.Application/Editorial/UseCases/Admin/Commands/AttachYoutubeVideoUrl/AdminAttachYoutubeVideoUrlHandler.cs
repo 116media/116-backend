@@ -38,7 +38,7 @@ public class AdminAttachYoutubeVideoUrlHandler(
     /// <inheritdoc />
     public async Task<AdminAttachYoutubeVideoUrlResult> Handle(
         AdminAttachYoutubeVideoUrlCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid videoId = Guid.Parse(command.VideoId);
