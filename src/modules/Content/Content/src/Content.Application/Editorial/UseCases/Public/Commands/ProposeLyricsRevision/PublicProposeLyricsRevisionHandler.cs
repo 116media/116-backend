@@ -21,7 +21,7 @@ public class PublicProposeLyricsRevisionHandler(
     /// <inheritdoc />
     public async Task<PublicProposeLyricsRevisionResult> Handle(
         PublicProposeLyricsRevisionCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         // Only confirms the lyrics record exists — no check on its origin (admin-entered,
