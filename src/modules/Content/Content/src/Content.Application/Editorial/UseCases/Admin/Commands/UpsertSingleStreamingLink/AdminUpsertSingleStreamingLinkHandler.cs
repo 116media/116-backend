@@ -24,7 +24,7 @@ public class AdminUpsertSingleStreamingLinkHandler(
     /// <inheritdoc />
     public async Task<AdminUpsertSingleStreamingLinkResult> Handle(
         AdminUpsertSingleStreamingLinkCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         LyricsEntity lyrics = await lyricsRepository.GetByIdOrThrowAsync(
