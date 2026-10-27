@@ -18,7 +18,7 @@ public class PublicGetLyricsTranslationsHandler(
     /// <inheritdoc />
     public async Task<PublicGetLyricsTranslationsResult> Handle(
         PublicGetLyricsTranslationsQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         await lyricsRepository.GetByIdOrThrowAsync(id: query.LyricsId, cancellationToken: cancellationToken);
