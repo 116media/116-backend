@@ -25,7 +25,7 @@ public class PublicGetArtistBySlugHandler(
     /// <inheritdoc />
     public async Task<PublicGetArtistBySlugResult> Handle(
         PublicGetArtistBySlugQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArtistEntity? artist = await artistRepository.GetBySlugAsync(
