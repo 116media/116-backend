@@ -15,7 +15,7 @@ public class AdminAddItemTierHandler(IAddItemTierService addItemTierService)
     /// <inheritdoc />
     public async Task<AdminAddItemTierResult> Handle(
         AdminAddItemTierCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid orderId = Guid.Parse(command.OrderId);
