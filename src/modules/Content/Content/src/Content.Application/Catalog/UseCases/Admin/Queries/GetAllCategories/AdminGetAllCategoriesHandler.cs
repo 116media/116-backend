@@ -20,7 +20,7 @@ public class AdminGetAllCategoriesHandler(
     /// <inheritdoc />
     public async Task<AdminGetAllCategoriesResult> Handle(
         AdminGetAllCategoriesQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageSize = query.PaginatedRequest.PageSize;
