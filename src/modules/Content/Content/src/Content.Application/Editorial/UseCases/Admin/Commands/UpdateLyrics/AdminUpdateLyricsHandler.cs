@@ -24,7 +24,7 @@ public class AdminUpdateLyricsHandler(
     /// <inheritdoc />
     public async Task<AdminUpdateLyricsResult> Handle(
         AdminUpdateLyricsCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         LyricsEntity lyrics = await updateLyricsService.UpdateAsync(command, cancellationToken);
