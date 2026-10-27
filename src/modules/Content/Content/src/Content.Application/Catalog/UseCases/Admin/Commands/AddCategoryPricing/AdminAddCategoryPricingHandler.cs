@@ -22,7 +22,7 @@ public class AdminAddCategoryPricingHandler(
     /// <inheritdoc />
     public async Task<AdminAddCategoryPricingResult> Handle(
         AdminAddCategoryPricingCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         CategoryPricingData added = await addPricingService.AddAsync(
