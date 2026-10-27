@@ -21,7 +21,7 @@ public class AdminUpsertAlbumStreamingLinkHandler(
     /// <inheritdoc />
     public async Task<AdminUpsertAlbumStreamingLinkResult> Handle(
         AdminUpsertAlbumStreamingLinkCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         await albumRepository.GetByIdOrThrowAsync(id: command.AlbumId, cancellationToken: cancellationToken);
