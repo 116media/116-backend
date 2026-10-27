@@ -22,7 +22,7 @@ public class AdminCreateShortVideoHandler(
     /// <inheritdoc />
     public async Task<AdminCreateShortVideoResult> Handle(
         AdminCreateShortVideoCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         string slug = await SlugHelper.ToAvailableSlugAsync(
