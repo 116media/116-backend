@@ -20,7 +20,10 @@ public class AdminGetOrderByIdHandler(
 ) : IQueryHandler<AdminGetOrderByIdQuery, AdminGetOrderByIdResult>
 {
     /// <inheritdoc />
-    public async Task<AdminGetOrderByIdResult> Handle(AdminGetOrderByIdQuery query, CancellationToken cancellationToken)
+    public async Task<AdminGetOrderByIdResult> Handle(
+        AdminGetOrderByIdQuery query,
+        CancellationToken cancellationToken = default
+    )
     {
         ContentOrderEntity? order = await contentOrderRepository.GetByIdWithItemsAsync(
             id: query.Id,
