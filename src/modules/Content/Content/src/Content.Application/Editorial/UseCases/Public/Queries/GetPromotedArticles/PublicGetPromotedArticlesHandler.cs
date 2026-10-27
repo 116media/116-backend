@@ -23,7 +23,7 @@ public class PublicGetPromotedArticlesHandler(
     /// <inheritdoc />
     public async Task<PublicGetPromotedArticlesResult> Handle(
         PublicGetPromotedArticlesQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         IReadOnlyList<ArticleEntity> articles = await articleRepository.GetPromotedAsync(
