@@ -25,7 +25,7 @@ public class AdminCreateCustomerHandler(
     /// <inheritdoc />
     public async Task<AdminCreateCustomerResult> Handle(
         AdminCreateCustomerCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         CustomerEntity? existing = await customerRepository.GetByEmailAsync(
