@@ -22,7 +22,7 @@ public class AdminApproveLyricsHandler(
     /// <inheritdoc />
     public async Task<AdminApproveLyricsResult> Handle(
         AdminApproveLyricsCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);
