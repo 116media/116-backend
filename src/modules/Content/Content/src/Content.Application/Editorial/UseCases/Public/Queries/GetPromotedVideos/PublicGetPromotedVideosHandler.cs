@@ -18,7 +18,7 @@ public class PublicGetPromotedVideosHandler(IVideoRepository videoRepository, IV
     /// <inheritdoc />
     public async Task<PublicGetPromotedVideosResult> Handle(
         PublicGetPromotedVideosQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         IReadOnlyList<VideoEntity> videos = await videoRepository.GetPromotedAsync(
