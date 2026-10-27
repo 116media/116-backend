@@ -23,7 +23,7 @@ public class AdminResolveSingleStreamingLinksHandler(
     /// <inheritdoc />
     public async Task<AdminResolveSingleStreamingLinksResult> Handle(
         AdminResolveSingleStreamingLinksCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         IReadOnlyDictionary<EnumStreamingPlatform, string> resolved = await linkResolutionService.ResolveAsync(
