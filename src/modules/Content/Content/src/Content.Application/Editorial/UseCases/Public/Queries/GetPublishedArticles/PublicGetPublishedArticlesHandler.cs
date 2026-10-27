@@ -25,7 +25,7 @@ public class PublicGetPublishedArticlesHandler(
     /// <inheritdoc />
     public async Task<PublicGetPublishedArticlesResult> Handle(
         PublicGetPublishedArticlesQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageSize = query.PaginatedRequest.PageSize;
