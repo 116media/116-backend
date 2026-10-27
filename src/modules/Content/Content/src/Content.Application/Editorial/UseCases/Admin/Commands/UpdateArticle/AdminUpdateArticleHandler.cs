@@ -24,7 +24,7 @@ public class AdminUpdateArticleHandler(
     /// <inheritdoc />
     public async Task<AdminUpdateArticleResult> Handle(
         AdminUpdateArticleCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArticleEntity article = await updateArticleService.UpdateAsync(command, cancellationToken);
