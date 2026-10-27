@@ -17,7 +17,7 @@ public class AdminSetLyricsTagsHandler(ILyricsRepository lyricsRepository, ICont
     /// <inheritdoc />
     public async Task<AdminSetLyricsTagsResult> Handle(
         AdminSetLyricsTagsCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         LyricsEntity lyrics = await lyricsRepository.GetByIdOrThrowAsync(
