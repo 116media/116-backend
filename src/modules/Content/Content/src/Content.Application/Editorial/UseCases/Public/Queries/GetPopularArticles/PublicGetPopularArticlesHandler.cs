@@ -22,7 +22,7 @@ public class PublicGetPopularArticlesHandler(
     /// <inheritdoc />
     public async Task<PublicGetPopularArticlesResult> Handle(
         PublicGetPopularArticlesQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         IReadOnlyList<ArticleEntity> articles = await articleRepository.GetPopularArticlesAsync(
