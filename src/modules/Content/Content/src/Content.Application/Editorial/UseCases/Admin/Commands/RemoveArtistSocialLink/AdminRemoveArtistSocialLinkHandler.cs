@@ -18,7 +18,7 @@ public class AdminRemoveArtistSocialLinkHandler(IArtistRepository artistReposito
     /// <inheritdoc />
     public async Task<AdminRemoveArtistSocialLinkResult> Handle(
         AdminRemoveArtistSocialLinkCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArtistEntity artist = await artistRepository.GetByIdOrThrowAsync(
