@@ -24,7 +24,7 @@ public class PublicGetLyricsBySlugHandler(
     /// <inheritdoc />
     public async Task<PublicGetLyricsBySlugResult> Handle(
         PublicGetLyricsBySlugQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         LyricsEntity? lyrics = await lyricsRepository.GetBySlugAsync(
