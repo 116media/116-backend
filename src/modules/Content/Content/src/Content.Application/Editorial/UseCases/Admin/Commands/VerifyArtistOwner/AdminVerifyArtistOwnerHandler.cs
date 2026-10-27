@@ -27,7 +27,7 @@ public class AdminVerifyArtistOwnerHandler(
     /// <inheritdoc />
     public async Task<AdminVerifyArtistOwnerResult> Handle(
         AdminVerifyArtistOwnerCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArtistEntity artist = await artistRepository.GetByIdOrThrowAsync(
