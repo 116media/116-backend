@@ -29,7 +29,7 @@ public class PublicRequestArtistClaimHandler(
     /// <inheritdoc />
     public async Task<PublicRequestArtistClaimResult> Handle(
         PublicRequestArtistClaimCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArtistEntity artist = await artistRepository.GetByIdOrThrowAsync(
