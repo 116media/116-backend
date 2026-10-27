@@ -24,7 +24,7 @@ public class AdminPinCategoryToFeedHandler(
     /// <inheritdoc />
     public async Task<AdminPinCategoryToFeedResult> Handle(
         AdminPinCategoryToFeedCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);
