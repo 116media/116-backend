@@ -21,7 +21,7 @@ public class PublicGetPublicShortBySlugHandler(
     /// <inheritdoc />
     public async Task<PublicGetPublicShortBySlugResult> Handle(
         PublicGetPublicShortBySlugQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ShortVideoEntity? shortVideo = await shortVideoRepository.GetBySlugAsync(
