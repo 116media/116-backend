@@ -24,7 +24,7 @@ public class AdminSetArticleArtistsHandler(
     /// <inheritdoc />
     public async Task<AdminSetArticleArtistsResult> Handle(
         AdminSetArticleArtistsCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArticleEntity article = await articleRepository.GetByIdOrThrowAsync(
