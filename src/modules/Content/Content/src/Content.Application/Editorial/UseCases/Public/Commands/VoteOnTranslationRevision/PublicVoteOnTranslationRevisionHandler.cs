@@ -24,7 +24,7 @@ public class PublicVoteOnTranslationRevisionHandler(
     /// <inheritdoc />
     public async Task<PublicVoteOnTranslationRevisionResult> Handle(
         PublicVoteOnTranslationRevisionCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         TranslationRevisionVoteData tally = await voteService.CastVoteAsync(
