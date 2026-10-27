@@ -24,7 +24,7 @@ public class AdminCreateArticleHandler(
     /// <inheritdoc />
     public async Task<AdminCreateArticleResult> Handle(
         AdminCreateArticleCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArticleEntity article = await createArticleService.CreateAsync(command, cancellationToken);
