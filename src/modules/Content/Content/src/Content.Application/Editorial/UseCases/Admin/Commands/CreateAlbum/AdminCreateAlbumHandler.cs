@@ -25,7 +25,7 @@ public class AdminCreateAlbumHandler(
     /// <inheritdoc />
     public async Task<AdminCreateAlbumResult> Handle(
         AdminCreateAlbumCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         if (command.ArtistId.HasValue)
