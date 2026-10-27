@@ -19,7 +19,7 @@ public class AdminSubmitOrderHandler(
     /// <inheritdoc />
     public async Task<AdminSubmitOrderResult> Handle(
         AdminSubmitOrderCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid orderId = Guid.Parse(command.OrderId);
