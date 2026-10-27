@@ -19,7 +19,7 @@ public class PublicGetLyricsByVideoIdHandler(ILyricsRepository lyricsRepository,
     /// <inheritdoc />
     public async Task<PublicGetLyricsByVideoIdResult> Handle(
         PublicGetLyricsByVideoIdQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid videoId = Guid.Parse(query.VideoId);
