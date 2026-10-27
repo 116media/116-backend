@@ -18,7 +18,7 @@ public class AdminForceUnpromoteArticleHandler(
     /// <inheritdoc />
     public async Task<AdminForceUnpromoteArticleResult> Handle(
         AdminForceUnpromoteArticleCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArticleEntity article = await unpromoteService.UnpromoteAsync(
