@@ -24,7 +24,7 @@ public class AdminCreateVideoHandler(
     /// <inheritdoc />
     public async Task<AdminCreateVideoResult> Handle(
         AdminCreateVideoCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         VideoEntity video = await createVideoService.CreateAsync(command, cancellationToken);
