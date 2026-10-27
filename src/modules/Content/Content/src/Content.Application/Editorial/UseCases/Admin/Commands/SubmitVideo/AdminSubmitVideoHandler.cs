@@ -24,7 +24,7 @@ public class AdminSubmitVideoHandler(
     /// <inheritdoc />
     public async Task<AdminSubmitVideoResult> Handle(
         AdminSubmitVideoCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);
