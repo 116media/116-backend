@@ -24,7 +24,7 @@ public class AdminUploadAlbumCoverHandler(
     /// <inheritdoc />
     public async Task<AdminUploadAlbumCoverResult> Handle(
         AdminUploadAlbumCoverCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         AlbumEntity album = await albumRepository.GetByIdOrThrowAsync(
