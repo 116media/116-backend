@@ -22,7 +22,7 @@ public class PublicGetArticleBySlugHandler(
     /// <inheritdoc />
     public async Task<PublicGetArticleBySlugResult> Handle(
         PublicGetArticleBySlugQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArticleEntity? article = await articleRepository.GetBySlugAsync(
