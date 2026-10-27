@@ -20,7 +20,7 @@ public class AdminGetOrderPaymentHandler(
     /// <inheritdoc />
     public async Task<AdminGetOrderPaymentResult> Handle(
         AdminGetOrderPaymentQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         await contentOrderRepository.GetByIdOrThrowAsync(id: query.OrderId, ct: cancellationToken);
