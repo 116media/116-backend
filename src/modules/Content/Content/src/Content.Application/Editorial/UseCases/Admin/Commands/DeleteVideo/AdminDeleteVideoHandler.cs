@@ -22,7 +22,7 @@ public class AdminDeleteVideoHandler(IVideoRepository videoRepository, IContentU
     /// <inheritdoc />
     public async Task<AdminDeleteVideoResult> Handle(
         AdminDeleteVideoCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);
