@@ -26,7 +26,7 @@ public class PublicGetArtistReleasesHandler(
     /// <inheritdoc />
     public async Task<PublicGetArtistReleasesResult> Handle(
         PublicGetArtistReleasesQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArtistEntity? artist = await artistRepository.GetBySlugAsync(
