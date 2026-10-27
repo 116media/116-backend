@@ -18,7 +18,7 @@ public class AdminRejectPaymentHandler(IContentOrderRepository contentOrderRepos
     /// <inheritdoc />
     public async Task<AdminRejectPaymentResult> Handle(
         AdminRejectPaymentCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid orderId = Guid.Parse(command.OrderId);
