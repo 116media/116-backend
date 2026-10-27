@@ -16,7 +16,7 @@ public class AdminGetLyricsSubmissionsHandler(ILyricsSubmissionRepository submis
     /// <inheritdoc />
     public async Task<AdminGetLyricsSubmissionsResult> Handle(
         AdminGetLyricsSubmissionsQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageSize = query.PaginatedRequest.PageSize;
