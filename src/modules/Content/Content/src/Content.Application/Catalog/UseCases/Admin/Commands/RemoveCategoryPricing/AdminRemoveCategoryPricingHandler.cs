@@ -23,7 +23,7 @@ public class AdminRemoveCategoryPricingHandler(
     /// <inheritdoc />
     public async Task<AdminRemoveCategoryPricingResult> Handle(
         AdminRemoveCategoryPricingCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid categoryId = Guid.Parse(command.CategoryId);
