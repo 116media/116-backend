@@ -22,7 +22,7 @@ public class AdminUpdateVideoSeoHandler(
     /// <inheritdoc />
     public async Task<AdminUpdateVideoSeoResult> Handle(
         AdminUpdateVideoSeoCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);
