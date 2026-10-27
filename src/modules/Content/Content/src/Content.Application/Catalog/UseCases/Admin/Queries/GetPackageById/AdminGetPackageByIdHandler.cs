@@ -18,7 +18,7 @@ public class AdminGetPackageByIdHandler(IPackageRepository packageRepository, IP
     /// <inheritdoc />
     public async Task<AdminGetPackageByIdResult> Handle(
         AdminGetPackageByIdQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         PackageEntity package = await packageRepository.GetByIdOrThrowAsync(
