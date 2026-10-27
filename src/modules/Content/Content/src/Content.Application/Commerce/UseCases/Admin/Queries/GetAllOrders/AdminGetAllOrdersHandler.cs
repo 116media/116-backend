@@ -18,7 +18,10 @@ public class AdminGetAllOrdersHandler(
 ) : IQueryHandler<AdminGetAllOrdersQuery, AdminGetAllOrdersResult>
 {
     /// <inheritdoc />
-    public async Task<AdminGetAllOrdersResult> Handle(AdminGetAllOrdersQuery query, CancellationToken cancellationToken)
+    public async Task<AdminGetAllOrdersResult> Handle(
+        AdminGetAllOrdersQuery query,
+        CancellationToken cancellationToken = default
+    )
     {
         int pageSize = query.PaginatedRequest.PageSize;
         int pageIndex = query.PaginatedRequest.PageIndex;
