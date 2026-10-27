@@ -21,7 +21,7 @@ public class AdminApproveLyricsSubmissionHandler(
     /// <inheritdoc />
     public async Task<AdminApproveLyricsSubmissionResult> Handle(
         AdminApproveLyricsSubmissionCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ApprovedSubmissionData approval = await approveService.PrepareAsync(
