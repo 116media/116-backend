@@ -24,7 +24,7 @@ public class AdminRemovePackageSlotHandler(
     /// <inheritdoc />
     public async Task<AdminRemovePackageSlotResult> Handle(
         AdminRemovePackageSlotCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid packageId = Guid.Parse(command.PackageId);
