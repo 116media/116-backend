@@ -25,7 +25,7 @@ public class AdminDecideLyricsRevisionHandler(
     /// <inheritdoc />
     public async Task<AdminDecideLyricsRevisionResult> Handle(
         AdminDecideLyricsRevisionCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         LyricsRevisionEntity revision = await revisionRepository.GetByIdOrThrowAsync(
