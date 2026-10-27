@@ -22,7 +22,7 @@ public class AdminVerifyPaymentHandler(
     /// <inheritdoc />
     public async Task<AdminVerifyPaymentResult> Handle(
         AdminVerifyPaymentCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid orderId = Guid.Parse(command.OrderId);
