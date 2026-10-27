@@ -18,7 +18,10 @@ public class AdminGetAllShortsHandler(
 ) : IQueryHandler<AdminGetAllShortsQuery, AdminGetAllShortsResult>
 {
     /// <inheritdoc />
-    public async Task<AdminGetAllShortsResult> Handle(AdminGetAllShortsQuery query, CancellationToken cancellationToken)
+    public async Task<AdminGetAllShortsResult> Handle(
+        AdminGetAllShortsQuery query,
+        CancellationToken cancellationToken = default
+    )
     {
         int pageSize = query.PaginatedRequest.PageSize;
         int pageIndex = query.PaginatedRequest.PageIndex;
