@@ -24,7 +24,7 @@ public class AdminUpdateVideoHandler(
     /// <inheritdoc />
     public async Task<AdminUpdateVideoResult> Handle(
         AdminUpdateVideoCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         VideoEntity video = await updateVideoService.UpdateAsync(command, cancellationToken);
