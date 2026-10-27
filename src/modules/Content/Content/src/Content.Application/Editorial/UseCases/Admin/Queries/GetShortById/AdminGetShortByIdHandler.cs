@@ -17,7 +17,10 @@ public class AdminGetShortByIdHandler(
 ) : IQueryHandler<AdminGetShortByIdQuery, AdminGetShortByIdResult>
 {
     /// <inheritdoc />
-    public async Task<AdminGetShortByIdResult> Handle(AdminGetShortByIdQuery query, CancellationToken cancellationToken)
+    public async Task<AdminGetShortByIdResult> Handle(
+        AdminGetShortByIdQuery query,
+        CancellationToken cancellationToken = default
+    )
     {
         ShortVideoEntity shortVideo = await shortVideoRepository.GetByIdOrThrowAsync(
             id: query.Id,
