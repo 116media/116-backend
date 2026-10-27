@@ -23,7 +23,7 @@ public class PublicGetPublishedLyricsHandler(
     /// <inheritdoc />
     public async Task<PublicGetPublishedLyricsResult> Handle(
         PublicGetPublishedLyricsQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageSize = query.PaginatedRequest.PageSize;
