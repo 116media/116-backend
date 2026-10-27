@@ -23,7 +23,7 @@ public class AdminUpdateCustomerHandler(
     /// <inheritdoc />
     public async Task<AdminUpdateCustomerResult> Handle(
         AdminUpdateCustomerCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);
