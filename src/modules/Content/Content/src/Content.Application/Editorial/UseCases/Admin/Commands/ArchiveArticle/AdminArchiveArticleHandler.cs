@@ -22,7 +22,7 @@ public class AdminArchiveArticleHandler(
     /// <inheritdoc />
     public async Task<AdminArchiveArticleResult> Handle(
         AdminArchiveArticleCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);
