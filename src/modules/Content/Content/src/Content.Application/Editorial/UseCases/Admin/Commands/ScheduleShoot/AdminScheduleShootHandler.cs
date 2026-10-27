@@ -16,7 +16,7 @@ public class AdminScheduleShootHandler(IVideoRepository videoRepository, IConten
     /// <inheritdoc />
     public async Task<AdminScheduleShootResult> Handle(
         AdminScheduleShootCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid videoId = Guid.Parse(command.VideoId);
