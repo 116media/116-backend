@@ -25,7 +25,7 @@ public class PublicRequestLyricsTranslationHandler(
     /// <inheritdoc />
     public async Task<PublicRequestLyricsTranslationResult> Handle(
         PublicRequestLyricsTranslationCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         LyricsTranslationEntity? existing = await translationRepository.GetByLyricsAndLanguageAsync(
