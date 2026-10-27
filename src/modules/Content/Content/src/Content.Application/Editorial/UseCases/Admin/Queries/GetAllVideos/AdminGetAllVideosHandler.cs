@@ -17,7 +17,10 @@ public class AdminGetAllVideosHandler(IVideoRepository videoRepository, IVideoDt
     : IQueryHandler<AdminGetAllVideosQuery, AdminGetAllVideosResult>
 {
     /// <inheritdoc />
-    public async Task<AdminGetAllVideosResult> Handle(AdminGetAllVideosQuery query, CancellationToken cancellationToken)
+    public async Task<AdminGetAllVideosResult> Handle(
+        AdminGetAllVideosQuery query,
+        CancellationToken cancellationToken = default
+    )
     {
         int pageSize = query.PaginatedRequest.PageSize;
         int pageIndex = query.PaginatedRequest.PageIndex;
