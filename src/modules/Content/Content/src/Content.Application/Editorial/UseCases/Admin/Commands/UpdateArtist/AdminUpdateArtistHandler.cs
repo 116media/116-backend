@@ -26,7 +26,7 @@ public class AdminUpdateArtistHandler(
     /// <inheritdoc />
     public async Task<AdminUpdateArtistResult> Handle(
         AdminUpdateArtistCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArtistEntity artist = await artistRepository.GetByIdOrThrowAsync(
