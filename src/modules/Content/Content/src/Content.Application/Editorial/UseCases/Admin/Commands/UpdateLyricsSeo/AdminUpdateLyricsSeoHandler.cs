@@ -21,7 +21,7 @@ public class AdminUpdateLyricsSeoHandler(
     /// <inheritdoc />
     public async Task<AdminUpdateLyricsSeoResult> Handle(
         AdminUpdateLyricsSeoCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);
