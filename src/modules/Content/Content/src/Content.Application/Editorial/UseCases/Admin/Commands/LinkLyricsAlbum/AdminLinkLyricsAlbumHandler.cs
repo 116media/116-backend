@@ -21,7 +21,7 @@ public class AdminLinkLyricsAlbumHandler(
     /// <inheritdoc />
     public async Task<AdminLinkLyricsAlbumResult> Handle(
         AdminLinkLyricsAlbumCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         LyricsEntity lyrics = await lyricsRepository.GetByIdOrThrowAsync(
