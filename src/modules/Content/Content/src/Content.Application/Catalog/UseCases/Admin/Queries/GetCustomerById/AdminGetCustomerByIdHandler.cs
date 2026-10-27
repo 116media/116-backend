@@ -17,7 +17,7 @@ public class AdminGetCustomerByIdHandler(ICustomerRepository customerRepository,
     /// <inheritdoc />
     public async Task<AdminGetCustomerByIdResult> Handle(
         AdminGetCustomerByIdQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         CustomerEntity customer = await customerRepository.GetByIdOrThrowAsync(
