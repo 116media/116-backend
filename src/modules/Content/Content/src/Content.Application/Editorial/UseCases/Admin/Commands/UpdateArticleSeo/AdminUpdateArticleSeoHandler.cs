@@ -21,7 +21,7 @@ public class AdminUpdateArticleSeoHandler(
     /// <inheritdoc />
     public async Task<AdminUpdateArticleSeoResult> Handle(
         AdminUpdateArticleSeoCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);
