@@ -22,7 +22,7 @@ public class AdminEditOrderItemHandler(
     /// <inheritdoc />
     public async Task<AdminEditOrderItemResult> Handle(
         AdminEditOrderItemCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ContentOrderItemEntity item = await editItemService.EditAsync(command, cancellationToken);
