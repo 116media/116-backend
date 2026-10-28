@@ -27,7 +27,7 @@ public class AdminAssignRoleToUserHandler(
     /// <inheritdoc />
     public async Task<AdminAssignRoleToUserResult> Handle(
         AdminAssignRoleToUserCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid userId = Guid.Parse(input: command.UserId);
