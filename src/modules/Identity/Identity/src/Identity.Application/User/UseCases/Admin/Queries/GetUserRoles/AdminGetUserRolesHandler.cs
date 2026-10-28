@@ -21,7 +21,10 @@ public class AdminGetUserRolesHandler(IAuthRepository authRepository, IMapper ma
     /// <param name="query">The query containing the user ID.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>A <see cref="AdminGetUserRolesResult" /> containing the user's roles.</returns>
-    public async Task<AdminGetUserRolesResult> Handle(AdminGetUserRolesQuery query, CancellationToken cancellationToken)
+    public async Task<AdminGetUserRolesResult> Handle(
+        AdminGetUserRolesQuery query,
+        CancellationToken cancellationToken = default
+    )
     {
         UserEntity? user = await authRepository.GetUserWithRolesByIdOrThrow(
             userId: query.UserId,
