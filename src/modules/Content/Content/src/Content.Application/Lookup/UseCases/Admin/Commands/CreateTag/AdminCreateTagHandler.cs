@@ -18,7 +18,10 @@ public class AdminCreateTagHandler(ITagRepository tagRepository, IContentUnitOfW
     : ICommandHandler<AdminCreateTagCommand, AdminCreateTagResult>
 {
     /// <inheritdoc />
-    public async Task<AdminCreateTagResult> Handle(AdminCreateTagCommand command, CancellationToken cancellationToken)
+    public async Task<AdminCreateTagResult> Handle(
+        AdminCreateTagCommand command,
+        CancellationToken cancellationToken = default
+    )
     {
         string slug = await SlugHelper.ToAvailableSlugAsync(
             name: command.Name,
