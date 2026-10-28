@@ -26,7 +26,7 @@ public class AdminRevokeSessionHandler(ISessionRepository sessionRepository, IId
     /// <exception cref="AuthorizationException">Thrown when the session doesn't belong to the user.</exception>
     public async Task<AdminRevokeSessionResult> Handle(
         AdminRevokeSessionCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid sessionId = Guid.Parse(command.SessionId);
