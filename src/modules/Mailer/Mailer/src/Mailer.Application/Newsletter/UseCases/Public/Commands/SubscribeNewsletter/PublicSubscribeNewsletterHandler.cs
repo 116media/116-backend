@@ -33,7 +33,7 @@ public class PublicSubscribeNewsletterHandler(
     /// </summary>
     public async Task<PublicSubscribeNewsletterResult> Handle(
         PublicSubscribeNewsletterCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         NewsletterSubscriberEntity? existing = await newsletterRepository.GetByEmailAsync(
