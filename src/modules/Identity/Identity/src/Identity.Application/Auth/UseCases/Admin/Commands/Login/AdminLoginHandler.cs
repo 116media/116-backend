@@ -26,7 +26,7 @@ public class AdminLoginHandler(
     /// <summary>
     /// Handles the admin login command by authenticating the user and validating admin privileges.
     /// </summary>
-    public async Task<AdminLoginResult> Handle(AdminLoginCommand command, CancellationToken cancellationToken)
+    public async Task<AdminLoginResult> Handle(AdminLoginCommand command, CancellationToken cancellationToken = default)
     {
         // Authenticate admin user and get associated data
         AdminLoginAuthData authData = await authService.AuthenticateAsync(
