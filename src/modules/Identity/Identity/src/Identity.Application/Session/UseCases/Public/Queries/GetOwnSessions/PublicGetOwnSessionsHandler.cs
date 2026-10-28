@@ -27,7 +27,7 @@ public class PublicGetOwnSessionsHandler(
     /// <returns>A <see cref="PublicGetOwnSessionsResult" /> containing list of user sessions.</returns>
     public async Task<PublicGetOwnSessionsResult> Handle(
         PublicGetOwnSessionsQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         List<SessionEntity> sessions = await sessionRepository.GetUserSessionsAsync(
