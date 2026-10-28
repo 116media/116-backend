@@ -28,7 +28,10 @@ public class AdminUpdateRoleHandler(
     /// <param name="command">The command containing role ID and update data.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>A <see cref="AdminUpdateRoleResult" /> containing the updated role.</returns>
-    public async Task<AdminUpdateRoleResult> Handle(AdminUpdateRoleCommand command, CancellationToken cancellationToken)
+    public async Task<AdminUpdateRoleResult> Handle(
+        AdminUpdateRoleCommand command,
+        CancellationToken cancellationToken = default
+    )
     {
         Guid roleId = Guid.Parse(input: command.RoleId);
 
