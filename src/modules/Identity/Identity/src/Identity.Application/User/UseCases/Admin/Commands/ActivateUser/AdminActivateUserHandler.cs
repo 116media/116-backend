@@ -25,7 +25,7 @@ internal class AdminActivateUserHandler(IAuthRepository authRepository, IIdentit
     /// <exception cref="NotFoundException">Thrown when no user is found with the specified ID.</exception>
     public async Task<AdminActivateUserResult> Handle(
         AdminActivateUserCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid userId = Guid.Parse(input: command.UserId);
