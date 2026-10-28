@@ -23,7 +23,7 @@ public class PublicGetSimilarLyricsHandler(
     /// <inheritdoc />
     public async Task<PublicGetSimilarLyricsResult> Handle(
         PublicGetSimilarLyricsQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         IReadOnlyList<LyricsEntity> similar = await lyricsRepository.GetSimilarAsync(
