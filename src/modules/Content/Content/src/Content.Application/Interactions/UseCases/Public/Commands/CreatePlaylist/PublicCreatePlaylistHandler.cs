@@ -17,7 +17,7 @@ public class PublicCreatePlaylistHandler(IPlaylistRepository playlistRepository,
     /// <inheritdoc />
     public async Task<PublicCreatePlaylistResult> Handle(
         PublicCreatePlaylistCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         var playlist = PlaylistEntity.Create(id: Guid.NewGuid(), userId: command.UserId, name: command.Name);
