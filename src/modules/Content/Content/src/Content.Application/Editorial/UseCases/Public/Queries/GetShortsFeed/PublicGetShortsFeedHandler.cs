@@ -23,7 +23,7 @@ public class PublicGetShortsFeedHandler(
     /// <inheritdoc />
     public async Task<PublicGetShortsFeedResult> Handle(
         PublicGetShortsFeedQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         long seed;
