@@ -20,7 +20,7 @@ public class PublicGetOwnCommentsForArticleHandler(
     /// <inheritdoc />
     public async Task<PublicGetOwnCommentsForArticleResult> Handle(
         PublicGetOwnCommentsForArticleQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArticleEntity? article = await articleRepository.GetByIdAsync(query.ArticleId, cancellationToken);
