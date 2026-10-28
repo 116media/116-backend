@@ -30,7 +30,7 @@ public class AdminCreatePermissionHandler(
     /// <returns>A <see cref="AdminCreatePermissionResult" /> containing the created permission.</returns>
     public async Task<AdminCreatePermissionResult> Handle(
         AdminCreatePermissionCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         bool permissionExists = await permissionRepository.ExistsByResourceAndActionAsync(
