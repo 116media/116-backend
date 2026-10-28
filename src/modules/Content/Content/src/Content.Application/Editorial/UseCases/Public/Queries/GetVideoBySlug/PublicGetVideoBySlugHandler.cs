@@ -24,7 +24,7 @@ public class PublicGetVideoBySlugHandler(
     /// <inheritdoc />
     public async Task<PublicGetVideoBySlugResult> Handle(
         PublicGetVideoBySlugQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         VideoEntity? video = await videoRepository.GetBySlugAsync(
