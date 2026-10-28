@@ -24,7 +24,7 @@ public class AdminDeleteArticleCommentHandler(
     /// <inheritdoc />
     public async Task<AdminDeleteArticleCommentResult> Handle(
         AdminDeleteArticleCommentCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArticleCommentEntity? comment = await articleCommentRepository.GetCommentByIdAsync(
