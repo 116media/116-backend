@@ -30,7 +30,7 @@ public class AdminDeactivatePermissionHandler(
     /// <returns>A <see cref="AdminDeactivatePermissionResult" /> containing the deactivated permission.</returns>
     public async Task<AdminDeactivatePermissionResult> Handle(
         AdminDeactivatePermissionCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid permissionId = Guid.Parse(input: command.PermissionId);
