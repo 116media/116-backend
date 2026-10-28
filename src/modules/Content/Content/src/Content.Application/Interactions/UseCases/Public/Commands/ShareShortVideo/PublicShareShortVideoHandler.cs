@@ -16,7 +16,7 @@ public class PublicShareShortVideoHandler(IShortVideoRepository shortVideoReposi
     /// <inheritdoc />
     public async Task<PublicShareShortVideoResult> Handle(
         PublicShareShortVideoCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         await shortVideoRepository.ExistsOrThrowAsync(
