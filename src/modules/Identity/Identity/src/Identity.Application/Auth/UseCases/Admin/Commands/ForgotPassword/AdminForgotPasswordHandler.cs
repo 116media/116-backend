@@ -25,7 +25,7 @@ public class AdminForgotPasswordHandler(
     /// </summary>
     public async Task<AdminForgotPasswordResult> Handle(
         AdminForgotPasswordCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         var email = new Email(value: command.Email);
