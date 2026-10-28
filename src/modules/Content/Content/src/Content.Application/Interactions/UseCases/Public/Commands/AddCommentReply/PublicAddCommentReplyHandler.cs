@@ -26,7 +26,7 @@ public class PublicAddCommentReplyHandler(
     /// <inheritdoc />
     public async Task<PublicAddCommentReplyResult> Handle(
         PublicAddCommentReplyCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         await articleCommentRepository.ExistsOrThrowAsync(
