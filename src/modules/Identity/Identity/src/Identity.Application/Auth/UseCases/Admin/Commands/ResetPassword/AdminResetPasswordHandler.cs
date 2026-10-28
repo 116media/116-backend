@@ -33,7 +33,7 @@ public class AdminResetPasswordHandler(
     /// <exception cref="AuthorizationException">Thrown when max attempts are reached.</exception>
     public async Task<AdminResetPasswordResult> Handle(
         AdminResetPasswordCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         AdminResetPasswordAuthData authData = await authService.GetUserForResetAsync(
