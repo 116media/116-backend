@@ -21,7 +21,7 @@ public class PublicRenamePlaylistHandler(
     /// <inheritdoc />
     public async Task<PublicRenamePlaylistResult> Handle(
         PublicRenamePlaylistCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         PlaylistEntity? playlist = await playlistRepository.GetByIdAsync(
