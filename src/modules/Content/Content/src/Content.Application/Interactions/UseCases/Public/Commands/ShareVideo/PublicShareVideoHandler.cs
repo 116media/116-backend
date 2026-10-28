@@ -16,7 +16,7 @@ public class PublicShareVideoHandler(IVideoRepository videoRepository, IContentU
     /// <inheritdoc />
     public async Task<PublicShareVideoResult> Handle(
         PublicShareVideoCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         await videoRepository.ExistsOrThrowAsync(videoId: command.VideoId, cancellationToken: cancellationToken);
