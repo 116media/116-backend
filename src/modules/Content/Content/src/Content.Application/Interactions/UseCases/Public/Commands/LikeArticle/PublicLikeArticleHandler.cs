@@ -21,7 +21,7 @@ public class PublicLikeArticleHandler(
     /// <inheritdoc />
     public async Task<PublicLikeArticleResult> Handle(
         PublicLikeArticleCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         await articleInteractionRepository.ExistsOrThrowAsync(
