@@ -30,7 +30,7 @@ public class AdminForceLogoutUserHandler(
     /// <returns>A <see cref="AdminForceLogoutUserResult" /> indicating success.</returns>
     public async Task<AdminForceLogoutUserResult> Handle(
         AdminForceLogoutUserCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid targetUserId = Guid.Parse(input: command.UserId);
