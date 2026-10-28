@@ -22,7 +22,7 @@ public class PublicGetOwnBookmarkedShortVideosHandler(
     /// <inheritdoc />
     public async Task<PublicGetOwnBookmarkedShortVideosResult> Handle(
         PublicGetOwnBookmarkedShortVideosQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageIndex = query.PaginatedRequest.PageIndex;
