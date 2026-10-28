@@ -30,7 +30,7 @@ public class AdminRestorePermissionHandler(
     /// <returns>A <see cref="AdminRestorePermissionResult" /> containing the restored permission.</returns>
     public async Task<AdminRestorePermissionResult> Handle(
         AdminRestorePermissionCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid permissionId = Guid.Parse(input: command.PermissionId);
