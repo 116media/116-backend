@@ -26,7 +26,7 @@ public class PublicMarkNotificationReadHandler(
     /// </summary>
     public async Task<PublicMarkNotificationReadResult> Handle(
         PublicMarkNotificationReadCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         NotificationEntity notification =
