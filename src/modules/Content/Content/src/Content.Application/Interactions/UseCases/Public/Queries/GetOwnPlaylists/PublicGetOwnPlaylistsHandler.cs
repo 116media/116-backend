@@ -20,7 +20,7 @@ public class PublicGetOwnPlaylistsHandler(
     /// <inheritdoc />
     public async Task<PublicGetOwnPlaylistsResult> Handle(
         PublicGetOwnPlaylistsQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         IReadOnlyList<PlaylistEntity> playlists = await playlistRepository.GetByUserIdAsync(
