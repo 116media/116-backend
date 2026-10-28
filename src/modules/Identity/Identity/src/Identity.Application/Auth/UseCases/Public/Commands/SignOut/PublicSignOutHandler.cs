@@ -17,7 +17,10 @@ public class PublicSignOutHandler(IPublicSignOutSessionService sessionService, I
     /// Handles the sign-out command by invalidating the specific session.
     /// If the session doesn't exist, user is already logged out.
     /// </summary>
-    public async Task<PublicSignOutResult> Handle(PublicSignOutCommand command, CancellationToken cancellationToken)
+    public async Task<PublicSignOutResult> Handle(
+        PublicSignOutCommand command,
+        CancellationToken cancellationToken = default
+    )
     {
         UserEntity? user = await authRepository.FindUserByIdOrThrow(
             userId: command.UserId,
