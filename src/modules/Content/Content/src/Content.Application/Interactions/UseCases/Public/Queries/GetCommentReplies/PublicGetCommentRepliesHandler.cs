@@ -27,7 +27,7 @@ public class PublicGetCommentRepliesHandler(
     /// <inheritdoc />
     public async Task<PublicGetCommentRepliesResult> Handle(
         PublicGetCommentRepliesQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageIndex = query.PaginatedRequest.PageIndex;
