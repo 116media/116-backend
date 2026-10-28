@@ -18,7 +18,7 @@ public class AdminGetAllPricingTiersHandler(IPricingTierRepository pricingTierRe
     /// <inheritdoc />
     public async Task<AdminGetAllPricingTiersResult> Handle(
         AdminGetAllPricingTiersQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         IReadOnlyList<PricingTierEntity> pricingTiers = await pricingTierRepository.GetAllAsync(
