@@ -30,7 +30,7 @@ public class PublicGetVideoPromotionFeedHandler(
     /// <inheritdoc />
     public async Task<PublicGetVideoPromotionFeedResult> Handle(
         PublicGetVideoPromotionFeedQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         IReadOnlyList<VideoEntity> spot1Videos = await videoRepository.GetActivePromotedBySpotAsync(
