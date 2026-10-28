@@ -35,7 +35,10 @@ public class PublicLoginHandler(
     /// <exception cref="AuthorizationException">
     /// Thrown when the user account is inactive or not verified (HTTP 403 Forbidden).
     /// </exception>
-    public async Task<PublicLoginResult> Handle(PublicLoginCommand command, CancellationToken cancellationToken)
+    public async Task<PublicLoginResult> Handle(
+        PublicLoginCommand command,
+        CancellationToken cancellationToken = default
+    )
     {
         // Authenticate user and get associated data
         PublicLoginAuthData authData = await authService.AuthenticateAsync(
