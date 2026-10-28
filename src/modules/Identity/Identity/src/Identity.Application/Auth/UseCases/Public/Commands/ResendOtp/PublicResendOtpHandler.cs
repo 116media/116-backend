@@ -25,7 +25,10 @@ public class PublicResendOtpHandler(IPublicResendOtpService otpService, IAuthRep
     /// <returns>The result indicating success or failure of the OTP resend operation.</returns>
     /// <exception cref="NotFoundException">Thrown when the user is not found.</exception>
     /// <exception cref="BadRequestException">Thrown when the user account is inactive or not verified.</exception>
-    public async Task<PublicResendOtpResult> Handle(PublicResendOtpCommand command, CancellationToken cancellationToken)
+    public async Task<PublicResendOtpResult> Handle(
+        PublicResendOtpCommand command,
+        CancellationToken cancellationToken = default
+    )
     {
         var email = new Email(value: command.Email);
         var purpose = new OtpPurpose(value: command.Purpose);
