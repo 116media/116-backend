@@ -23,7 +23,7 @@ public class AdminSignOutFromAllDevicesHandler(
     /// </summary>
     public async Task<AdminSignOutFromAllDevicesResult> Handle(
         AdminSignOutFromAllDevicesCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         UserEntity? user = await authRepository.FindUserByIdOrThrow(
