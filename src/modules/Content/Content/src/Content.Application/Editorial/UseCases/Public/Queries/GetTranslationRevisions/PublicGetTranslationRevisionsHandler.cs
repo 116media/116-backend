@@ -18,7 +18,7 @@ public class PublicGetTranslationRevisionsHandler(
     /// <inheritdoc />
     public async Task<PublicGetTranslationRevisionsResult> Handle(
         PublicGetTranslationRevisionsQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         await translationRepository.GetByIdOrThrowAsync(id: query.TranslationId, cancellationToken: cancellationToken);
