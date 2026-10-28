@@ -21,7 +21,10 @@ public class PublicSignUpHandler(IPublicSignUpAuthService authService, IMapper m
     /// <param name="command">The public sign-up command containing user registration data.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>A <see cref="PublicSignUpResult" /> containing the created user.</returns>
-    public async Task<PublicSignUpResult> Handle(PublicSignUpCommand command, CancellationToken cancellationToken)
+    public async Task<PublicSignUpResult> Handle(
+        PublicSignUpCommand command,
+        CancellationToken cancellationToken = default
+    )
     {
         PublicSignUpAuthData authData = await authService.RegisterAsync(
             email: command.Email,
