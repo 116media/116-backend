@@ -16,7 +16,7 @@ public class PublicGetAllContentTypesHandler(IContentTypeRepository contentTypeR
     /// <inheritdoc />
     public async Task<PublicGetAllContentTypesResult> Handle(
         PublicGetAllContentTypesQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         IReadOnlyList<ContentTypeEntity> contentTypes = await contentTypeRepository.GetActiveAsync(
