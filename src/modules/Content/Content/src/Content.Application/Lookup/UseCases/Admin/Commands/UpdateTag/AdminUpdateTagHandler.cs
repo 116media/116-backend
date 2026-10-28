@@ -17,7 +17,10 @@ public class AdminUpdateTagHandler(ITagRepository tagRepository, IContentUnitOfW
     : ICommandHandler<AdminUpdateTagCommand, AdminUpdateTagResult>
 {
     /// <inheritdoc />
-    public async Task<AdminUpdateTagResult> Handle(AdminUpdateTagCommand command, CancellationToken cancellationToken)
+    public async Task<AdminUpdateTagResult> Handle(
+        AdminUpdateTagCommand command,
+        CancellationToken cancellationToken = default
+    )
     {
         Guid id = Guid.Parse(command.Id);
 
