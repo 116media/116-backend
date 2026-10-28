@@ -20,7 +20,7 @@ public class PublicGetPublishedVideosHandler(IVideoRepository videoRepository, I
     /// <inheritdoc />
     public async Task<PublicGetPublishedVideosResult> Handle(
         PublicGetPublishedVideosQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageSize = query.PaginatedRequest.PageSize;
