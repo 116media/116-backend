@@ -23,7 +23,7 @@ public class AdminGetAllSessionsHandler(ISessionRepository sessionRepository, IM
     /// <returns>A <see cref="AdminGetAllSessionsResult" /> containing paginated session DTOs.</returns>
     public async Task<AdminGetAllSessionsResult> Handle(
         AdminGetAllSessionsQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageSize = query.PaginatedRequest.PageSize;
