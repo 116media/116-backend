@@ -25,7 +25,7 @@ public class AdminUpdatePromotionLevelHandler(
     /// <inheritdoc />
     public async Task<AdminUpdatePromotionLevelResult> Handle(
         AdminUpdatePromotionLevelCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);
