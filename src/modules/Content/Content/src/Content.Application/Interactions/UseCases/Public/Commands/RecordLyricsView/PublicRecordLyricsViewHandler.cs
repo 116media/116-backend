@@ -36,7 +36,7 @@ public class PublicRecordLyricsViewHandler(ILyricsRepository lyricsRepository, I
     /// <inheritdoc />
     public async Task<PublicRecordLyricsViewResult> Handle(
         PublicRecordLyricsViewCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         LyricsEntity lyrics = await lyricsRepository.GetByIdOrThrowAsync(
