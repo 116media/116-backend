@@ -32,7 +32,7 @@ public class PublicUpdateAvatarHandler(
     /// <returns>The result containing the updated user information.</returns>
     public async Task<PublicUpdateAvatarResult> Handle(
         PublicUpdateAvatarCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         PublicUpdateAvatarAuthData userData = await authService.GetUserForAvatarUpdateAsync(
