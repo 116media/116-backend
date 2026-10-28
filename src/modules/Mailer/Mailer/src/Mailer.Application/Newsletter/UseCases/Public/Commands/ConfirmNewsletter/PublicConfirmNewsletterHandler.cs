@@ -35,7 +35,7 @@ public class PublicConfirmNewsletterHandler(
     /// </summary>
     public async Task<PublicConfirmNewsletterResult> Handle(
         PublicConfirmNewsletterCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         NewsletterSubscriberEntity subscriber =
