@@ -26,7 +26,7 @@ public class PublicForgotPasswordHandler(
     /// </summary>
     public async Task<PublicForgotPasswordResult> Handle(
         PublicForgotPasswordCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         var email = new Email(value: command.Email);
