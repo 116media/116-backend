@@ -32,7 +32,7 @@ public class PublicUpdateOwnProfileHandler(
     /// <exception cref="ConflictException">Thrown when email, username, or phone number already exists.</exception>
     public async Task<PublicUpdateOwnProfileResult> Handle(
         PublicUpdateOwnProfileCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         PublicUpdateProfileAuthData authData = await authService.UpdateProfileAsync(
