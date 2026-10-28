@@ -27,7 +27,7 @@ public class PublicGetOwnSessionByIdHandler(
     /// <returns>A <see cref="PublicGetOwnSessionByIdResult" /> containing the session DTO.</returns>
     public async Task<PublicGetOwnSessionByIdResult> Handle(
         PublicGetOwnSessionByIdQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         SessionEntity? session = await sessionRepository.GetByIdAsync(
