@@ -30,7 +30,7 @@ public class AdminDeactivateRoleHandler(
     /// <returns>A <see cref="AdminDeactivateRoleResult" /> containing the deactivated role.</returns>
     public async Task<AdminDeactivateRoleResult> Handle(
         AdminDeactivateRoleCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid roleId = Guid.Parse(input: command.RoleId);
