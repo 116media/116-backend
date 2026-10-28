@@ -21,7 +21,7 @@ public class PublicRemoveVideoFromPlaylistHandler(
     /// <inheritdoc />
     public async Task<PublicRemoveVideoFromPlaylistResult> Handle(
         PublicRemoveVideoFromPlaylistCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         PlaylistEntity? playlist = await playlistRepository.GetByIdAsync(
