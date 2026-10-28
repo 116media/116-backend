@@ -26,7 +26,7 @@ public class PublicAddVideoToPlaylistHandler(
     /// <inheritdoc />
     public async Task<PublicAddVideoToPlaylistResult> Handle(
         PublicAddVideoToPlaylistCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         PlaylistEntity? playlist = await playlistRepository.GetByIdAsync(
