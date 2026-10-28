@@ -21,7 +21,7 @@ public class PublicLikeArticleCommentHandler(
     /// <inheritdoc />
     public async Task<PublicLikeArticleCommentResult> Handle(
         PublicLikeArticleCommentCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArticleCommentEntity? comment = await articleCommentRepository.GetCommentByIdAsync(
