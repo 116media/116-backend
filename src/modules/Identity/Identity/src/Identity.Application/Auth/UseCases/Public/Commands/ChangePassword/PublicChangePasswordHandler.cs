@@ -39,7 +39,7 @@ public class PublicChangePasswordHandler(
     /// <exception cref="ConflictException">Thrown when new password is the same as old password.</exception>
     public async Task<PublicChangePasswordResult> Handle(
         PublicChangePasswordCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         UserEntity? user = await authRepository.FindUserByIdOrThrow(
