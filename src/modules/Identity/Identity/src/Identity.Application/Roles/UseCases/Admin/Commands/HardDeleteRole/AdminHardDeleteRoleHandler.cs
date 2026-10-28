@@ -27,7 +27,7 @@ public class AdminHardDeleteRoleHandler(
     /// <returns>A <see cref="AdminHardDeleteRoleResult" /> indicating success.</returns>
     public async Task<AdminHardDeleteRoleResult> Handle(
         AdminHardDeleteRoleCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid roleId = Guid.Parse(input: command.RoleId);
