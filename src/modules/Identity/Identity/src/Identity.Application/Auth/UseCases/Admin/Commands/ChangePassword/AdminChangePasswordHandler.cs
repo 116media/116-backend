@@ -39,7 +39,7 @@ public class AdminChangePasswordHandler(
     /// <exception cref="BadRequestException">Thrown when the current password is incorrect.</exception>
     public async Task<AdminChangePasswordResult> Handle(
         AdminChangePasswordCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         UserEntity? user = await authRepository.FindUserByIdOrThrow(
