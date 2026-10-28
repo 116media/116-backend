@@ -30,7 +30,7 @@ public class AdminRestoreRoleHandler(
     /// <returns>A <see cref="AdminRestoreRoleResult" /> containing the restored role.</returns>
     public async Task<AdminRestoreRoleResult> Handle(
         AdminRestoreRoleCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid roleId = Guid.Parse(input: command.RoleId);
