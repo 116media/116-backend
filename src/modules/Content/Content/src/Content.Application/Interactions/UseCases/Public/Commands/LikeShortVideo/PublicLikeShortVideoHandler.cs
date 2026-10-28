@@ -21,7 +21,7 @@ public class PublicLikeShortVideoHandler(
     /// <inheritdoc />
     public async Task<PublicLikeShortVideoResult> Handle(
         PublicLikeShortVideoCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         await shortVideoRepository.ExistsOrThrowAsync(
