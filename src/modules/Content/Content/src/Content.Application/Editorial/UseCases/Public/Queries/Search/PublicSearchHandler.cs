@@ -17,7 +17,7 @@ public class PublicSearchHandler(ISearchCatalog searchCatalog, ISearchHitDtoServ
     : IQueryHandler<PublicSearchQuery, PublicSearchResult>
 {
     /// <inheritdoc />
-    public async Task<PublicSearchResult> Handle(PublicSearchQuery query, CancellationToken cancellationToken)
+    public async Task<PublicSearchResult> Handle(PublicSearchQuery query, CancellationToken cancellationToken = default)
     {
         string term = query.Query.Trim();
         PaginatedRequest page = query.PaginatedRequest;
