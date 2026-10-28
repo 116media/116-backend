@@ -16,7 +16,7 @@ public class PublicShareLyricsHandler(ILyricsRepository lyricsRepository, IConte
     /// <inheritdoc />
     public async Task<PublicShareLyricsResult> Handle(
         PublicShareLyricsCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         await lyricsRepository.ExistsOrThrowAsync(lyricsId: command.LyricsId, cancellationToken: cancellationToken);
