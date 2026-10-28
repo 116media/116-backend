@@ -13,7 +13,10 @@ public class AdminGetAllTagsHandler(ITagRepository tagRepository)
     : IQueryHandler<AdminGetAllTagsQuery, AdminGetAllTagsResult>
 {
     /// <inheritdoc />
-    public async Task<AdminGetAllTagsResult> Handle(AdminGetAllTagsQuery query, CancellationToken cancellationToken)
+    public async Task<AdminGetAllTagsResult> Handle(
+        AdminGetAllTagsQuery query,
+        CancellationToken cancellationToken = default
+    )
     {
         IReadOnlyList<TagCountRow> rows = await tagRepository.GetAllAsync(
             search: query.Search,
