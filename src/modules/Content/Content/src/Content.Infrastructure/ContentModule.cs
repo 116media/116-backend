@@ -85,12 +85,15 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Ports;
 using _116.Content.Application.Shared.Repositories;
+using _116.Content.Application.Shared.Search;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Events;
 using _116.Content.Infrastructure.BackgroundJobs;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Persistence.Seeds.ContentTypes;
 using _116.Content.Infrastructure.Repositories;
+using _116.Content.Infrastructure.Search;
+using _116.Content.Infrastructure.Search.Projectors;
 using _116.Content.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -191,6 +194,25 @@ public static class ContentModule
         services.AddScoped<IPricingTierRepository, PricingTierRepository>();
         services.AddScoped<IPromotionLevelRepository, PromotionLevelRepository>();
         services.AddScoped<ITagRepository, TagRepository>();
+        // One line per searchable type; nothing else in the search stack names them.
+        services.AddScoped<ISearchDocumentProjector, ArticleSearchProjector>();
+        services.AddScoped<ISearchDocumentProjector, VideoSearchProjector>();
+        services.AddScoped<ISearchDocumentProjector, ShortVideoSearchProjector>();
+
+        services.AddScoped<SearchDocumentWriter>();
+        services.AddScoped<ISearchProjection, SearchProjection>();
+
+        services.AddScoped<ISearchCatalog, SearchDocumentCatalog>();
+        services.Decorate<ISearchCatalog, CachedSearchCatalog>();
+
+        services.AddScoped<IDomainEventHandler<ArticlePublishedEvent>, ArticleSearchProjectionHandler>();
+        services.AddScoped<IDomainEventHandler<ArticleUnpublishedEvent>, ArticleSearchProjectionHandler>();
+        services.AddScoped<IDomainEventHandler<ArticleDeletedEvent>, ArticleSearchProjectionHandler>();
+        services.AddScoped<IDomainEventHandler<VideoPublishedEvent>, VideoSearchProjectionHandler>();
+        services.AddScoped<IDomainEventHandler<VideoUnpublishedEvent>, VideoSearchProjectionHandler>();
+        services.AddScoped<IDomainEventHandler<VideoDeletedEvent>, VideoSearchProjectionHandler>();
+        services.AddScoped<IDomainEventHandler<ShortVideoChangedEvent>, ShortVideoSearchProjectionHandler>();
+        services.AddScoped<IDomainEventHandler<ShortVideoDeletedEvent>, ShortVideoSearchProjectionHandler>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IPackageRepository, PackageRepository>();
@@ -312,6 +334,7 @@ public static class ContentModule
 
         // Catalog services
         services.AddScoped<IContentLookupService, ContentLookupService>();
+        services.AddScoped<ISearchHitDtoService, SearchHitDtoService>();
         services.AddScoped<ICategoryDtoService, CategoryDtoService>();
         services.AddScoped<IPackageDtoService, PackageDtoService>();
 
@@ -366,6 +389,7 @@ public static class ContentModule
             .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(10));
         services.AddScheduledJob<AbandonedDraftCleanupJob>(cronExpression: "0 0 * * * ?");
         services.AddScheduledJob<ShortVideoViewEventCleanupJob>(cronExpression: "0 0 3 * * ?");
+        services.AddScheduledJob<SearchProjectionReconcileJob>(cronExpression: "0 0 4 * * ?");
 
         // Seeders run from the advisory-locked seeding hosted service. The concrete type stays
         // registered for direct resolution; Testing hosts register no IDataSeeder, so the

@@ -41,6 +41,15 @@ public class FileStorageService(
 
     private static readonly string[] CacheTags = [StorageCacheTags.Files];
 
+    /// <summary>
+    /// Reads the cache without running a factory, so a probe never falls through to the
+    /// repository and never stores a miss.
+    /// </summary>
+    private static readonly HybridCacheEntryOptions ProbeOptions = new()
+    {
+        Flags = HybridCacheEntryFlags.DisableUnderlyingData,
+    };
+
     /// <inheritdoc />
     public async Task<StoredFile> UploadAsync(
         IFormFile file,
@@ -137,31 +146,60 @@ public class FileStorageService(
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// Serves what the cache already holds and queries only the rest, with the probes and
+    /// the stores each going out together rather than one round trip per file.
+    /// </remarks>
     public async Task<IReadOnlyDictionary<Guid, FileReferenceDto>> ResolveManyAsync(
         IReadOnlyCollection<Guid> fileIds,
         CancellationToken cancellationToken = default
     )
     {
+        Guid[] distinct = [.. fileIds.Distinct()];
+
+        FileReferenceDto?[] cached = await Task.WhenAll(distinct.Select(id => ProbeAsync(id, cancellationToken)));
+
+        var resolved = new Dictionary<Guid, FileReferenceDto>(distinct.Length);
+        var missing = new List<Guid>(distinct.Length);
+
+        for (int index = 0; index < distinct.Length; index++)
+        {
+            if (cached[index] is FileReferenceDto hit)
+            {
+                resolved[distinct[index]] = hit;
+            }
+            else
+            {
+                missing.Add(distinct[index]);
+            }
+        }
+
+        if (missing.Count == 0)
+        {
+            return resolved;
+        }
+
         IReadOnlyDictionary<Guid, FileEntity> files = await fileRepository.GetByIdsAsync(
-            fileIds: fileIds,
+            fileIds: missing,
             cancellationToken: cancellationToken
         );
 
-        var resolved = new Dictionary<Guid, FileReferenceDto>(files.Count);
+        var writes = new List<Task>(files.Count);
 
         foreach ((Guid id, FileEntity file) in files)
         {
             FileReferenceDto reference = file.ToFileReferenceDto(mapper);
             resolved[id] = reference;
 
-            await cache.SetAsync<FileReferenceDto?>(
-                CacheKey(id),
-                reference,
-                CacheOptions,
-                CacheTags,
-                cancellationToken
+            writes.Add(
+                cache
+                    .SetAsync<FileReferenceDto?>(CacheKey(id), reference, CacheOptions, CacheTags, cancellationToken)
+                    .AsTask()
             );
         }
+
+        // The writes are independent, so they go out together rather than one round trip per file.
+        await Task.WhenAll(writes);
 
         return resolved;
     }
@@ -175,6 +213,25 @@ public class FileStorageService(
         IReadOnlyDictionary<Guid, FileReferenceDto> references = await ResolveManyAsync(fileIds, cancellationToken);
 
         return references.ToDictionary(entry => entry.Key, entry => entry.Value.StorageUrl);
+    }
+
+    /// <summary>
+    /// Reads one entry without falling through to the repository, so a batch can find out
+    /// what it already has before querying for the rest.
+    /// </summary>
+    /// <param name="fileId">The file to look for.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The cached reference, or null when the cache does not hold it.</returns>
+    private async Task<FileReferenceDto?> ProbeAsync(Guid fileId, CancellationToken cancellationToken)
+    {
+        return await cache.GetOrCreateAsync<Guid, FileReferenceDto?>(
+            CacheKey(fileId),
+            fileId,
+            static (_, _) => default,
+            ProbeOptions,
+            CacheTags,
+            cancellationToken
+        );
     }
 
     /// <inheritdoc />

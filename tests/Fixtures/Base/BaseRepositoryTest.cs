@@ -1,4 +1,6 @@
 using _116.Tests.Fixtures.Stubs;
+using Microsoft.Extensions.Caching.Memory;
+using StackExchange.Redis;
 
 namespace _116.Tests.Fixtures.Base;
 
@@ -92,6 +94,32 @@ public abstract class BaseRepositoryTest : IAsyncLifetime
     {
         await Postgres.ResetAsync();
         ResetStubs();
+        await ClearCachesAsync();
+    }
+
+    /// <summary>
+    /// Clears both cache layers before each test, since they outlive the database reset and a
+    /// cached repository would otherwise answer the next test from the previous one's rows.
+    /// </summary>
+    private async Task ClearCachesAsync()
+    {
+        using var scope = Api.Services.CreateScope();
+
+        if (scope.ServiceProvider.GetRequiredService<IMemoryCache>() is MemoryCache memoryCache)
+        {
+            memoryCache.Clear();
+        }
+
+        var multiplexer = scope.ServiceProvider.GetService<IConnectionMultiplexer>();
+        if (multiplexer is null)
+        {
+            return;
+        }
+
+        foreach (EndPoint endpoint in multiplexer.GetEndPoints())
+        {
+            await multiplexer.GetServer(endpoint).FlushDatabaseAsync();
+        }
     }
 
     /// <summary>

@@ -8,6 +8,12 @@ namespace _116.Content.Application.Editorial.Constants;
 public static class EditorialRouteConstants
 {
     /// <summary>
+    /// The base endpoint path for the public cross-content search route.
+    /// Combined with public prefix: /api/v1/public/search.
+    /// </summary>
+    public const string Search = "search";
+
+    /// <summary>
     /// The base endpoint path for article routes.
     /// Combined with admin prefix: /api/v1/admin/articles.
     /// </summary>

@@ -1,3 +1,5 @@
+using _116.Content.Domain.Enums;
+
 namespace _116.Content.Application.Shared.Cache;
 
 /// <summary>
@@ -49,4 +51,20 @@ public static class ContentCacheTags
     /// The lookup tables: content types, pricing tiers, promotion levels, categories.
     /// </summary>
     public const string Lookups = "content:lookups";
+
+    /// <summary>
+    /// The tag that covers one content type's projections, for callers that hold a type
+    /// rather than a compile-time constant.
+    /// </summary>
+    /// <param name="type">The content type.</param>
+    /// <returns>The tag, or <see cref="Lookups" /> for a type with no tag of its own.</returns>
+    public static string For(EnumCoreContentType type) =>
+        type switch
+        {
+            EnumCoreContentType.Article => Articles,
+            EnumCoreContentType.Video => Videos,
+            EnumCoreContentType.Short => Shorts,
+            EnumCoreContentType.Lyrics => Lyrics,
+            _ => Lookups,
+        };
 }

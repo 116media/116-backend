@@ -45,7 +45,10 @@ def normalize(filename, source=""):
     (modules/Content/Content/src/...). Anchoring on the source root keeps both straight.
     """
     path = (filename or "").replace("\\", "/").strip()
-    if path.startswith("/"):
+    # SourceLink is on in CI, so the collector records a raw.githubusercontent URL rather
+    # than a path, and the report's <source> root comes back empty. Both forms carry the
+    # repo-relative path after the first "/src/" segment.
+    if path.startswith("/") or "://" in path:
         marker = path.find("/src/")
         return path[marker + 1:] if marker != -1 else path
     root = (source or "").replace("\\", "/").strip().rstrip("/")
@@ -119,11 +122,18 @@ if changed is not None:
     files = [name for name in files if name in changed]
 
 
-def gaps(covered):
-    """Files below 100% line coverage for a suite, worst first, as (file, covered, total)."""
+def gaps(covered, measured):
+    """Files below 100% line coverage for a suite, worst first, as (file, covered, total).
+
+    A file absent from this suite's own report is skipped rather than read as a gap: the
+    suite's runsettings excluded it on purpose, as the unit settings do for endpoints,
+    whose routing the integration suite owns.
+    """
     rows = []
     for name in files:
-        total = all_total[name]
+        if name not in measured:
+            continue
+        total = measured[name]
         hit = covered.get(name, 0)
         if hit < total:
             rows.append((name, hit, total))
@@ -132,8 +142,8 @@ def gaps(covered):
 
 
 scoped = changed is not None
-not_unit = gaps(unit_covered)
-not_int = gaps(int_covered)
+not_unit = gaps(unit_covered, unit_total)
+not_int = gaps(int_covered, int_total)
 
 
 def section(title, rows):

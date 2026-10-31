@@ -6,12 +6,14 @@ constructs a handler, a validator or a specification directly.
 
 ## Checklist
 
-- [ ] `PublicSearchValidatorTests` covering every boundary
-- [ ] `PublicSearchHandlerTests` covering scope selection and merge ordering
-- [ ] `PublicSearchMetaFieldTests` per the MetaField convention
-- [ ] `SearchRepositoryTests` through `Resolve<ISearchRepository>()`
-- [ ] `PublicSearchEndpointV1Tests` through real HTTP
-- [ ] `ExcerptHelperTests`
+- [x] `PublicSearchValidatorTests` covering every boundary
+- [x] `PublicSearchHandlerTests` covering scope selection and merge ordering
+- [ ] `PublicSearchMetaFieldTests` per the MetaField convention (the Content module has
+      no MetaField test file yet; the convention is one file per area and actor, so this
+      belongs to an `EditorialPublicMetaFieldTests` covering the whole area)
+- [x] `SearchRepositoryTests` through `Resolve<ISearchRepository>()`
+- [x] `PublicSearchEndpointV1Tests` through real HTTP
+- [x] `ExcerptHelperTests`
 
 ---
 
@@ -152,3 +154,49 @@ later refactor breaks silently.
 | The exact `score` value | An implementation detail of `ts_rank_cd`; asserting it pins us to a Postgres version |
 | GIN index presence via a query plan assertion | Plans are environment-sensitive; verified manually per `01-database-and-tsvector.md` |
 | Ordering across more than two types | Only two types exist; revisit when a third lands |
+
+---
+
+## Shorts coverage
+
+Shorts were added after the first release of the endpoint, with the same split:
+
+| Level | Case |
+| --- | --- |
+| Unit | `Shorts` scope queries only the shorts arm |
+| Unit | `Shorts` scope reports `counts.Shorts`, not the total |
+| Unit | `All` orders a short between a higher-scoring video and a lower-scoring article |
+| Unit | `All` asks all three arms for the whole `skip + pageSize` window |
+| Integration | a term in a short's title returns it with a positive score |
+| Integration | a short hit carries no category, excerpt or rating |
+| Integration | an inactive short is never returned |
+| Integration | an unaccented term matches an accented short title |
+| Integration | `CountAsync` counts active shorts and sums all three scopes |
+| Integration | `scope=Shorts` over HTTP returns only active shorts |
+| Integration | a short hit serialises `categoryId` and `categoryName` as null |
+
+---
+
+## After the projection rewrite
+
+The depth cap and the cross-type ordering moved out of the handler into
+`SearchDocumentCatalog`, which needs a database, so they moved from unit to integration.
+The handler kept the orchestration it still owns.
+
+| Level | File | Covers |
+| --- | --- | --- |
+| Unit | `PublicSearchHandlerTests` | trimming, the skip/take it passes down, the scoped count it selects |
+| Unit | `SearchProjectionTests` | routing to the projector for a type, no-op for a type with none, rebuild-all |
+| Unit | `SearchScopesTests` | the scope/content-type map, including the round trip and the types no scope exposes |
+| Integration | `SearchCatalogTests` | ranked matching, accent folding, visibility, paging, merged `All`, cached counts |
+| Integration | `SearchProjectionTests` | publish writes a visible document, archive hides it, a short's rename reprojects, deactivation hides, rebuild restores after drift |
+| Integration | `PublicSearchEndpointV1Tests` | real HTTP, scope narrowing, zero-filled counts, overflowing page index, `no-store`, the wire shape of `counts` |
+
+The projection tests drive the **real domain transitions** — `Publish`, `Archive`,
+`Update`, `Deactivate` — rather than calling the projector, so the domain event, its
+registration and its handler are all exercised. That is the part most likely to rot, since
+a missing registration fails silently.
+
+One thing the suite does **not** cover: that the SQL backfill in the migration and the C#
+projectors produce the same rows. They are kept to plain column copying so they can be read
+side by side, but nothing asserts it.

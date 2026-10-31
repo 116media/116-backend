@@ -16,5 +16,8 @@ public sealed class DatabaseCollection : ICollectionFixture<PostgresFixture>;
 [CollectionDefinition("OtpPepperless", DisableParallelization = true)]
 public sealed class OtpPepperlessCollection : ICollectionFixture<OtpPepperlessPostgresFixture>;
 
+[CollectionDefinition("RequestLogging", DisableParallelization = true)]
+public sealed class RequestLoggingCollection : ICollectionFixture<RequestLogPostgresFixture>;
+
 [CollectionDefinition("RateLimiting", DisableParallelization = true)]
 public sealed class RateLimitingCollection : ICollectionFixture<RateLimitedPostgresFixture>;

@@ -38,7 +38,10 @@ def normalize(filename, source=""):
     (modules/Content/Content/src/...). Anchoring on the source root keeps both straight.
     """
     path = (filename or "").replace("\\", "/").strip()
-    if path.startswith("/"):
+    # SourceLink is on in CI, so the collector records a raw.githubusercontent URL rather
+    # than a path, and the report's <source> root comes back empty. Both forms carry the
+    # repo-relative path after the first "/src/" segment.
+    if path.startswith("/") or "://" in path:
         marker = path.find("/src/")
         return path[marker + 1:] if marker != -1 else path
     root = (source or "").replace("\\", "/").strip().rstrip("/")

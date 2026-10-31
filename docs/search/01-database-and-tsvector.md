@@ -1,146 +1,160 @@
-# Database and `tsvector`
+# Database and tsvector
 
 ## Checklist
 
-- [ ] `unaccent` extension enabled
-- [ ] `immutable_unaccent` wrapper created
-- [ ] `search_vector` generated column on `content.articles`
-- [ ] `search_vector` generated column on `content.videos`
-- [ ] GIN index on each column
-- [ ] `EXPLAIN ANALYZE` confirms a bitmap index scan
+- [x] `immutable_unaccent` wrapper, so a generated column may call `unaccent`
+- [x] `content.search_documents` holding one row per searchable item
+- [x] `search_vector` generated from the four weighted text columns
+- [x] Partial GIN index covering the visible rows
+- [x] Backfill from every source table in the same migration
 
 ---
 
-## The `unaccent` problem
+## One table, not one per type
 
-A `GENERATED ALWAYS AS … STORED` column requires an `IMMUTABLE` expression. `unaccent()`
-is declared `STABLE`, because the dictionary it reads could in principle be changed at
-runtime. Postgres therefore refuses:
+Every searchable item is a row in `content.search_documents`. The alternative — a vector on
+each source table and a view over each — was built first and replaced: it cost one query per
+type for a page plus one per type for the counts, merged the page in application memory, and
+grew both costs with every type added.
 
-```text
-ERROR:  generation expression is not immutable
-```
-
-The wrapper below asserts immutability. It is safe **on the condition that the
-`unaccent` dictionary is never modified**. If it is, every generated column must be
-recomputed and every index rebuilt. That constraint is the price of accent folding and
-is accepted deliberately.
+The source tables remain the record. This table is derived and can be rebuilt from them.
 
 ```sql
-CREATE EXTENSION IF NOT EXISTS unaccent;
+CREATE TABLE content.search_documents (
+    type             text        NOT NULL,
+    entity_id        uuid        NOT NULL,
+    slug             text        NOT NULL,
+    is_visible       boolean     NOT NULL,
 
--- Immutable wrapper so unaccent() can be used in a generated column.
--- Hard dependency: the unaccent dictionary must not be modified, or every
--- search_vector column and GIN index needs rebuilding.
+    title            text        NOT NULL,   -- weight A
+    summary          text        NOT NULL,   -- weight B, also the display excerpt
+    keywords         text        NOT NULL,   -- weight C
+    body             text        NOT NULL,   -- weight D
+
+    image_file_id    uuid,
+    category_id      uuid,
+    published_at     timestamptz,
+    rating_average   numeric,
+
+    PRIMARY KEY (type, entity_id)
+);
+```
+
+The four text columns are the contract between the table and the types. Each projector
+decides what its type puts in each weight slot; the vector definition never changes when a
+type is added.
+
+`is_visible` is the whole of public reachability, so the predicate is the same for every
+type even though the rule behind it differs — published for the editorial types, active for
+shorts.
+
+---
+
+## The vector
+
+Every weight slot is indexed under **both** the French and the English configurations.
+
+```sql
+setweight(to_tsvector('french',  content.immutable_unaccent(coalesce(title, ''))), 'A') ||
+setweight(to_tsvector('english', content.immutable_unaccent(coalesce(title, ''))), 'A') ||
+setweight(to_tsvector('french',  content.immutable_unaccent(coalesce(summary, ''))), 'B') ||
+setweight(to_tsvector('english', content.immutable_unaccent(coalesce(summary, ''))), 'B') ||
+…
+```
+
+The catalogue is not French-only. Titles and descriptions are regularly English, and the
+French stemmer leaves English morphology alone, so under a single `french` configuration a
+reader searching `record` never reached an article about a `recording`. Measured on the real
+database:
+
+| Text | `french` alone | Consequence |
+| --- | --- | --- |
+| `CoolBeatz Talks Hip-Hop` | identical to `english` | none |
+| `The Making of the Album` | keeps `the`, `of` | harmless |
+| `ON AIR with a star` | drops `on` | partial |
+| `recording sessions` | `recording`, not `record` | `record` misses it |
+
+Indexing both recovers the last two rows, and French morphology is untouched: `chanteur`
+still finds `chanteurs`.
+
+**`simple` was considered and rejected.** It would recover the remaining loss — words that
+are stop words in *both* languages, like `on` — but it indexes every stop word, so `la`,
+`de` and `the` become searchable tokens matching nearly every row. On an anonymous endpoint
+whose cost is already driven by match-set size, that is a worse trade than losing a handful
+of two-letter titles.
+
+`coalesce` is not optional: concatenating `NULL` into a `tsvector` wipes the whole thing.
+
+The wrapper exists because a generated column may only call `IMMUTABLE` functions, and the
+one-argument `unaccent` is `STABLE` — it resolves its dictionary per call. Naming the
+dictionary explicitly is what makes it immutable:
+
+```sql
 CREATE OR REPLACE FUNCTION content.immutable_unaccent(text)
-RETURNS text
-LANGUAGE sql
-IMMUTABLE
-PARALLEL SAFE
-STRICT
+RETURNS text LANGUAGE sql IMMUTABLE PARALLEL SAFE STRICT
 AS $$ SELECT public.unaccent('public.unaccent'::regdictionary, $1) $$;
 ```
 
-The two-argument form is used on purpose: `unaccent(text)` resolves its dictionary at
-call time, which is exactly what makes it `STABLE`. Naming the dictionary explicitly
-removes that lookup.
+### The query must parse under both
+
+A vector carrying two stemmings is only half the fix; the query parses under both and the
+two are OR'd, so either stemming can match:
+
+```csharp
+EF.Functions.WebSearchToTsQuery(SearchConfig.French, query)
+    .Or(EF.Functions.WebSearchToTsQuery(SearchConfig.English, query))
+```
+
+The cost is that the vector roughly doubles where the two stemmers disagree, which widens
+the match set — the same dimension the ranking cost below is driven by.
 
 ---
 
-## Articles
+## The index
 
 ```sql
-ALTER TABLE content.articles
-    ADD COLUMN search_vector tsvector
-    GENERATED ALWAYS AS (
-        setweight(to_tsvector('french', content.immutable_unaccent(coalesce(title, ''))), 'A') ||
-        setweight(to_tsvector('french', content.immutable_unaccent(coalesce(headline, ''))), 'B') ||
-        setweight(to_tsvector('french', content.immutable_unaccent(coalesce(meta_title, ''))), 'C') ||
-        setweight(to_tsvector('french', content.immutable_unaccent(coalesce(meta_description, ''))), 'C') ||
-        setweight(to_tsvector('french', content.immutable_unaccent(coalesce(body, ''))), 'D')
-    ) STORED;
-
-CREATE INDEX ix_articles_search_vector
-    ON content.articles USING GIN (search_vector);
+CREATE INDEX ix_search_documents_vector_visible
+    ON content.search_documents USING GIN (search_vector)
+    WHERE is_visible;
 ```
 
-`coalesce(…, '')` is required on every field: `to_tsvector` of `NULL` is `NULL`, and
-concatenating `NULL` into the vector would wipe the whole thing.
-
-## Videos
-
-```sql
-ALTER TABLE content.videos
-    ADD COLUMN search_vector tsvector
-    GENERATED ALWAYS AS (
-        setweight(to_tsvector('french', content.immutable_unaccent(coalesce(title, ''))), 'A') ||
-        setweight(to_tsvector('french', content.immutable_unaccent(coalesce(description, ''))), 'B') ||
-        setweight(to_tsvector('french', content.immutable_unaccent(coalesce(meta_title, ''))), 'C') ||
-        setweight(to_tsvector('french', content.immutable_unaccent(coalesce(meta_description, ''))), 'C')
-    ) STORED;
-
-CREATE INDEX ix_videos_search_vector
-    ON content.videos USING GIN (search_vector);
-```
+Partial, because every search filters on visibility, so the posting lists carry only rows a
+reader can reach.
 
 ---
 
-## Supporting indexes
+## What the index does not do
 
-The search predicate always filters on `status`, so a partial index keeps the posting
-lists to published rows only:
+`ORDER BY ts_rank_cd(...)` **cannot** be served from this index, or from any B-tree or GIN
+index. Postgres matches through the index, then heap-fetches and ranks every matching row
+before returning a page. Measured on a synthetic 200k-article corpus, a term matching 77,143
+of 180,000 visible rows took 43ms warm to return 20: the index scan was 6.7ms of that and the
+heap-and-rank the rest.
 
-```sql
-CREATE INDEX ix_articles_search_vector_published
-    ON content.articles USING GIN (search_vector)
-    WHERE status = 'Published';
+The unified table does not change this — it is the same corpus either way. What it fixes is
+the number of round trips and the application-memory merge.
 
-CREATE INDEX ix_videos_search_vector_published
-    ON content.videos USING GIN (search_vector)
-    WHERE status = 'Published';
-```
+Two things would move it, neither done here:
 
-Create **either** the plain index or the partial one, not both. The partial index is
-smaller and matches every query this feature issues; the plain one is only needed if an
-admin surface later searches drafts. Start partial.
+- **Narrow what is indexed.** The article body at weight D is why a common term matches tens
+  of thousands of rows. Dropping it from `body` is a one-line change to
+  `ArticleSearchProjector` and a product decision about whether full-body search matters.
+- **The `rum` extension**, a GIN variant that can return rows in rank order from the index.
+  Non-standard, and slower on write.
 
----
-
-## Verification
-
-```sql
-EXPLAIN (ANALYZE, BUFFERS)
-SELECT a.id,
-       ts_rank_cd(a.search_vector, q) AS score
-FROM content.articles a,
-     websearch_to_tsquery('french', content.immutable_unaccent('fally ipupa')) q
-WHERE a.search_vector @@ q
-  AND a.status = 'Published'
-ORDER BY score DESC
-LIMIT 20;
-```
-
-Expected plan fragment:
-
-```text
-->  Bitmap Heap Scan on articles a
-      Recheck Cond: (search_vector @@ q)
-      ->  Bitmap Index Scan on ix_articles_search_vector_published
-```
-
-A `Seq Scan` means the predicate is not sargable. Check that the query is built with
-`@@` against the column and not wrapped in a function.
+Until one of those, `SearchDocumentCatalog.MaxResultDepth` bounds how much of a match set a
+single request can rank.
 
 ---
 
-## Rollback
+## Backfill
 
-```sql
-DROP INDEX IF EXISTS content.ix_articles_search_vector_published;
-DROP INDEX IF EXISTS content.ix_videos_search_vector_published;
-ALTER TABLE content.articles DROP COLUMN IF EXISTS search_vector;
-ALTER TABLE content.videos  DROP COLUMN IF EXISTS search_vector;
-DROP FUNCTION IF EXISTS content.immutable_unaccent(text);
-```
+`AddSearchDocuments` creates the table, then inserts from `articles`, `videos` and
+`short_videos` in the same migration, so a deploy leaves search populated. The generated
+column computes as the rows land; there is nothing to backfill afterwards.
 
-Lossless: every dropped object is derived from columns that remain.
+The SQL mirrors the C# projectors, which is a real duplication: **if a projector's column
+mapping changes, the backfill is stale for anyone migrating from scratch.** The C# projector
+is the source of truth, and `RebuildAllAsync` is what reconciles. The mapping is kept to
+plain column copying precisely so the two are easy to compare — nothing is computed on
+either side.

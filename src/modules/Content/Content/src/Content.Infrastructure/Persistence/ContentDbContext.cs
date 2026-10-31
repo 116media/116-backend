@@ -2,8 +2,11 @@ using System.Reflection;
 using _116.BuildingBlocks.Infrastructure.Outbox;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
+using _116.Content.Infrastructure.Persistence.Configurations;
+using _116.Content.Infrastructure.Persistence.Projections;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using NpgsqlTypes;
 
 namespace _116.Content.Infrastructure.Persistence;
 
@@ -259,11 +262,40 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options) : DbCo
     /// </summary>
     public DbSet<ArtistClaimRequestEntity> ArtistClaimRequests => Set<ArtistClaimRequestEntity>();
 
+    /// <summary>
+    /// Gets the search projection: one row per searchable item, across every content type.
+    /// </summary>
+    public DbSet<SearchDocument> SearchDocuments => Set<SearchDocument>();
+
+    /// <summary>
+    /// Maps PostgreSQL's ts_rank_cd so relevance can be projected and ordered in LINQ.
+    /// </summary>
+    /// <param name="vector">The indexed search vector.</param>
+    /// <param name="query">The parsed tsquery.</param>
+    /// <returns>The cover-density relevance score.</returns>
+    [DbFunction("ts_rank_cd", IsBuiltIn = true)]
+    public static double RankCd(NpgsqlTsVector vector, NpgsqlTsQuery query) =>
+        throw new NotSupportedException("Translated by the provider; never called in memory.");
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(ContentConstants.SchemaName);
-        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        // The search read models map tsvector, which only the Npgsql provider understands.
+        // Tests that run this context on another provider leave them out of the model.
+        bool isPostgres = Database.IsNpgsql();
+
+        modelBuilder.ApplyConfigurationsFromAssembly(
+            Assembly.GetExecutingAssembly(),
+            type => isPostgres || !typeof(IPostgresOnlyConfiguration).IsAssignableFrom(type)
+        );
+
+        if (!isPostgres)
+        {
+            // A DbSet puts its type in the model whether or not a configuration ran, and
+            // an unmapped tsvector is then read as an entity type of its own.
+            modelBuilder.Ignore<SearchDocument>();
+        }
         modelBuilder.ApplyConfiguration(new OutboxEventConfiguration());
 
         // Every identifier is assigned by the domain factory, never by the store. Saying so
@@ -272,9 +304,17 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options) : DbCo
         // and its INSERT never runs.
         foreach (IMutableEntityType entityType in modelBuilder.Model.GetEntityTypes())
         {
-            IMutableProperty? key = entityType.FindPrimaryKey()?.Properties.SingleOrDefault();
+            IReadOnlyList<IMutableProperty>? keyProperties = entityType.FindPrimaryKey()?.Properties;
 
-            if (key?.ClrType == typeof(Guid))
+            // Composite keys are assigned wholesale by their owner, so there is nothing to say.
+            if (keyProperties is not { Count: 1 })
+            {
+                continue;
+            }
+
+            IMutableProperty key = keyProperties[0];
+
+            if (key.ClrType == typeof(Guid))
             {
                 key.ValueGenerated = ValueGenerated.Never;
             }
