@@ -3,6 +3,29 @@ using _116.Content.Domain.Enums;
 namespace _116.Content.Application.Shared.DTOs;
 
 /// <summary>
+/// The engagement figures behind one hit, read from the source row at search time rather
+/// than projected, since a like or a share moves them without raising any event the search
+/// projection listens for. A figure the hit's type does not keep is null, which is not the
+/// same as a type that keeps it and stands at zero.
+/// </summary>
+/// <param name="LikeCount">Likes, for articles and shorts.</param>
+/// <param name="CommentCount">Comments, for articles.</param>
+/// <param name="ShareCount">Shares, kept by all three types.</param>
+/// <param name="ViewCount">Views, for shorts.</param>
+/// <param name="BookmarkCount">Bookmarks, for articles and shorts.</param>
+/// <param name="RatingAverage">The mean score, for videos; meaningless without its count.</param>
+/// <param name="RatingCount">Ratings cast, for videos.</param>
+public sealed record SearchHitEngagementDto(
+    int? LikeCount,
+    int? CommentCount,
+    int? ShareCount,
+    int? ViewCount,
+    int? BookmarkCount,
+    decimal? RatingAverage,
+    int? RatingCount
+);
+
+/// <summary>
 /// One search result, flattened across content types. Type-specific fields are null when
 /// they do not apply to the hit's type.
 /// </summary>
@@ -15,9 +38,9 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="CategoryName">The owning category's display name, or null for a type that has none.</param>
 /// <param name="PublishedAt">When the entity was published, or first created for a type that has no publication date.</param>
 /// <param name="Score">The relevance score; higher ranks first.</param>
-/// <param name="RatingAverage">The cached average rating, or null for a type that carries none.</param>
 /// <param name="CategoryId">The owning category, used to resolve the display name; null for a type that has none.</param>
 /// <param name="ImageFileId">The poster file, used to resolve the image URL.</param>
+/// <param name="Engagement">The engagement figures the hit's type keeps.</param>
 public record SearchHitDto(
     EnumCoreContentType Type,
     Guid Id,
@@ -28,9 +51,9 @@ public record SearchHitDto(
     string? CategoryName,
     DateTimeOffset? PublishedAt,
     double Score,
-    decimal? RatingAverage,
     Guid? CategoryId,
-    Guid? ImageFileId
+    Guid? ImageFileId,
+    SearchHitEngagementDto Engagement
 );
 
 /// <summary>
@@ -41,11 +64,6 @@ public record SearchHitDto(
 /// <param name="ByScope">The hit count each provider reported, keyed by its scope.</param>
 public sealed record SearchCountsDto(IReadOnlyDictionary<EnumSearchScope, int> ByScope)
 {
-    /// <summary>
-    /// An empty set of counts, for a query no provider answered.
-    /// </summary>
-    public static SearchCountsDto Empty { get; } = new(new Dictionary<EnumSearchScope, int>());
-
     /// <summary>
     /// The total across every scope.
     /// </summary>

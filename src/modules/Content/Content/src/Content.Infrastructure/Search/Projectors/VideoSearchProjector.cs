@@ -61,6 +61,5 @@ public class VideoSearchProjector(ContentDbContext context, SearchDocumentWriter
             ImageFileId = video.ThumbnailFileId,
             CategoryId = video.CategoryId,
             PublishedAt = video.PublishedAt,
-            RatingAverage = video.RatingAverage,
         };
 }

@@ -5,6 +5,7 @@ using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Builders.Entities;
 using _116.Content.TestData.Factories;
+using _116.Tests.Fixtures.Stubs;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Content.Integration.Tests.Infrastructure.Search;
@@ -73,6 +74,25 @@ public class SearchCatalogTests(PostgresFixture postgres) : BaseRepositoryTest(p
     /// context, so the domain events that normally drive the projection never fire.
     /// </summary>
     private Task RebuildSearchAsync() => Resolve<ISearchProjection>().RebuildAllAsync();
+
+    /// <summary>
+    /// Sets the engagement figures on a seeded row. They are raised by interactions rather than by a
+    /// factory, so a read-side test arranges them directly.
+    /// </summary>
+    private async Task SetArticleEngagementAsync(Guid id, int likes, int comments, int shares, int bookmarks)
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+
+        await context
+            .Articles.Where(article => article.Id == id)
+            .ExecuteUpdateAsync(setters =>
+                setters
+                    .SetProperty(article => article.LikeCount, likes)
+                    .SetProperty(article => article.CommentCount, comments)
+                    .SetProperty(article => article.ShareCount, shares)
+                    .SetProperty(article => article.BookmarkCount, bookmarks)
+            );
+    }
 
     [Fact]
     public async Task SearchArticlesAsync_WithATermInTheTitle_ReturnsTheArticleWithAPositiveScore()
@@ -262,7 +282,7 @@ public class SearchCatalogTests(PostgresFixture postgres) : BaseRepositoryTest(p
         hits[0].CategoryId.Should().BeNull();
         hits[0].CategoryName.Should().BeNull();
         hits[0].Excerpt.Should().BeEmpty();
-        hits[0].RatingAverage.Should().BeNull();
+        hits[0].Engagement.RatingAverage.Should().BeNull();
         hits[0].PublishedAt.Should().NotBeNull();
     }
 
@@ -457,5 +477,118 @@ public class SearchCatalogTests(PostgresFixture postgres) : BaseRepositoryTest(p
         );
 
         hits.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SearchAsync_ForAnArticle_CarriesItsEngagementFigures()
+    {
+        CategoryEntity category = await SeedCategoryAsync();
+        ArticleEntity article = new ArticleBuilder(category.Id)
+            .WithTitle("Soukous et engagement")
+            .WithSlug("soukous-engagement")
+            .AsPublished()
+            .Build();
+        await SeedArticlesAsync(article);
+        await SetArticleEngagementAsync(article.Id, likes: 12, comments: 5, shares: 3, bookmarks: 7);
+
+        var catalog = Resolve<ISearchCatalog>();
+        IReadOnlyList<SearchHitDto> hits = await catalog.SearchAsync(
+            EnumSearchScope.Articles,
+            "soukous",
+            skip: 0,
+            take: 20
+        );
+
+        SearchHitEngagementDto engagement = hits.Should().ContainSingle().Subject.Engagement;
+
+        engagement.LikeCount.Should().Be(12);
+        engagement.CommentCount.Should().Be(5);
+        engagement.ShareCount.Should().Be(3);
+        engagement.BookmarkCount.Should().Be(7);
+        engagement.ViewCount.Should().BeNull("an article keeps no view count");
+        engagement.RatingCount.Should().BeNull("an article keeps no ratings");
+        engagement.RatingAverage.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SearchAsync_ForAVideo_CarriesOnlyTheFiguresAVideoKeeps()
+    {
+        CategoryEntity category = await SeedCategoryAsync();
+        await SeedVideosAsync(
+            new VideoBuilder(category.Id).WithTitle("Ndombolo live").WithSlug("ndombolo-live").AsPublished().Build()
+        );
+
+        var catalog = Resolve<ISearchCatalog>();
+        IReadOnlyList<SearchHitDto> hits = await catalog.SearchAsync(
+            EnumSearchScope.Videos,
+            "ndombolo",
+            skip: 0,
+            take: 20
+        );
+
+        SearchHitEngagementDto engagement = hits.Should().ContainSingle().Subject.Engagement;
+
+        engagement.ShareCount.Should().NotBeNull();
+        engagement.RatingCount.Should().NotBeNull();
+        engagement.RatingAverage.Should().NotBeNull("the average and its count belong together");
+        engagement.CommentCount.Should().BeNull("a video keeps no comment count");
+        engagement.LikeCount.Should().BeNull("a video is rated rather than liked");
+        engagement.ViewCount.Should().BeNull();
+        engagement.BookmarkCount.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SearchAsync_ForAShort_CarriesOnlyTheFiguresAShortKeeps()
+    {
+        await SeedShortsAsync(new ShortVideoBuilder().WithTitle("Kwassa teaser").WithSlug("kwassa-teaser").Build());
+
+        var catalog = Resolve<ISearchCatalog>();
+        IReadOnlyList<SearchHitDto> hits = await catalog.SearchAsync(
+            EnumSearchScope.Shorts,
+            "kwassa",
+            skip: 0,
+            take: 20
+        );
+
+        SearchHitEngagementDto engagement = hits.Should().ContainSingle().Subject.Engagement;
+
+        engagement.ViewCount.Should().NotBeNull();
+        engagement.LikeCount.Should().NotBeNull();
+        engagement.ShareCount.Should().NotBeNull();
+        engagement.BookmarkCount.Should().NotBeNull();
+        engagement.CommentCount.Should().BeNull("a short keeps no comment count");
+        engagement.RatingCount.Should().BeNull("a short is not rated");
+        engagement.RatingAverage.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SearchAsync_AcrossEveryType_ReadsThePageAndItsEngagementInOneStatement()
+    {
+        CategoryEntity category = await SeedCategoryAsync();
+        await SeedArticlesAsync(
+            new ArticleBuilder(category.Id).WithTitle("Mutuashi roots").WithSlug("mutuashi-roots").AsPublished().Build()
+        );
+        await SeedVideosAsync(
+            new VideoBuilder(category.Id).WithTitle("Mutuashi live").WithSlug("mutuashi-live").AsPublished().Build()
+        );
+        await SeedShortsAsync(new ShortVideoBuilder().WithTitle("Mutuashi clip").WithSlug("mutuashi-clip").Build());
+
+        var recorder = Api.Services.GetRequiredService<RecordingCommandInterceptor>();
+        recorder.Reset();
+
+        var catalog = Resolve<ISearchCatalog>();
+        IReadOnlyList<SearchHitDto> hits = await catalog.SearchAsync(
+            EnumSearchScope.All,
+            "mutuashi",
+            skip: 0,
+            take: 20
+        );
+
+        hits.Should().HaveCount(3);
+        hits.Should().AllSatisfy(hit => hit.Engagement.ShareCount.Should().NotBeNull());
+
+        // The guard against a per-row lookup: three types, three joins, one statement.
+        recorder.Commands.Should().ContainSingle("the page and its figures are one round trip");
+        recorder.Commands[0].Should().Contain("LEFT JOIN", "the figures are joined, not fetched per row");
     }
 }

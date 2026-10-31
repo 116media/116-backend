@@ -83,7 +83,6 @@ public class SearchDocumentConfigurationTests
     [InlineData(nameof(SearchDocument.ImageFileId), "image_file_id")]
     [InlineData(nameof(SearchDocument.CategoryId), "category_id")]
     [InlineData(nameof(SearchDocument.PublishedAt), "published_at")]
-    [InlineData(nameof(SearchDocument.RatingAverage), "rating_average")]
     [InlineData(nameof(SearchDocument.SearchVector), "search_vector")]
     public void Configure_ShouldNameEveryColumnExplicitly(string property, string column)
     {

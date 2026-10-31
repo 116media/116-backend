@@ -17,6 +17,11 @@ namespace _116.Content.Unit.Tests.Infrastructure.Search;
 /// </summary>
 public class CachedSearchCatalogTests
 {
+    /// <summary>
+    /// Counts for a query no provider answered.
+    /// </summary>
+    private static SearchCountsDto NoCounts => new(new Dictionary<EnumSearchScope, int>());
+
     private readonly Mock<ISearchCatalog> _innerMock = new();
     private readonly Mock<HybridCache> _cacheMock = new();
     private readonly CachedSearchCatalog _catalog;
@@ -110,7 +115,7 @@ public class CachedSearchCatalogTests
         // Arrange
         _innerMock
             .Setup(inner => inner.CountAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(SearchCountsDto.Empty);
+            .ReturnsAsync(NoCounts);
 
         // Act
         await _catalog.CountAsync("Fally IPUPA");
@@ -125,7 +130,7 @@ public class CachedSearchCatalogTests
         // Arrange
         _innerMock
             .Setup(inner => inner.CountAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(SearchCountsDto.Empty);
+            .ReturnsAsync(NoCounts);
 
         // Act
         await _catalog.CountAsync("fally");

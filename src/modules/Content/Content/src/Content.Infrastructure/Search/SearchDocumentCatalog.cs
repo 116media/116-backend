@@ -52,7 +52,7 @@ public class SearchDocumentCatalog(ContentDbContext context) : ISearchCatalog
             matches = matches.Where(document => document.Type == type);
         }
 
-        return await matches
+        var page = matches
             .Select(document => new
             {
                 document.Type,
@@ -62,7 +62,6 @@ public class SearchDocumentCatalog(ContentDbContext context) : ISearchCatalog
                 document.Summary,
                 document.CategoryId,
                 document.PublishedAt,
-                document.RatingAverage,
                 document.ImageFileId,
                 Score = ContentDbContext.RankCd(
                     document.SearchVector,
@@ -73,9 +72,22 @@ public class SearchDocumentCatalog(ContentDbContext context) : ISearchCatalog
             .OrderByDescending(document => document.Score)
             .ThenByDescending(document => document.PublishedAt)
             .Skip(skip)
-            .Take(take)
+            .Take(take);
+
+        // The figures are joined onto the page rather than the match set, so the three
+        // outer joins run against at most `take` rows on their primary keys. One query, and
+        // the ordering is restated because a join does not preserve the subquery's.
+        return await (
+            from document in page
+            join candidate in context.Articles on document.EntityId equals candidate.Id into articleRows
+            from article in articleRows.DefaultIfEmpty()
+            join candidate in context.Videos on document.EntityId equals candidate.Id into videoRows
+            from video in videoRows.DefaultIfEmpty()
+            join candidate in context.ShortVideos on document.EntityId equals candidate.Id into shortRows
+            from shortVideo in shortRows.DefaultIfEmpty()
+            orderby document.Score descending, document.PublishedAt descending
             // Positional: an expression tree cannot carry named arguments.
-            .Select(document => new SearchHitDto(
+            select new SearchHitDto(
                 document.Type,
                 document.EntityId,
                 document.Slug,
@@ -85,11 +97,30 @@ public class SearchDocumentCatalog(ContentDbContext context) : ISearchCatalog
                 null,
                 document.PublishedAt,
                 document.Score,
-                document.RatingAverage,
                 document.CategoryId,
-                document.ImageFileId
-            ))
-            .ToListAsync(cancellationToken);
+                document.ImageFileId,
+                new SearchHitEngagementDto(
+                    article != null ? article.LikeCount
+                        : shortVideo != null ? shortVideo.LikeCount
+                        : null,
+                    article != null ? article.CommentCount : null,
+                    article != null ? article.ShareCount
+                        : video != null ? video.ShareCount
+                        : shortVideo != null ? shortVideo.ShareCount
+                        : null,
+                    shortVideo != null ? shortVideo.ViewCount : null,
+                    article != null ? article.BookmarkCount
+                        : shortVideo != null ? shortVideo.BookmarkCount
+                        : null,
+                    // Read off the joined row rather than the projected column, so the
+                    // average and its count are as current as each other.
+                    video != null
+                        ? video.RatingAverage
+                        : null,
+                    video != null ? video.RatingCount : null
+                )
+            )
+        ).ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc />

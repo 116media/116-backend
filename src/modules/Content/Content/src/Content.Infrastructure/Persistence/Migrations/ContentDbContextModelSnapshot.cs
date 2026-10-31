@@ -3211,10 +3211,6 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("published_at");
 
-                    b.Property<decimal?>("RatingAverage")
-                        .HasColumnType("numeric")
-                        .HasColumnName("rating_average");
-
                     b.Property<NpgsqlTsVector>("SearchVector")
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
