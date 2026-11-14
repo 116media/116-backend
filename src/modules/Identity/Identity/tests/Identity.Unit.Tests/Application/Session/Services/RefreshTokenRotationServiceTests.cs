@@ -100,6 +100,7 @@ public class RefreshTokenRotationServiceTests : IDisposable
                     session.Id,
                     newRefreshTokenHash,
                     It.IsAny<DateTime>(),
+                    It.IsAny<DateTime>(),
                     It.IsAny<CancellationToken>()
                 )
             )
@@ -197,6 +198,7 @@ public class RefreshTokenRotationServiceTests : IDisposable
                     session.Id,
                     newRefreshTokenHash,
                     It.IsAny<DateTime>(),
+                    It.IsAny<DateTime>(),
                     It.IsAny<CancellationToken>()
                 )
             )
@@ -237,6 +239,7 @@ public class RefreshTokenRotationServiceTests : IDisposable
                     session.Id,
                     newRefreshTokenHash,
                     It.IsAny<DateTime>(),
+                    It.IsAny<DateTime>(),
                     It.IsAny<CancellationToken>()
                 )
             )
@@ -253,6 +256,7 @@ public class RefreshTokenRotationServiceTests : IDisposable
                 x.UpdateRefreshTokenAsync(
                     session.Id,
                     newRefreshTokenHash,
+                    It.IsAny<DateTime>(),
                     It.IsAny<DateTime>(),
                     It.IsAny<CancellationToken>()
                 ),
@@ -284,6 +288,7 @@ public class RefreshTokenRotationServiceTests : IDisposable
                 x.UpdateRefreshTokenAsync(
                     session.Id,
                     newRefreshTokenHash,
+                    It.IsAny<DateTime>(),
                     It.IsAny<DateTime>(),
                     It.IsAny<CancellationToken>()
                 )
@@ -324,6 +329,7 @@ public class RefreshTokenRotationServiceTests : IDisposable
                     session.Id,
                     newRefreshTokenHash,
                     It.IsAny<DateTime>(),
+                    It.IsAny<DateTime>(),
                     It.IsAny<CancellationToken>()
                 )
             )
@@ -363,7 +369,13 @@ public class RefreshTokenRotationServiceTests : IDisposable
 
         _sessionRepositoryMock
             .Setup(x =>
-                x.UpdateRefreshTokenAsync(session.Id, newRefreshTokenHash, It.IsAny<DateTime>(), cancellationToken)
+                x.UpdateRefreshTokenAsync(
+                    session.Id,
+                    newRefreshTokenHash,
+                    It.IsAny<DateTime>(),
+                    It.IsAny<DateTime>(),
+                    cancellationToken
+                )
             )
             .Returns(Task.CompletedTask);
 
@@ -378,7 +390,14 @@ public class RefreshTokenRotationServiceTests : IDisposable
             Times.Once
         );
         _sessionRepositoryMock.Verify(
-            x => x.UpdateRefreshTokenAsync(session.Id, newRefreshTokenHash, It.IsAny<DateTime>(), cancellationToken),
+            x =>
+                x.UpdateRefreshTokenAsync(
+                    session.Id,
+                    newRefreshTokenHash,
+                    It.IsAny<DateTime>(),
+                    It.IsAny<DateTime>(),
+                    cancellationToken
+                ),
             Times.Once
         );
         _unitOfWorkMock.Verify(x => x.CommitAsync(cancellationToken), Times.Once);
@@ -418,6 +437,7 @@ public class RefreshTokenRotationServiceTests : IDisposable
                 x.UpdateRefreshTokenAsync(
                     It.IsAny<Guid>(),
                     It.IsAny<string>(),
+                    It.IsAny<DateTime>(),
                     It.IsAny<DateTime>(),
                     It.IsAny<CancellationToken>()
                 ),
@@ -459,6 +479,7 @@ public class RefreshTokenRotationServiceTests : IDisposable
                     It.IsAny<Guid>(),
                     It.IsAny<string>(),
                     It.IsAny<DateTime>(),
+                    It.IsAny<DateTime>(),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Never
@@ -498,6 +519,110 @@ public class RefreshTokenRotationServiceTests : IDisposable
         raised.SessionId.Should().Be(revokedSession.Id);
         raised.UserId.Should().Be(revokedSession.UserId);
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RefreshTokenAsync_WhenTokenIsInsideTheRotationGrace_ShouldIssueAccessTokenWithoutRotating()
+    {
+        // Arrange
+        string refreshToken = "superseded_refresh_token";
+        string refreshTokenHash = "superseded_hashed_refresh_token";
+        UserEntity user = UserFactory.Create();
+        SessionEntity rotatedSession = new SessionBuilder().WithUser(user).Build();
+        rotatedSession.ClearDomainEvents();
+
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
+
+        _sessionRepositoryMock.SetupGetByRefreshTokenHashReturnsNull(refreshTokenHash);
+
+        _sessionRepositoryMock
+            .Setup(x =>
+                x.GetByPreviousRefreshTokenHashAsync(
+                    refreshTokenHash,
+                    It.IsAny<DateTime>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(rotatedSession);
+
+        // Act
+        RefreshTokenData result = await _service.RefreshTokenAsync(refreshToken, CancellationToken.None);
+
+        // Assert
+        result.Session.Should().BeSameAs(rotatedSession);
+        result.NewRefreshToken.Should().BeNull();
+        rotatedSession.DomainEvents.OfType<RefreshTokenReplayDetectedEvent>().Should().BeEmpty();
+        _sessionRepositoryMock.Verify(
+            x =>
+                x.UpdateRefreshTokenAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async Task RefreshTokenAsync_WhenTokenIsOutsideTheRotationGrace_ShouldFallThroughToReplayDetection()
+    {
+        // Arrange
+        string refreshToken = "long_superseded_refresh_token";
+        string refreshTokenHash = "long_superseded_hashed_refresh_token";
+
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
+
+        _sessionRepositoryMock.SetupGetByRefreshTokenHashReturnsNull(refreshTokenHash);
+
+        _sessionRepositoryMock
+            .Setup(x =>
+                x.GetByPreviousRefreshTokenHashAsync(
+                    refreshTokenHash,
+                    It.IsAny<DateTime>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((SessionEntity?)null);
+
+        // Act
+        Func<Task> act = async () => await _service.RefreshTokenAsync(refreshToken, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowExactlyAsync<RefreshTokenExpiryException>();
+
+        _sessionRepositoryMock.Verify(
+            x => x.GetRevokedSessionByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task RefreshTokenAsync_WhenRotating_ShouldOpenAGraceWindowOnTheSupersededToken()
+    {
+        // Arrange
+        string refreshToken = "refresh_token_123";
+        string refreshTokenHash = "hashed_refresh_token";
+        UserEntity user = UserFactory.Create();
+        SessionEntity session = new SessionBuilder().WithUser(user).Build();
+        session.ClearDomainEvents();
+
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
+
+        _sessionRepositoryMock.SetupGetByRefreshTokenHash(refreshTokenHash, session);
+
+        _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+        string supersededHash = session.RefreshTokenHash;
+
+        // Act
+        await _service.RefreshTokenAsync(refreshToken, CancellationToken.None);
+
+        // Assert
+        session.PreviousRefreshTokenHash.Should().Be(supersededHash);
+        session.PreviousRefreshTokenUsableUntil.Should().NotBeNull();
+        session.PreviousRefreshTokenUsableUntil!.Value.Should().BeAfter(DateTime.UtcNow);
     }
 
     [Fact]

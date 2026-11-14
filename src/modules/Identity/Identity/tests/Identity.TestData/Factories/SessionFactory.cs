@@ -150,6 +150,34 @@ public static class SessionFactory
         new SessionBuilder().WithUserId(userId).WithRefreshTokenHash(refreshTokenHash).AsRevoked().Build();
 
     /// <summary>
+    /// Creates an active session that has already rotated, so the supplied hash is the superseded
+    /// token still inside its grace window.
+    /// </summary>
+    /// <param name="userId">The user identifier.</param>
+    /// <param name="supersededRefreshTokenHash">The hash of the token the rotation replaced.</param>
+    /// <param name="usableUntil">How long that token still buys an access token.</param>
+    /// <returns>A new SessionEntity carrying the superseded hash.</returns>
+    public static SessionEntity CreateWithSupersededRefreshTokenHash(
+        Guid userId,
+        string supersededRefreshTokenHash,
+        DateTime usableUntil
+    )
+    {
+        SessionEntity session = new SessionBuilder()
+            .WithUserId(userId)
+            .WithRefreshTokenHash(supersededRefreshTokenHash)
+            .Build();
+
+        session.UpdateRefreshToken(
+            newRefreshTokenHash: $"rotated-{supersededRefreshTokenHash}",
+            newExpiresAt: DateTime.UtcNow.AddDays(7),
+            previousTokenUsableUntil: usableUntil
+        );
+
+        return session;
+    }
+
+    /// <summary>
     /// Creates a session with a specific IP address.
     /// </summary>
     /// <param name="ipAddress">The IP address.</param>

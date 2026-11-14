@@ -13,6 +13,12 @@ public interface ISessionRevocationCache
     void Revoke(Guid sessionId, TimeSpan ttl);
 
     /// <summary>
+    /// Drops the session from the denylist, so tokens minted for it are honoured again.
+    /// </summary>
+    /// <param name="sessionId">The id of the session that is live once more.</param>
+    void Allow(Guid sessionId);
+
+    /// <summary>
     /// Whether the session has been revoked and its tokens must be rejected.
     /// </summary>
     /// <param name="sessionId">The session id carried by the token's <c>ref</c> claim.</param>

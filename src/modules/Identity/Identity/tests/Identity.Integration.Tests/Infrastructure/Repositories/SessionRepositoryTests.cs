@@ -223,7 +223,7 @@ public class SessionRepositoryTests(PostgresFixture postgres) : BaseRepositoryTe
         var newHash = "updated-refresh-token-hash-999";
         var newExpiry = DateTime.UtcNow.AddDays(30);
 
-        await repo.UpdateRefreshTokenAsync(session.Id, newHash, newExpiry);
+        await repo.UpdateRefreshTokenAsync(session.Id, newHash, newExpiry, DateTime.UtcNow.AddSeconds(30));
         await db.SaveChangesAsync();
 
         await using var verifyContext = CreateDbContext<IdentityDbContext>();

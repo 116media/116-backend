@@ -21,8 +21,10 @@ public partial class SessionEntity
     /// Rotates the refresh token and updates the session expiration. The absolute expiry is
     /// deliberately left untouched.
     /// </summary>
-    public void UpdateRefreshToken(string newRefreshTokenHash, DateTime newExpiresAt)
+    public void UpdateRefreshToken(string newRefreshTokenHash, DateTime newExpiresAt, DateTime previousTokenUsableUntil)
     {
+        PreviousRefreshTokenHash = RefreshTokenHash;
+        PreviousRefreshTokenUsableUntil = previousTokenUsableUntil;
         RefreshTokenHash = newRefreshTokenHash;
         ExpiresAt = newExpiresAt;
     }
@@ -54,6 +56,7 @@ public partial class SessionEntity
 
         IsRevoked = true;
         RevokedAt = now;
+        RevokeReason = reason;
 
         AddDomainEvent(new SessionRevokedEvent(UserId: UserId, SessionId: Id, Reason: reason));
         return true;
@@ -79,6 +82,9 @@ public partial class SessionEntity
 
         IsRevoked = false;
         RevokedAt = null;
+        RevokeReason = null;
+        PreviousRefreshTokenHash = null;
+        PreviousRefreshTokenUsableUntil = null;
 
         AddDomainEvent(new SessionReactivatedEvent(SessionId: Id, UserId: UserId));
         return true;

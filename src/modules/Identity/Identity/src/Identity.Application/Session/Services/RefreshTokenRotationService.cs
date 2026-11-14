@@ -33,6 +33,12 @@ public class RefreshTokenRotationService(
     ILogger<RefreshTokenRotationService> logger
 ) : IRefreshTokenRotationService
 {
+    /// <summary>
+    /// How long a token superseded by a rotation still buys an access token, so two contexts
+    /// racing on one shared cookie jar do not knock each other out.
+    /// </summary>
+    private static readonly TimeSpan RotationGrace = TimeSpan.FromSeconds(30);
+
     /// <inheritdoc />
     public async Task<RefreshTokenData> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken)
     {
@@ -67,6 +73,7 @@ public class RefreshTokenRotationService(
                 sessionId: session.Id,
                 newRefreshTokenHash: newRefreshTokenHash,
                 newExpiresAt: newRefreshTokenExpiresAt,
+                previousTokenUsableUntil: now.Add(RotationGrace),
                 cancellationToken: cancellationToken
             );
 
@@ -74,7 +81,8 @@ public class RefreshTokenRotationService(
 
             session.UpdateRefreshToken(
                 newRefreshTokenHash: newRefreshTokenHash,
-                newExpiresAt: newRefreshTokenExpiresAt
+                newExpiresAt: newRefreshTokenExpiresAt,
+                previousTokenUsableUntil: now.Add(RotationGrace)
             );
 
             UserSecurityState tokenState = await tokenStateRepository.GetOrCreateAsync(
@@ -87,6 +95,27 @@ public class RefreshTokenRotationService(
                 Session: session,
                 NewRefreshToken: newRefreshToken,
                 TokenState: tokenState
+            );
+        }
+
+        SessionEntity? recentlyRotated = await sessionRepository.GetByPreviousRefreshTokenHashAsync(
+            refreshTokenHash: refreshTokenHash,
+            now: timeProvider.GetUtcNow().UtcDateTime,
+            cancellationToken: cancellationToken
+        );
+
+        if (recentlyRotated is not null)
+        {
+            UserSecurityState graceTokenState = await tokenStateRepository.GetOrCreateAsync(
+                userId: recentlyRotated.UserId,
+                cancellationToken: cancellationToken
+            );
+
+            return new RefreshTokenData(
+                User: recentlyRotated.User,
+                Session: recentlyRotated,
+                NewRefreshToken: null,
+                TokenState: graceTokenState
             );
         }
 

@@ -1,5 +1,6 @@
 using _116.Identity.Application.Adapters.Wangkanai.Detection;
 using _116.Identity.Application.Auth.Ports;
+using _116.Identity.Application.Session.Cache;
 using _116.Identity.Application.Session.Ports;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.Services;
@@ -38,6 +39,7 @@ public class SessionServiceTests : IDisposable
     private readonly Mock<ISessionMetadataService> _sessionMetadataServiceMock;
     private readonly Mock<IUserTokenStateRepository> _tokenStateRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<ISessionRevocationCache> _revocationCacheMock;
     private readonly UserSecurityState _tokenState = new(Guid.NewGuid(), 1);
     private readonly SessionsService _service;
 
@@ -52,6 +54,7 @@ public class SessionServiceTests : IDisposable
         _sessionMetadataServiceMock = MockSessionMetadataService.Create();
         _tokenStateRepositoryMock = new Mock<IUserTokenStateRepository>();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
+        _revocationCacheMock = new Mock<ISessionRevocationCache>();
 
         _tokenStateRepositoryMock
             .Setup(x => x.GetOrCreateAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -66,6 +69,7 @@ public class SessionServiceTests : IDisposable
             _sessionMetadataServiceMock.Object,
             _tokenStateRepositoryMock.Object,
             _unitOfWorkMock.Object,
+            _revocationCacheMock.Object,
             sessionErrors
         );
     }
@@ -198,6 +202,57 @@ public class SessionServiceTests : IDisposable
             x => x.CreateAsync(It.IsAny<SessionEntity>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
+    }
+
+    [Fact]
+    public async Task CreateSessionAsync_WhenReusingASession_ShouldTakeItOffTheRevocationDenylist()
+    {
+        // Arrange
+        UserEntity user = UserFactory.Create();
+        var userPermissions = new List<RolePermissionEntity>();
+        string refreshToken = "refresh_token_123";
+        string refreshTokenHash = "hashed_refresh_token";
+        string deviceId = "device_123";
+        SessionEntity existingSession = SessionFactory.Create(Guid.NewGuid(), deviceId);
+        var jwtResult = new JwtGenerationDto("access_token", DateTime.UtcNow.AddHours(1));
+
+        _sessionMetadataServiceMock.Setup(x => x.ExtractDeviceId()).Returns(deviceId);
+
+        _sessionRepositoryMock
+            .Setup(x => x.GetSessionByUserIdAndDeviceIdAsync(user.Id, deviceId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingSession);
+
+        _refreshTokenServiceMock.SetupGenerateRefreshToken(refreshToken);
+
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
+
+        _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+        _jwtServiceMock
+            .Setup(x =>
+                x.GenerateToken(
+                    user.Id,
+                    existingSession.Id,
+                    user.Email!,
+                    user.UserName,
+                    user.UserRoles,
+                    userPermissions,
+                    user.IsVerified,
+                    user.IsActive,
+                    _tokenState.SecurityStamp,
+                    _tokenState.TokenVersion,
+                    user.AuthProvider
+                )
+            )
+            .Returns(jwtResult);
+
+        // Act
+        SessionResult result = await _service.CreateSessionAsync(user, userPermissions, CancellationToken.None);
+
+        // Assert — signing out leaves the id on the denylist, so reusing the row without
+        // clearing it mints tokens the validator rejects for the whole entry lifetime.
+        result.RefreshToken.Should().Be(refreshToken);
+        _revocationCacheMock.Verify(x => x.Allow(existingSession.Id), Times.Once);
     }
 
     [Fact]

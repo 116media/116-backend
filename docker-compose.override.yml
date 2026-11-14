@@ -43,6 +43,9 @@ services:
             - "9091:80"
     116_api:
         container_name: 116_api
+        depends_on:
+            116_mailpit:
+                condition: service_started
         environment:
             - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
             - POSTGRES_DB=${POSTGRES_DB}

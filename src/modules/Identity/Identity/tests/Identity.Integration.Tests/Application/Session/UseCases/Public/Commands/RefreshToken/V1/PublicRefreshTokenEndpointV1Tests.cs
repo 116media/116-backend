@@ -78,6 +78,36 @@ public class PublicRefreshTokenEndpointV1Tests(PostgresFixture db) : BaseApiTest
     }
 
     [Fact]
+    public async Task RefreshToken_WithASupersededTokenInsideTheGrace_SetsOnlyTheAccessCookie()
+    {
+        const string supersededToken = "test-superseded-refresh-token-for-visitor";
+        string supersededHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(supersededToken)));
+
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            SessionEntity session = SessionFactory.CreateWithSupersededRefreshTokenHash(
+                userId: TestUser.VisitorId,
+                supersededRefreshTokenHash: supersededHash,
+                usableUntil: DateTime.UtcNow.AddSeconds(30)
+            );
+            ctx.Sessions.Add(session);
+        });
+
+        Client.ClearAuthentication();
+        var msg = new HttpRequestMessage(HttpMethod.Post, RefreshTokenUrl);
+        msg.Headers.Add("Client-App", "WebApp");
+        msg.Headers.Add("Cookie", $"refreshToken={supersededToken}");
+
+        var response = await Client.SendAsync(msg);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        string setCookie = string.Join("; ", response.Headers.GetValues("Set-Cookie"));
+        setCookie.Should().Contain("accessToken=");
+        setCookie.Should().NotContain("refreshToken=");
+    }
+
+    [Fact]
     public async Task RefreshToken_WithATokenFromARevokedSession_RevokesTheAccountAndAlertsTheOwner()
     {
         const string replayedToken = "test-replayed-refresh-token-for-visitor";
