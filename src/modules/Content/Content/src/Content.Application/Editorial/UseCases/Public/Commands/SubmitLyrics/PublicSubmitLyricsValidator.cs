@@ -25,8 +25,6 @@ public class PublicSubmitLyricsValidator : AbstractValidator<PublicSubmitLyricsC
 
         RuleFor(x => x.Language).ValidLyricsLanguage(i18n.Lyrics.Msg);
 
-        RuleFor(x => x.Slug).ValidLyricsSlug(i18n.Lyrics.Msg, isRequired: false);
-
         When(
             x => !string.IsNullOrWhiteSpace(x.ArtistName),
             () => RuleFor(x => x.ArtistName).ValidArtistName(i18n.Lyrics.Msg)

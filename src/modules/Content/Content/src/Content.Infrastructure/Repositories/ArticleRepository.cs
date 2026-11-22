@@ -23,6 +23,8 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
         string? search,
         EnumContentStatus? status,
         Guid? categoryId,
+        string? categorySlug = null,
+        string? tagSlug = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -32,7 +34,9 @@ public class ArticleRepository(ContentDbContext context) : ContentRepository<Art
             .WithSearch(search: search)
             .WithStatus(status: status)
             .WithCategory(categoryId: categoryId)
-            .Build();
+            .WithCategorySlug(categorySlug: categorySlug)
+            .WithTag(tagSlug: tagSlug)
+            .Build(tags: Context.Tags, categories: Context.Categories);
 
         if (spec is not null)
         {

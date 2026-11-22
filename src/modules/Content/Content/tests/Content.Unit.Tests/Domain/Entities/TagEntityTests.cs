@@ -44,38 +44,9 @@ public class TagEntityTests
         // Assert
         act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.TagNameRequired);
     }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void Create_WithInvalidSlug_ShouldThrowBadRequestException(string? invalidSlug)
-    {
-        // Act
-        Action act = () => TagEntity.Create(Guid.NewGuid(), TestConstants.Tag.ValidName, invalidSlug!);
-
-        // Assert
-        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.TagSlugRequired);
-    }
-
     #endregion
 
     #region Update Tests
-
-    [Fact]
-    public void Update_WithValidValues_ShouldUpdateNameAndSlug()
-    {
-        // Arrange
-        var tag = TagEntity.Create(Guid.NewGuid(), TestConstants.Tag.ValidName, TestConstants.Tag.ValidSlug);
-
-        // Act
-        tag.Update(name: "New Name", slug: "new-slug");
-
-        // Assert
-        tag.Name.Should().Be("New Name");
-        tag.Slug.Value.Should().Be("new-slug");
-    }
-
     [Theory]
     [InlineData(null)]
     [InlineData("")]
@@ -86,28 +57,11 @@ public class TagEntityTests
         var tag = TagEntity.Create(Guid.NewGuid(), TestConstants.Tag.ValidName, TestConstants.Tag.ValidSlug);
 
         // Act
-        Action act = () => tag.Update(name: invalidName!, slug: "valid-slug");
+        Action act = () => tag.Update(name: invalidName!);
 
         // Assert
         act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.TagNameRequired);
     }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void Update_WithInvalidSlug_ShouldThrowBadRequestException(string? invalidSlug)
-    {
-        // Arrange
-        var tag = TagEntity.Create(Guid.NewGuid(), TestConstants.Tag.ValidName, TestConstants.Tag.ValidSlug);
-
-        // Act
-        Action act = () => tag.Update(name: "Valid Name", slug: invalidSlug!);
-
-        // Assert
-        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.TagSlugRequired);
-    }
-
     #endregion
 
     [Fact]
@@ -132,7 +86,7 @@ public class TagEntityTests
         tag.ClearDomainEvents();
 
         // Act
-        tag.Update("Gombe", "gombe");
+        tag.Update("Gombe");
 
         // Assert
         tag.DomainEvents.OfType<TagGraphChangedEvent>()

@@ -34,29 +34,12 @@ public class AdminCreateVideoServiceTests
         return new AdminCreateVideoCommand(
             categoryId,
             "Title",
-            "video-slug",
             Guid.NewGuid(),
             null,
             null,
             "Description",
             shootingScheduledAt
         );
-    }
-
-    [Fact]
-    public async Task CreateAsync_WithAFreeSlug_ShouldStageTheVideo()
-    {
-        // Arrange
-        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
-        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _videoRepositoryMock.SetupGetBySlug("video-slug", null);
-
-        // Act
-        VideoEntity video = await _service.CreateAsync(Command(category.Id), CancellationToken.None);
-
-        // Assert
-        video.Slug.Value.Should().Be("video-slug");
-        _videoRepositoryMock.VerifyAddCalled();
     }
 
     [Fact]
@@ -73,20 +56,5 @@ public class AdminCreateVideoServiceTests
 
         // Assert
         video.ShootingScheduledAt.Should().Be(shootingAt);
-    }
-
-    [Fact]
-    public async Task CreateAsync_WhenTheSlugIsTaken_ShouldThrowConflictException()
-    {
-        // Arrange
-        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
-        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _videoRepositoryMock.SetupGetBySlug("video-slug", VideoFactory.Create(category.Id));
-
-        // Act
-        Func<Task> act = async () => await _service.CreateAsync(Command(category.Id), CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
     }
 }

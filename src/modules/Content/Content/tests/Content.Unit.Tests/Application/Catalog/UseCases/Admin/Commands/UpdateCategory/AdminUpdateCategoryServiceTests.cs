@@ -50,39 +50,11 @@ public class AdminUpdateCategoryServiceTests
         return new AdminUpdateCategoryCommand(
             id.ToString(),
             "Name",
-            "slug",
             "Description",
             false,
             isExclusive,
             isDefaultForLyrics
         );
-    }
-
-    [Fact]
-    public async Task EnsureUpdatableAsync_WithAFreeSlug_ShouldReturnTheCategory()
-    {
-        // Arrange
-        CategoryEntity category = Arrange("Video");
-
-        // Act
-        CategoryEntity result = await _service.EnsureUpdatableAsync(Command(category.Id), CancellationToken.None);
-
-        // Assert
-        result.Should().BeSameAs(category);
-    }
-
-    [Fact]
-    public async Task EnsureUpdatableAsync_WhenTheSlugBelongsToAnotherCategory_ShouldThrowConflictException()
-    {
-        // Arrange
-        CategoryEntity category = Arrange("Video");
-        _categoryRepositoryMock.SetupGetBySlug("slug", CategoryFactory.Create(category.ContentTypeId));
-
-        // Act
-        Func<Task> act = async () => await _service.EnsureUpdatableAsync(Command(category.Id), CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
     }
 
     [Fact]

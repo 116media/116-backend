@@ -152,31 +152,6 @@ public class LyricsEntityTests
         // Assert
         act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.LyricsTextRequired);
     }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void CreateFree_WithEmptySlug_ShouldThrowBadRequestException(string? invalidSlug)
-    {
-        // Act
-        Action act = () =>
-            LyricsEntity.CreateFree(
-                Guid.NewGuid(),
-                CategoryId,
-                null,
-                TestConstants.Lyrics.ValidSongTitle,
-                TestConstants.Lyrics.ValidArtistName,
-                TestConstants.Lyrics.ValidLyricsText,
-                TestConstants.Lyrics.ValidLanguage,
-                invalidSlug!,
-                AuthorId
-            );
-
-        // Assert
-        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.LyricsSlugRequired);
-    }
-
     #endregion
 
     #region CreatePaid Tests
@@ -283,32 +258,6 @@ public class LyricsEntityTests
         // Assert
         act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.LyricsTextRequired);
     }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void CreatePaid_WithEmptySlug_ShouldThrowBadRequestException(string? invalidSlug)
-    {
-        // Act
-        Action act = () =>
-            LyricsEntity.CreatePaid(
-                Guid.NewGuid(),
-                Guid.NewGuid(),
-                Guid.NewGuid(),
-                CategoryId,
-                null,
-                TestConstants.Lyrics.ValidSongTitle,
-                TestConstants.Lyrics.ValidArtistName,
-                TestConstants.Lyrics.ValidLyricsText,
-                TestConstants.Lyrics.ValidLanguage,
-                invalidSlug!,
-                AuthorId
-            );
-
-        // Assert
-        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.LyricsSlugRequired);
-    }
-
     #endregion
 
     #region Status Transition Tests
@@ -620,7 +569,7 @@ public class LyricsEntityTests
 
         // Act
         lyrics.Recategorize(categoryId: newCategoryId);
-        lyrics.Retitle(songTitle: "Updated Song Title", artistName: "Updated Artist", slug: "updated-slug");
+        lyrics.Retitle(songTitle: "Updated Song Title", artistName: "Updated Artist");
         lyrics.ReviseText(lyricsText: "Updated lyrics text", language: "en");
         lyrics.Relink(videoId: newVideoId);
         lyrics.AssignCommission(customerId: customerId, orderItemId: orderItemId);
@@ -629,33 +578,12 @@ public class LyricsEntityTests
         lyrics.CategoryId.Should().Be(newCategoryId);
         lyrics.SongTitle.Should().Be("Updated Song Title");
         lyrics.ArtistName.Should().Be("Updated Artist");
-        lyrics.Slug.Value.Should().Be("updated-slug");
+        lyrics.Slug.Value.Should().Be(TestConstants.Lyrics.ValidSlug);
         lyrics.LyricsText.Should().Be("Updated lyrics text");
         lyrics.Language.Should().Be("en");
         lyrics.VideoId.Should().Be(newVideoId);
         lyrics.CustomerId.Should().Be(customerId);
         lyrics.OrderItemId.Should().Be(orderItemId);
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void Retitle_WithEmptySlug_ShouldThrowBadRequestException(string? invalidSlug)
-    {
-        // Arrange
-        LyricsEntity lyrics = CreateFreeLyrics();
-
-        // Act
-        Action act = () =>
-            lyrics.Retitle(
-                songTitle: TestConstants.Lyrics.ValidSongTitle,
-                artistName: TestConstants.Lyrics.ValidArtistName,
-                slug: invalidSlug!
-            );
-
-        // Assert
-        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.LyricsSlugRequired);
     }
 
     [Fact]
@@ -666,13 +594,72 @@ public class LyricsEntityTests
 
         // Act & Assert
         lyrics.Recategorize(categoryId: lyrics.CategoryId).Should().BeFalse();
-        lyrics
-            .Retitle(songTitle: lyrics.SongTitle, artistName: lyrics.ArtistName, slug: lyrics.Slug)
-            .Should()
-            .BeFalse();
+        lyrics.Retitle(songTitle: lyrics.SongTitle, artistName: lyrics.ArtistName).Should().BeFalse();
         lyrics.ReviseText(lyricsText: lyrics.LyricsText, language: lyrics.Language).Should().BeFalse();
         lyrics.Relink(videoId: lyrics.VideoId).Should().BeFalse();
         lyrics.AssignCommission(customerId: lyrics.CustomerId, orderItemId: lyrics.OrderItemId).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Retitle_WithEmptySongTitle_ShouldThrowBadRequestException(string? invalidSongTitle)
+    {
+        // Arrange
+        LyricsEntity lyrics = CreateFreeLyrics();
+
+        // Act
+        Action act = () => lyrics.Retitle(songTitle: invalidSongTitle!, artistName: "New Artist");
+
+        // Assert
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.SongTitleRequired);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Retitle_WithEmptyArtistName_ShouldThrowBadRequestException(string? invalidArtistName)
+    {
+        // Arrange
+        LyricsEntity lyrics = CreateFreeLyrics();
+
+        // Act
+        Action act = () => lyrics.Retitle(songTitle: "New Song", artistName: invalidArtistName!);
+
+        // Assert
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.LyricsArtistNameRequired);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void ReviseText_WithEmptyLyricsText_ShouldThrowBadRequestException(string? invalidLyricsText)
+    {
+        // Arrange
+        LyricsEntity lyrics = CreateFreeLyrics();
+
+        // Act
+        Action act = () => lyrics.ReviseText(lyricsText: invalidLyricsText!, language: "en");
+
+        // Assert
+        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.LyricsTextRequired);
+    }
+
+    [Fact]
+    public void ReviseSeo_WithUnchangedValues_ShouldReturnFalse()
+    {
+        // Arrange
+        LyricsEntity lyrics = CreateFreeLyrics();
+        lyrics.ReviseSeo("Meta Title", "Meta Description", "{}");
+
+        // Act
+        bool changed = lyrics.ReviseSeo("Meta Title", "Meta Description", "{}");
+
+        // Assert
+        changed.Should().BeFalse();
     }
 
     #endregion

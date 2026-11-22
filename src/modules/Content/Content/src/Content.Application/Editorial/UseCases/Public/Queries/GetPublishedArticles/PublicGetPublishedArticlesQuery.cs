@@ -7,12 +7,13 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishe
 
 /// <summary>
 /// Query for retrieving a paginated list of published articles for public consumption.
-/// Supports optional filtering by category and tag slug.
+/// Supports optional filtering by category (identifier or slug) and tag slug.
 /// </summary>
 /// <param name="PaginatedRequest">Pagination parameters (page index and page size).</param>
 /// <param name="Search">Optional search term matched against title, headline, body, meta title, and meta description.</param>
 /// <param name="CategoryId">Optional filter by category identifier.</param>
-/// <param name="TagSlug">Optional filter by tag slug (aspirational — reserved for future use).</param>
+/// <param name="CategorySlug">Optional filter by category slug, preferred over the identifier in public URLs.</param>
+/// <param name="TagSlug">Optional filter by tag slug.</param>
 /// <param name="CurrentUserId">
 /// The authenticated caller's id, or null for an anonymous request. When null, the per-user
 /// interaction flags on the returned summaries resolve to false.
@@ -21,6 +22,7 @@ public record PublicGetPublishedArticlesQuery(
     PaginatedRequest PaginatedRequest,
     string? Search,
     Guid? CategoryId,
+    string? CategorySlug,
     string? TagSlug,
     Guid? CurrentUserId = null
 ) : IQuery<PublicGetPublishedArticlesResult>, IConditionallyCacheableRequest
@@ -36,7 +38,7 @@ public record PublicGetPublishedArticlesQuery(
     /// <inheritdoc />
     public string CacheKey =>
         $"published_articles:{PaginatedRequest.PageIndex}:{PaginatedRequest.PageSize}"
-        + $":{CategoryId?.ToString() ?? "all"}:{TagSlug ?? "all"}";
+        + $":{CategoryId?.ToString() ?? "all"}:{CategorySlug ?? "all"}:{TagSlug ?? "all"}";
 
     /// <inheritdoc />
     public TimeSpan Ttl => TimeSpan.FromMinutes(10);

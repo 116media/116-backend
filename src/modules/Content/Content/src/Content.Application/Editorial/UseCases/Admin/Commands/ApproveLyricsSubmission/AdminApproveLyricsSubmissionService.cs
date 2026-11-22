@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveLyricsSubmission.Contracts;
 using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -23,7 +24,6 @@ public class AdminApproveLyricsSubmissionService(
     /// <inheritdoc />
     public async Task<ApprovedSubmissionData> PrepareAsync(
         Guid submissionId,
-        string slug,
         Guid reviewerId,
         CancellationToken cancellationToken
     )
@@ -38,15 +38,12 @@ public class AdminApproveLyricsSubmissionService(
             throw i18n.Submission.NotPending();
         }
 
-        LyricsEntity? existing = await lyricsRepository.GetBySlugAsync(
-            slug: slug,
+        string slug = await SlugHelper.ToAvailableSlugAsync(
+            name: submission.SongTitle,
+            isTakenAsync: async (candidate, ct) =>
+                await lyricsRepository.GetBySlugAsync(slug: candidate, cancellationToken: ct) is not null,
             cancellationToken: cancellationToken
         );
-
-        if (existing is not null)
-        {
-            throw i18n.Lyrics.SlugAlreadyExists(slug: slug);
-        }
 
         // Community submissions never carry a customer or order, so approval always files under the default free category.
         CategoryEntity? category = await categoryRepository.GetDefaultLyricsCategoryAsync(

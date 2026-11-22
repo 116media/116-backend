@@ -35,7 +35,6 @@ public class AdminUpdateArticleServiceTests
             article.Id.ToString(),
             article.CategoryId,
             "New title",
-            slug,
             "Headline",
             "<p>Body</p>",
             null,
@@ -62,23 +61,6 @@ public class AdminUpdateArticleServiceTests
         // Assert
         result.Should().BeSameAs(article);
         article.Title.Should().Be("New title");
-        article.Slug.Value.Should().Be("new-slug");
-    }
-
-    [Fact]
-    public async Task UpdateAsync_WhenTheNewSlugBelongsToAnotherArticle_ShouldThrowConflictException()
-    {
-        // Arrange
-        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
-        ArticleEntity article = ArticleFactory.CreateWithSlug(category.Id, "old-slug");
-        _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _articleRepositoryMock.SetupGetBySlug("new-slug", ArticleFactory.CreateWithSlug(category.Id, "new-slug"));
-
-        // Act
-        Func<Task> act = async () => await _service.UpdateAsync(Command(article, "new-slug"), CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
+        article.Slug.Value.Should().Be("old-slug");
     }
 }

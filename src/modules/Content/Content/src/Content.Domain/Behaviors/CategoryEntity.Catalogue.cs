@@ -10,30 +10,24 @@ namespace _116.Content.Domain.Entities;
 public sealed partial class CategoryEntity
 {
     /// <summary>
-    /// Renames the category and its slug.
+    /// Renames the category. The slug is assigned once at creation and never follows the name,
+    /// so a published URL keeps resolving.
     /// </summary>
     /// <param name="name">The new display name.</param>
-    /// <param name="slug">The new URL-safe slug.</param>
-    /// <returns><c>true</c> if either value changed; otherwise <c>false</c>.</returns>
-    public bool Rename(string name, string slug)
+    /// <returns><c>true</c> if the name changed; otherwise <c>false</c>.</returns>
+    public bool Rename(string name)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
             throw new ContentRuleException(ContentRuleCodes.CategoryNameRequired);
         }
 
-        if (string.IsNullOrWhiteSpace(value: slug))
-        {
-            throw new ContentRuleException(ContentRuleCodes.CategorySlugRequired);
-        }
-
-        if (Name == name && Slug == slug)
+        if (Name == name)
         {
             return false;
         }
 
         Name = name;
-        Slug = slug;
         MarkChanged();
 
         return true;

@@ -37,6 +37,8 @@ public class PublicGetPublishedArticlesHandler(
             search: query.Search,
             status: EnumContentStatus.Published,
             categoryId: query.CategoryId,
+            categorySlug: query.CategorySlug,
+            tagSlug: query.TagSlug,
             cancellationToken: cancellationToken
         );
 

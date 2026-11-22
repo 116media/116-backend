@@ -18,7 +18,6 @@ public class AdminUpdateCategoryValidator : AbstractValidator<AdminUpdateCategor
     {
         RuleFor(x => x.Id).IsValidGuid(i18n.Category.Msg.Localizer);
         RuleFor(x => x.Name).ValidCategoryName(i18n.Category.Msg);
-        RuleFor(x => x.Slug).ValidCategorySlug(i18n.Category.Msg);
         RuleFor(x => x.Description).ValidCategoryDescription(i18n.Category.Msg);
     }
 }

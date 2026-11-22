@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArticle.Contracts;
 using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 
@@ -22,15 +23,13 @@ public class AdminCreateArticleService(
     {
         await categoryRepository.GetByIdOrThrowAsync(id: command.CategoryId, cancellationToken: cancellationToken);
 
-        ArticleEntity? existing = await articleRepository.GetBySlugAsync(
-            slug: command.Slug,
+        string slug = await SlugHelper.ToAvailableSlugAsync(
+            name: command.Title,
+            isTakenAsync: async (candidate, ct) =>
+                await articleRepository.GetBySlugAsync(slug: candidate, cancellationToken: ct) is not null,
+            unique: true,
             cancellationToken: cancellationToken
         );
-
-        if (existing is not null)
-        {
-            throw i18n.Article.SlugAlreadyExists(slug: command.Slug);
-        }
 
         ArticleEntity article = command.CustomerId.HasValue
             ? ArticleEntity.CreatePaid(
@@ -39,14 +38,14 @@ public class AdminCreateArticleService(
                 orderItemId: command.OrderItemId!.Value,
                 categoryId: command.CategoryId,
                 title: command.Title,
-                slug: command.Slug,
+                slug: slug,
                 authorId: command.AuthorId
             )
             : ArticleEntity.CreateFree(
                 id: Guid.NewGuid(),
                 categoryId: command.CategoryId,
                 title: command.Title,
-                slug: command.Slug,
+                slug: slug,
                 authorId: command.AuthorId
             );
 

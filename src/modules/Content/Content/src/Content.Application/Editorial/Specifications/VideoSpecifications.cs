@@ -55,6 +55,23 @@ public class VideoByCategorySpecification(Guid categoryId) : Specification<Video
 }
 
 /// <summary>
+/// Specification that matches videos filed under a category with the given slug
+/// (case-insensitive), probing the category rows since the relationship carries no navigation.
+/// </summary>
+public class VideoByCategorySlugSpecification(string categorySlug, IQueryable<CategoryEntity> categories)
+    : Specification<VideoEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<VideoEntity, bool>> ToExpression()
+    {
+        return video =>
+            categories.Any(category =>
+                category.Id == video.CategoryId && EF.Functions.ILike(category.Slug, categorySlug)
+            );
+    }
+}
+
+/// <summary>
 /// Specification that matches videos linked to a specific artist profile.
 /// </summary>
 public class VideoByArtistSpecification(Guid artistId) : Specification<VideoEntity>

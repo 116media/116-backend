@@ -49,10 +49,7 @@ public class DomainEventDurabilityFlowTests(PostgresFixture db) : BaseApiTest(db
         Client.AuthenticateAsAdmin();
 
         // Act
-        var response = await Client.PutAsJsonAsync(
-            Routes.Admin.Lyrics.Submission(submission.Id),
-            new AdminApproveLyricsSubmissionRequest($"durable-{submission.Id:N}")
-        );
+        var response = await Client.PutAsync(Routes.Admin.Lyrics.Submission(submission.Id), null);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -101,10 +98,7 @@ public class DomainEventDurabilityFlowTests(PostgresFixture db) : BaseApiTest(db
 
         Client.AuthenticateAsAdmin();
 
-        var response = await Client.PutAsJsonAsync(
-            Routes.Admin.Lyrics.Submission(submission.Id),
-            new AdminApproveLyricsSubmissionRequest($"idempotent-{submission.Id:N}")
-        );
+        var response = await Client.PutAsync(Routes.Admin.Lyrics.Submission(submission.Id), null);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         await RunContentReplayAsync();

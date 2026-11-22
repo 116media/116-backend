@@ -335,6 +335,7 @@ public static class ArticleMapper
             entity.Id,
             entity.CategoryId,
             lookups.CategoryName(entity.CategoryId),
+            lookups.CategorySlug(entity.CategoryId),
             entity.Title,
             entity.Slug,
             entity.Headline,

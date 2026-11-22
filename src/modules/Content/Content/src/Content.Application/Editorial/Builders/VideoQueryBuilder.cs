@@ -12,6 +12,7 @@ namespace _116.Content.Application.Editorial.Builders;
 /// </summary>
 public class VideoQueryBuilder : IVideoQueryBuilder
 {
+    private string? _categorySlug;
     private Specification<VideoEntity>? _specification;
     private string? _tagSlug;
 
@@ -67,16 +68,36 @@ public class VideoQueryBuilder : IVideoQueryBuilder
     }
 
     /// <inheritdoc />
-    public Specification<VideoEntity>? Build(IQueryable<TagEntity> tags)
+    public IVideoQueryBuilder WithCategorySlug(string? categorySlug)
     {
-        if (_tagSlug is null)
+        if (string.IsNullOrWhiteSpace(value: categorySlug))
         {
-            return _specification;
+            return this;
         }
 
-        var tagSpec = new VideoByTagSlugSpecification(tagSlug: _tagSlug, tags: tags);
+        _categorySlug = categorySlug;
+        return this;
+    }
 
-        return _specification is null ? tagSpec : _specification.And(other: tagSpec);
+    /// <inheritdoc />
+    public Specification<VideoEntity>? Build(IQueryable<TagEntity> tags, IQueryable<CategoryEntity> categories)
+    {
+        if (_categorySlug is not null)
+        {
+            var categorySlugSpec = new VideoByCategorySlugSpecification(
+                categorySlug: _categorySlug,
+                categories: categories
+            );
+            CombineSpecification(spec: categorySlugSpec);
+        }
+
+        if (_tagSlug is not null)
+        {
+            var tagSpec = new VideoByTagSlugSpecification(tagSlug: _tagSlug, tags: tags);
+            CombineSpecification(spec: tagSpec);
+        }
+
+        return _specification;
     }
 
     private void CombineSpecification(Specification<VideoEntity> spec)

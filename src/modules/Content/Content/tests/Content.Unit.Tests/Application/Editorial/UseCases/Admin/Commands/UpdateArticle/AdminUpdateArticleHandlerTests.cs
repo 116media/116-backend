@@ -1,5 +1,6 @@
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticle;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -63,7 +64,6 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
             Id: article.Id.ToString(),
             CategoryId: categoryId,
             Title: TestConstants.Article.ValidTitle,
-            Slug: TestConstants.Article.ValidSlug,
             Headline: TestConstants.Article.ValidHeadline,
             Body: TestConstants.Article.ValidBody,
             CustomerId: null,
@@ -85,8 +85,10 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _articleRepositoryMock.SetupGetBySlug(command.Slug, null);
+        _articleRepositoryMock.SetupGetBySlug(It.IsAny<string>(), null);
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
+
+        string slugBeforeUpdate = article.Slug.Value;
 
         // Act
         AdminUpdateArticleResult result = await _handler.Handle(command, CancellationToken.None);
@@ -94,7 +96,7 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
         // Assert
         article.CategoryId.Should().Be(command.CategoryId);
         article.Title.Should().Be(command.Title);
-        article.Slug.Value.Should().Be(command.Slug);
+        article.Slug.Value.Should().Be(slugBeforeUpdate);
         article.Headline.Should().Be(command.Headline);
         article.Body.Should().Be(command.Body);
         article.CustomerId.Should().BeNull();
@@ -104,7 +106,7 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
         article.MetaDescription.Should().BeNull();
         result.Article.Id.Should().Be(article.Id);
         result.Article.Title.Should().Be(command.Title);
-        result.Article.Slug.Should().Be(command.Slug);
+        result.Article.Slug.Should().Be(slugBeforeUpdate);
         article.DomainEvents.OfType<ArticleBodyImagesOrphanedEvent>().Should().BeEmpty();
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -121,7 +123,7 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _articleRepositoryMock.SetupGetBySlug(command.Slug, null);
+        _articleRepositoryMock.SetupGetBySlug(It.IsAny<string>(), null);
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
 
         // Act
@@ -179,30 +181,5 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
         article.DomainEvents.Should().BeEmpty();
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
-
-    [Fact]
-    public async Task Handle_WhenSlugConflictsWithAnotherArticle_ShouldThrowConflictException()
-    {
-        // Arrange
-        CategoryEntity category = CategoryFactory.Create(CategoryId);
-        ArticleEntity article = ArticleFactory.CreateWithSlug(CategoryId, "original-article-slug");
-        article.ClearDomainEvents();
-        AdminUpdateArticleCommand command = BuildCommand(article, category.Id);
-        ArticleEntity conflicting = ArticleFactory.CreateWithSlug(CategoryId, command.Slug);
-
-        _articleRepositoryMock.SetupGetByIdOrThrow(article);
-        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _articleRepositoryMock.SetupGetBySlug(command.Slug, conflicting);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
-        article.Slug.Value.Should().Be("original-article-slug");
-        article.DomainEvents.Should().BeEmpty();
-        _unitOfWorkMock.VerifyCommitNotCalled();
-    }
-
     #endregion
 }

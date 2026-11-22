@@ -41,6 +41,37 @@ public class PublicGetArticleBySlugEndpointV1Tests(PostgresFixture db) : BaseApi
     }
 
     [Fact]
+    public async Task GetArticleBySlug_CarriesTheCategorySlug_SoTheBreadcrumbNeedsNoIdentifier()
+    {
+        (ArticleEntity article, CategoryEntity category) = await SeedAsync<
+            ContentDbContext,
+            (ArticleEntity, CategoryEntity)
+        >(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+
+            CategoryEntity seededCategory = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(seededCategory);
+
+            ArticleEntity entity = ArticleFactory.CreatePublished(seededCategory.Id);
+            ctx.Articles.Add(entity);
+
+            return (entity, seededCategory);
+        });
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Articles}/{article.Slug}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetArticleBySlugResponse body = await response.ReadAsAsync<PublicGetArticleBySlugResponse>();
+        body.Article.CategorySlug.Should().Be(category.Slug);
+        body.Article.CategoryName.Should().Be(category.Name);
+    }
+
+    [Fact]
     public async Task GetArticleBySlug_WithDraftArticle_ReturnsNotFound()
     {
         Guid categoryId = await SeedCategoryAsync();

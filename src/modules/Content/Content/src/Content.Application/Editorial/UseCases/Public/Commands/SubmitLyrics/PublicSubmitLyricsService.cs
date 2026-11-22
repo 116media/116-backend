@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Public.Commands.SubmitLyrics.Contracts;
 using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 
@@ -33,11 +34,6 @@ public class PublicSubmitLyricsService(
         CancellationToken cancellationToken
     )
     {
-        if (string.IsNullOrWhiteSpace(command.Slug))
-        {
-            throw i18n.Lyrics.SlugRequired();
-        }
-
         CategoryEntity? category = await categoryRepository.GetDefaultLyricsCategoryAsync(
             cancellationToken: cancellationToken
         );
@@ -47,15 +43,12 @@ public class PublicSubmitLyricsService(
             throw i18n.Category.DefaultLyricsCategoryNotConfigured();
         }
 
-        LyricsEntity? existing = await lyricsRepository.GetBySlugAsync(
-            slug: command.Slug,
+        string slug = await SlugHelper.ToAvailableSlugAsync(
+            name: command.SongTitle,
+            isTakenAsync: async (candidate, ct) =>
+                await lyricsRepository.GetBySlugAsync(slug: candidate, cancellationToken: ct) is not null,
             cancellationToken: cancellationToken
         );
-
-        if (existing is not null)
-        {
-            throw i18n.Lyrics.SlugAlreadyExists(slug: command.Slug);
-        }
 
         LyricsEntity lyrics = LyricsEntity.CreateFree(
             id: Guid.NewGuid(),
@@ -65,7 +58,7 @@ public class PublicSubmitLyricsService(
             artistName: ownedArtist.Name,
             lyricsText: command.LyricsText,
             language: command.Language,
-            slug: command.Slug,
+            slug: slug,
             authorId: command.UserId
         );
         lyrics.LinkArtist(artistId: ownedArtist.Id);

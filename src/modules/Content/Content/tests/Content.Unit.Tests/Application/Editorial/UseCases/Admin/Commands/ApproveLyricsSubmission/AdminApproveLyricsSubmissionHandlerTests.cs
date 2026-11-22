@@ -61,7 +61,7 @@ public class AdminApproveLyricsSubmissionHandlerTests
         _categoryRepositoryMock.SetupGetDefaultLyricsCategory(category);
         _lyricsRepositoryMock.SetupGetBySlug("eloko-oyo-lyrics", null);
         var reviewerId = Guid.NewGuid();
-        var command = new AdminApproveLyricsSubmissionCommand(submission.Id, "eloko-oyo-lyrics", reviewerId);
+        var command = new AdminApproveLyricsSubmissionCommand(submission.Id, reviewerId);
 
         LyricsEntity? added = null;
         _lyricsRepositoryMock
@@ -80,7 +80,7 @@ public class AdminApproveLyricsSubmissionHandlerTests
         added.ArtistName.Should().Be("Fally Ipupa");
         added.LyricsText.Should().Be(submission.LyricsText);
         added.Language.Should().Be(submission.Language);
-        added.Slug.Value.Should().Be("eloko-oyo-lyrics");
+        added.Slug.Value.Should().Be("eloko-oyo");
         added.AuthorId.Should().Be(reviewerId);
         result.LyricsId.Should().Be(added.Id);
         submission.Status.Should().Be(EnumSubmissionStatus.Approved);
@@ -102,7 +102,7 @@ public class AdminApproveLyricsSubmissionHandlerTests
         _categoryRepositoryMock.SetupGetDefaultLyricsCategory(category);
         _lyricsRepositoryMock.SetupGetBySlug("eloko-oyo-lyrics", null);
         var reviewerId = Guid.NewGuid();
-        var command = new AdminApproveLyricsSubmissionCommand(submission.Id, "eloko-oyo-lyrics", reviewerId);
+        var command = new AdminApproveLyricsSubmissionCommand(submission.Id, reviewerId);
 
         // Act
         AdminApproveLyricsSubmissionResult result = await _handler.Handle(command, CancellationToken.None);
@@ -127,34 +127,6 @@ public class AdminApproveLyricsSubmissionHandlerTests
     #endregion
 
     #region Failure Cases
-
-    [Fact]
-    public async Task Handle_WhenSlugAlreadyExists_ShouldThrowConflictExceptionAndNotCreateLyrics()
-    {
-        // Arrange
-        LyricsSubmissionEntity submission = LyricsSubmissionFactory.Create();
-        submission.ClearDomainEvents();
-        _submissionRepositoryMock.SetupGetByIdOrThrow(submission);
-        LyricsEntity existing = LyricsFactory.CreateWithSlug(Guid.NewGuid(), "taken-slug");
-        _lyricsRepositoryMock.SetupGetBySlug("taken-slug", existing);
-        var command = new AdminApproveLyricsSubmissionCommand(submission.Id, "taken-slug", Guid.NewGuid());
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
-        submission.Status.Should().Be(EnumSubmissionStatus.Pending);
-        submission.ReviewedByUserId.Should().BeNull();
-        submission.PublishedLyricsId.Should().BeNull();
-        submission.DomainEvents.Should().BeEmpty();
-        _lyricsRepositoryMock.Verify(
-            x => x.AddAsync(It.IsAny<LyricsEntity>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
-        _unitOfWorkMock.VerifyCommitNotCalled();
-    }
-
     [Fact]
     public async Task Handle_WhenSubmissionNotPending_ShouldThrowConflictException()
     {
@@ -162,7 +134,7 @@ public class AdminApproveLyricsSubmissionHandlerTests
         LyricsSubmissionEntity submission = LyricsSubmissionFactory.CreateRejected(Guid.NewGuid());
         submission.ClearDomainEvents();
         _submissionRepositoryMock.SetupGetByIdOrThrow(submission);
-        var command = new AdminApproveLyricsSubmissionCommand(submission.Id, "eloko-oyo-lyrics", Guid.NewGuid());
+        var command = new AdminApproveLyricsSubmissionCommand(submission.Id, Guid.NewGuid());
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);

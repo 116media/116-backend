@@ -10,14 +10,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtic
 /// </summary>
 /// <param name="CategoryId">The category this article belongs to.</param>
 /// <param name="Title">The article display title.</param>
-/// <param name="Slug">The URL-safe slug for this article.</param>
 /// <param name="AuthorId">The identity user UUID read from JWT claims.</param>
 /// <param name="CustomerId">The B2B customer who commissioned this article. Null for free content.</param>
 /// <param name="OrderItemId">The order item this article fulfils. Null for free content.</param>
 public record AdminCreateArticleCommand(
     Guid CategoryId,
     string Title,
-    string Slug,
     Guid AuthorId,
     Guid? CustomerId,
     Guid? OrderItemId

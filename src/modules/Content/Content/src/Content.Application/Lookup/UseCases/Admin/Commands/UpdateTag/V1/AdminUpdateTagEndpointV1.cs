@@ -16,8 +16,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateTag.V1;
 /// Request model for updating a content tag.
 /// </summary>
 /// <param name="Name">The new display name of the tag.</param>
-/// <param name="Slug">The new URL-safe slug for the tag (lowercase, hyphens only).</param>
-public record AdminUpdateTagRequest(string Name, string Slug);
+public record AdminUpdateTagRequest(string Name);
 
 /// <summary>
 /// Response model for a successful tag update.
@@ -52,7 +51,7 @@ internal class AdminUpdateTagEndpointV1 : ICarterModule
                     CancellationToken cancellationToken
                 ) =>
                 {
-                    var command = new AdminUpdateTagCommand(Id: id, Name: request.Name, Slug: request.Slug);
+                    var command = new AdminUpdateTagCommand(Id: id, Name: request.Name);
 
                     AdminUpdateTagResult result = await dispatcher.Send(
                         request: command,

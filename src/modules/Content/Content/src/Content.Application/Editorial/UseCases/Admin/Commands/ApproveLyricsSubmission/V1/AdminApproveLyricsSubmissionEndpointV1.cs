@@ -14,12 +14,6 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveLyricsSubmission.V1;
 
 /// <summary>
-/// Request model for approving a community lyrics submission.
-/// </summary>
-/// <param name="Slug">The URL-safe slug to assign to the newly created lyrics record.</param>
-public record AdminApproveLyricsSubmissionRequest(string Slug);
-
-/// <summary>
 /// Response model for a successful ApproveLyricsSubmission operation.
 /// </summary>
 /// <param name="IsSuccess">Indicates if the operation was successful.</param>
@@ -47,7 +41,6 @@ internal class AdminApproveLyricsSubmissionEndpointV1 : ICarterModule
                 $"/{EditorialRouteConstants.Submissions}/{{id}}",
                 async (
                     Guid id,
-                    AdminApproveLyricsSubmissionRequest request,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
                     IDispatcher dispatcher,
@@ -56,11 +49,7 @@ internal class AdminApproveLyricsSubmissionEndpointV1 : ICarterModule
                 {
                     Guid reviewerId = claimsProvider.GetUserIdFromClaims(user: user);
 
-                    var command = new AdminApproveLyricsSubmissionCommand(
-                        Id: id,
-                        Slug: request.Slug,
-                        ReviewerId: reviewerId
-                    );
+                    var command = new AdminApproveLyricsSubmissionCommand(Id: id, ReviewerId: reviewerId);
                     AdminApproveLyricsSubmissionResult result = await dispatcher.Send(
                         request: command,
                         cancellationToken: cancellationToken

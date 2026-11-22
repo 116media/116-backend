@@ -1,6 +1,7 @@
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtist;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -54,21 +55,20 @@ public class AdminCreateArtistHandlerTests : BaseContentHandlerTest
         // Arrange
         var command = new AdminCreateArtistCommand(
             TestConstants.Artist.ValidName,
-            TestConstants.Artist.ValidSlug,
             TestConstants.Artist.ValidBio,
             null,
             null,
             null,
             null
         );
-        _artistRepositoryMock.SetupGetBySlug(command.Slug, null);
+        _artistRepositoryMock.SetupGetBySlug(It.IsAny<string>(), null);
 
         // Act
         AdminCreateArtistResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.Artist.Name.Should().Be(command.Name);
-        result.Artist.Slug.Should().Be(command.Slug);
+        result.Artist.Slug.Should().Be(SlugHelper.ToSlug(command.Name));
         result.Artist.Bio.Should().Be(command.Bio);
 
         _artistRepositoryMock.VerifyAddCalled();
@@ -78,54 +78,5 @@ public class AdminCreateArtistHandlerTests : BaseContentHandlerTest
     #endregion
 
     #region Failure Cases
-
-    [Fact]
-    public async Task Handle_WhenSlugAlreadyExists_ShouldThrowConflictException()
-    {
-        // Arrange
-        var command = new AdminCreateArtistCommand(
-            TestConstants.Artist.ValidName,
-            TestConstants.Artist.ValidSlug,
-            null,
-            null,
-            null,
-            null,
-            null
-        );
-        ArtistEntity existing = ArtistFactory.CreateWithSlug(command.Slug);
-        _artistRepositoryMock.SetupGetBySlug(command.Slug, existing);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenSlugAlreadyExists_ShouldNotAddOrCommit()
-    {
-        // Arrange
-        var command = new AdminCreateArtistCommand(
-            TestConstants.Artist.ValidName,
-            TestConstants.Artist.ValidSlug,
-            null,
-            null,
-            null,
-            null,
-            null
-        );
-        ArtistEntity existing = ArtistFactory.CreateWithSlug(command.Slug);
-        _artistRepositoryMock.SetupGetBySlug(command.Slug, existing);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
-        _artistRepositoryMock.VerifyAddNotCalled();
-        _unitOfWorkMock.VerifyCommitNotCalled();
-    }
-
     #endregion
 }

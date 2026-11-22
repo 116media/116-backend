@@ -26,8 +26,20 @@ public interface IArticleQueryBuilder
     IArticleQueryBuilder WithCategory(Guid? categoryId);
 
     /// <summary>
+    /// Adds a category-slug filter to the query.
+    /// </summary>
+    IArticleQueryBuilder WithCategorySlug(string? categorySlug);
+
+    /// <summary>
+    /// Adds a tag-slug filter to the query.
+    /// </summary>
+    IArticleQueryBuilder WithTag(string? tagSlug);
+
+    /// <summary>
     /// Builds and returns the final specification.
     /// Returns null if no filters were applied.
     /// </summary>
-    Specification<ArticleEntity>? Build();
+    /// <param name="tags">The tag rows the tag-slug filter probes.</param>
+    /// <param name="categories">The category rows the category-slug filter probes.</param>
+    Specification<ArticleEntity>? Build(IQueryable<TagEntity> tags, IQueryable<CategoryEntity> categories);
 }

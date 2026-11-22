@@ -17,7 +17,6 @@ public class AdminCreateArticleValidator : AbstractValidator<AdminCreateArticleC
     {
         RuleFor(x => x.CategoryId).ValidArticleCategoryId(i18n.Article.Msg.CategoryIdRequired());
         RuleFor(x => x.Title).ValidArticleTitle(i18n.Article.Msg);
-        RuleFor(x => x.Slug).ValidArticleSlug(i18n.Article.Msg);
 
         When(x => x.CustomerId.HasValue, () => RuleFor(x => x.OrderItemId).ValidOrderItemId(i18n.ContentOrder.Msg));
         When(x => x.OrderItemId.HasValue, () => RuleFor(x => x.CustomerId).ValidCustomerId(i18n.Customer.Msg));

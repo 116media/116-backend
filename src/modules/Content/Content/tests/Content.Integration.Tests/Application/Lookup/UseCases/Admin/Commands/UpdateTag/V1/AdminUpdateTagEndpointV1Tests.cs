@@ -62,29 +62,12 @@ public class AdminUpdateTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         var body = await response.ReadAsAsync<AdminUpdateTagResponse>();
         body.Tag.Id.Should().Be(tag.Id);
         body.Tag.Name.Should().Be(request.Name);
-        body.Tag.Slug.Should().Be(request.Slug);
+        body.Tag.Slug.Should().Be(tag.Slug.Value);
 
         await using ContentDbContext context = CreateDbContext<ContentDbContext>();
         TagEntity? persisted = await context.Tags.FindAsync(tag.Id);
         persisted!.Name.Should().Be(request.Name);
-        persisted.Slug.Value.Should().Be(request.Slug);
-    }
-
-    [Fact]
-    public async Task UpdateTag_WithSlugTooLong_ReturnsBadRequest()
-    {
-        Client.AuthenticateAsSuperAdmin();
-        Guid id = Guid.NewGuid();
-        var request = new AdminUpdateTagRequestBuilder()
-            .WithSlug(new string('a', TestConstants.Tag.SlugMaxLength + 1))
-            .Build();
-
-        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Tags}/{id}", request);
-
-        await response.ShouldBeValidationProblem(
-            "Slug",
-            Localized<TagErrorMessage>(m => m.SlugTooLong(ContentConstants.MaxTagSlugLength))
-        );
+        persisted.Slug.Value.Should().Be(tag.Slug.Value);
     }
 
     [Fact]
@@ -102,17 +85,5 @@ public class AdminUpdateTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
             "Name",
             Localized<TagErrorMessage>(m => m.NameTooLong(ContentConstants.MaxTagNameLength))
         );
-    }
-
-    [Fact]
-    public async Task UpdateTag_WithInvalidSlugFormat_ReturnsBadRequest()
-    {
-        Client.AuthenticateAsSuperAdmin();
-        Guid id = Guid.NewGuid();
-        var request = new AdminUpdateTagRequestBuilder().WithSlug("INVALID SLUG!!!").Build();
-
-        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Tags}/{id}", request);
-
-        await response.ShouldBeValidationProblem("Slug", Localized<TagErrorMessage>(m => m.SlugInvalidFormat()));
     }
 }

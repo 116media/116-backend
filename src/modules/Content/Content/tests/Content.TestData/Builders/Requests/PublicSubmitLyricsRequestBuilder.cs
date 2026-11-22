@@ -91,8 +91,7 @@ public class PublicSubmitLyricsRequestBuilder
             SongTitle: _songTitle,
             ArtistName: _artistName,
             LyricsText: _lyricsText,
-            Language: _language,
-            Slug: _slug
+            Language: _language
         );
     }
 }

@@ -30,7 +30,6 @@ public class AdminCreateShortVideoValidatorTests
         // Arrange
         var command = new AdminCreateShortVideoCommand(
             Title: TestConstants.ShortVideo.ValidTitle,
-            Slug: TestConstants.ShortVideo.ValidSlug,
             AuthorId: Guid.NewGuid(),
             VideoId: null
         );
@@ -51,12 +50,7 @@ public class AdminCreateShortVideoValidatorTests
     public async Task Validate_WithEmptyTitle_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminCreateShortVideoCommand(
-            Title: string.Empty,
-            Slug: TestConstants.ShortVideo.ValidSlug,
-            AuthorId: Guid.NewGuid(),
-            VideoId: null
-        );
+        var command = new AdminCreateShortVideoCommand(Title: string.Empty, AuthorId: Guid.NewGuid(), VideoId: null);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -77,7 +71,6 @@ public class AdminCreateShortVideoValidatorTests
         // Arrange
         var command = new AdminCreateShortVideoCommand(
             Title: new string('a', TestConstants.ShortVideo.TitleMaxLength + 1),
-            Slug: TestConstants.ShortVideo.ValidSlug,
             AuthorId: Guid.NewGuid(),
             VideoId: null
         );
@@ -92,58 +85,6 @@ public class AdminCreateShortVideoValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateShortVideoCommand.Title)
                 && e.ErrorMessage == _i18n.ShortVideo.Msg.TitleTooLong(TestConstants.ShortVideo.TitleMaxLength)
-            );
-    }
-
-    #endregion
-
-    #region Slug Validation Tests
-
-    [Fact]
-    public async Task Validate_WithEmptySlug_ShouldHaveError()
-    {
-        // Arrange
-        var command = new AdminCreateShortVideoCommand(
-            Title: TestConstants.ShortVideo.ValidTitle,
-            Slug: string.Empty,
-            AuthorId: Guid.NewGuid(),
-            VideoId: null
-        );
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminCreateShortVideoCommand.Slug)
-                && e.ErrorMessage == _i18n.ShortVideo.Msg.SlugRequired()
-            );
-    }
-
-    [Fact]
-    public async Task Validate_WithUppercaseSlug_ShouldHaveError()
-    {
-        // Arrange
-        var command = new AdminCreateShortVideoCommand(
-            Title: TestConstants.ShortVideo.ValidTitle,
-            Slug: "Invalid-Slug",
-            AuthorId: Guid.NewGuid(),
-            VideoId: null
-        );
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminCreateShortVideoCommand.Slug)
-                && e.ErrorMessage == _i18n.ShortVideo.Msg.SlugInvalidFormat()
             );
     }
 

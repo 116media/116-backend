@@ -838,7 +838,7 @@ public class VideoEntityTests
 
         // Act
         video.Recategorize(categoryId: newCategoryId);
-        video.Retitle(title: "Updated Title", slug: "updated-slug");
+        video.Retitle(title: "Updated Title");
         video.ReviseDescription(description: "Updated description");
         video.AssignCommission(customerId: customerId, orderItemId: orderItemId, socialBoost: true);
         video.ReviseSeo(metaTitle: "Updated Meta", metaDescription: "Updated description");
@@ -846,7 +846,7 @@ public class VideoEntityTests
         // Assert
         video.CategoryId.Should().Be(newCategoryId);
         video.Title.Should().Be("Updated Title");
-        video.Slug.Value.Should().Be("updated-slug");
+        video.Slug.Value.Should().Be(TestConstants.Video.ValidSlug);
         video.Description.Should().Be("Updated description");
         video.CustomerId.Should().Be(customerId);
         video.OrderItemId.Should().Be(orderItemId);
@@ -870,7 +870,7 @@ public class VideoEntityTests
 
         // Act & Assert
         video.Recategorize(categoryId: CategoryId).Should().BeFalse();
-        video.Retitle(title: video.Title, slug: video.Slug).Should().BeFalse();
+        video.Retitle(title: video.Title).Should().BeFalse();
         video.ReviseDescription(description: Description).Should().BeFalse();
         video.AssignCommission(customerId: null, orderItemId: null, socialBoost: false).Should().BeFalse();
         video.ReviseSeo(metaTitle: null, metaDescription: null).Should().BeFalse();

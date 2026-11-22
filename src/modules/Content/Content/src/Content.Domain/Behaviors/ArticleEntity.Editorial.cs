@@ -10,24 +10,22 @@ namespace _116.Content.Domain.Entities;
 public sealed partial class ArticleEntity
 {
     /// <summary>
-    /// Renames the article and its slug. Allowed while the article is editable — <c>Draft</c>,
-    /// <c>PendingPayment</c>, <c>PendingReview</c> or <c>Rejected</c>; slug uniqueness is the
-    /// handler's to enforce.
+    /// Renames the article. Allowed while the article is editable — <c>Draft</c>,
+    /// <c>PendingPayment</c>, <c>PendingReview</c> or <c>Rejected</c>. The slug is assigned once
+    /// at creation and never follows the title, so a published URL keeps resolving.
     /// </summary>
     /// <param name="title">The article title.</param>
-    /// <param name="slug">The URL-safe slug. Uniqueness enforced by handler.</param>
-    /// <returns><c>true</c> if either value changed; otherwise <c>false</c>.</returns>
-    public bool Retitle(string title, string slug)
+    /// <returns><c>true</c> if the title changed; otherwise <c>false</c>.</returns>
+    public bool Retitle(string title)
     {
         ContentPublicationState.EnsureEditable(status: Status, contentType: EnumCoreContentType.Article);
 
-        if (Title == title && Slug == slug)
+        if (Title == title)
         {
             return false;
         }
 
         Title = title;
-        Slug = slug;
 
         return true;
     }

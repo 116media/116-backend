@@ -17,7 +17,6 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategor
 /// dedicated <c>PUT /api/v1/admin/categories/{id}/poster</c> endpoint.
 /// </summary>
 /// <param name="Name">The new display name for the category.</param>
-/// <param name="Slug">The new URL-safe slug for the category.</param>
 /// <param name="Description">The new description.</param>
 /// <param name="IsGossip">Whether this is the gossip category used for homepage feed fallbacks and the gossip strip.</param>
 /// <param name="IsExclusive">Whether this category is the exclusive show featured on the homepage.</param>
@@ -27,7 +26,6 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategor
 /// </param>
 internal record AdminUpdateCategoryRequest(
     string Name,
-    string Slug,
     string Description,
     bool IsGossip,
     bool IsExclusive,
@@ -70,7 +68,6 @@ internal class AdminUpdateCategoryEndpointV1 : ICarterModule
                     var command = new AdminUpdateCategoryCommand(
                         Id: id,
                         Name: request.Name,
-                        Slug: request.Slug,
                         Description: request.Description,
                         IsGossip: request.IsGossip,
                         IsExclusive: request.IsExclusive,

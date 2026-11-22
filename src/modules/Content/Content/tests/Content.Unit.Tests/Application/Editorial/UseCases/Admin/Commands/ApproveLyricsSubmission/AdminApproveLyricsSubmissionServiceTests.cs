@@ -48,7 +48,6 @@ public class AdminApproveLyricsSubmissionServiceTests
         // Act
         ApprovedSubmissionData approval = await _service.PrepareAsync(
             submission.Id,
-            "song-slug",
             reviewerId,
             CancellationToken.None
         );
@@ -68,24 +67,7 @@ public class AdminApproveLyricsSubmissionServiceTests
         _submissionRepositoryMock.SetupGetByIdOrThrow(submission);
 
         // Act
-        Func<Task> act = async () =>
-            await _service.PrepareAsync(submission.Id, "song-slug", Guid.NewGuid(), CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
-    }
-
-    [Fact]
-    public async Task PrepareAsync_WhenTheSlugIsTaken_ShouldThrowConflictException()
-    {
-        // Arrange
-        LyricsSubmissionEntity submission = LyricsSubmissionFactory.Create();
-        _submissionRepositoryMock.SetupGetByIdOrThrow(submission);
-        _lyricsRepositoryMock.SetupGetBySlug("song-slug", LyricsFactory.Create(Guid.NewGuid()));
-
-        // Act
-        Func<Task> act = async () =>
-            await _service.PrepareAsync(submission.Id, "song-slug", Guid.NewGuid(), CancellationToken.None);
+        Func<Task> act = async () => await _service.PrepareAsync(submission.Id, Guid.NewGuid(), CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>();
@@ -101,8 +83,7 @@ public class AdminApproveLyricsSubmissionServiceTests
         _categoryRepositoryMock.SetupGetDefaultLyricsCategory(null);
 
         // Act
-        Func<Task> act = async () =>
-            await _service.PrepareAsync(submission.Id, "song-slug", Guid.NewGuid(), CancellationToken.None);
+        Func<Task> act = async () => await _service.PrepareAsync(submission.Id, Guid.NewGuid(), CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<InternalServerException>();

@@ -1,5 +1,6 @@
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategory.Contracts;
 using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -30,15 +31,12 @@ public class AdminCreateCategoryService(
             cancellationToken: cancellationToken
         );
 
-        CategoryEntity? existing = await categoryRepository.GetBySlugAsync(
-            slug: command.Slug,
+        string slug = await SlugHelper.ToAvailableSlugAsync(
+            name: command.Name,
+            isTakenAsync: async (candidate, ct) =>
+                await categoryRepository.GetBySlugAsync(slug: candidate, cancellationToken: ct) is not null,
             cancellationToken: cancellationToken
         );
-
-        if (existing is not null)
-        {
-            throw i18n.Category.AlreadyExists(slug: command.Slug);
-        }
 
         if (command.IsExclusive)
         {
@@ -57,7 +55,7 @@ public class AdminCreateCategoryService(
             id: Guid.NewGuid(),
             contentTypeId: contentTypeId,
             name: command.Name,
-            slug: command.Slug,
+            slug: slug,
             description: command.Description,
             isFree: command.IsFree,
             isGossip: command.IsGossip,

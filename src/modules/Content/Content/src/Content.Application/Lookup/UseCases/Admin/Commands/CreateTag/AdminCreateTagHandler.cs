@@ -1,5 +1,6 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -25,17 +26,15 @@ public class AdminCreateTagHandler(
     /// <inheritdoc />
     public async Task<AdminCreateTagResult> Handle(AdminCreateTagCommand command, CancellationToken cancellationToken)
     {
-        TagEntity? existing = await tagRepository.GetBySlugAsync(
-            slug: command.Slug,
+        string slug = await SlugHelper.ToAvailableSlugAsync(
+            name: command.Name,
+            isTakenAsync: async (candidate, ct) =>
+                await tagRepository.GetBySlugAsync(slug: candidate, cancellationToken: ct) is not null,
+            unique: true,
             cancellationToken: cancellationToken
         );
 
-        if (existing is not null)
-        {
-            throw i18n.Tag.SlugAlreadyExists(slug: command.Slug);
-        }
-
-        var tag = TagEntity.Create(id: Guid.NewGuid(), name: command.Name, slug: command.Slug);
+        var tag = TagEntity.Create(id: Guid.NewGuid(), name: command.Name, slug: slug);
 
         await tagRepository.AddAsync(tag: tag, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

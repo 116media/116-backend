@@ -1,6 +1,7 @@
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -64,7 +65,6 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
             Id: video.Id.ToString(),
             CategoryId: categoryId,
             Title: TestConstants.Video.ValidTitle,
-            Slug: TestConstants.Video.ValidSlug,
             Description: TestConstants.Video.ValidDescription,
             CustomerId: null,
             OrderItemId: null,
@@ -86,13 +86,15 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
 
+        string slugBeforeUpdate = video.Slug.Value;
+
         // Act
         AdminUpdateVideoResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         video.CategoryId.Should().Be(command.CategoryId);
         video.Title.Should().Be(command.Title);
-        video.Slug.Value.Should().Be(command.Slug);
+        video.Slug.Value.Should().Be(slugBeforeUpdate);
         video.Description.Should().Be(command.Description);
         video.CustomerId.Should().BeNull();
         video.OrderItemId.Should().BeNull();
@@ -101,7 +103,7 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
         video.MetaDescription.Should().BeNull();
         result.Video.Id.Should().Be(video.Id);
         result.Video.Title.Should().Be(command.Title);
-        result.Video.Slug.Should().Be(command.Slug);
+        result.Video.Slug.Should().Be(slugBeforeUpdate);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -146,28 +148,5 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
         video.Slug.Value.Should().Be(originalSlug);
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
-
-    [Fact]
-    public async Task Handle_WhenSlugConflictsWithAnotherVideo_ShouldThrowConflictException()
-    {
-        // Arrange
-        CategoryEntity category = CategoryFactory.Create(CategoryId);
-        VideoEntity video = VideoFactory.CreateWithSlug(CategoryId, "original-video-slug");
-        AdminUpdateVideoCommand command = BuildCommand(video, category.Id);
-        VideoEntity conflicting = VideoFactory.CreateWithSlug(CategoryId, command.Slug);
-
-        _videoRepositoryMock.SetupGetByIdOrThrow(video);
-        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _videoRepositoryMock.SetupGetBySlug(command.Slug, conflicting);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
-        video.Slug.Value.Should().Be("original-video-slug");
-        _unitOfWorkMock.VerifyCommitNotCalled();
-    }
-
     #endregion
 }

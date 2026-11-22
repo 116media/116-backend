@@ -20,7 +20,6 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo
 /// </summary>
 /// <param name="CategoryId">The category this video belongs to.</param>
 /// <param name="Title">The video display title.</param>
-/// <param name="Slug">The URL-safe slug for this video.</param>
 /// <param name="CustomerId">The B2B customer who commissioned this video. Null for free content.</param>
 /// <param name="OrderItemId">The order item this video fulfils. Null for free content.</param>
 /// <param name="Description">The description shown below the video player.</param>
@@ -28,7 +27,6 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo
 public record AdminCreateVideoRequest(
     Guid CategoryId,
     string Title,
-    string Slug,
     Guid? CustomerId,
     Guid? OrderItemId,
     string Description,
@@ -75,7 +73,6 @@ internal class AdminCreateVideoEndpointV1 : ICarterModule
                     var command = new AdminCreateVideoCommand(
                         CategoryId: request.CategoryId,
                         Title: request.Title,
-                        Slug: request.Slug,
                         AuthorId: authorId,
                         CustomerId: request.CustomerId,
                         OrderItemId: request.OrderItemId,

@@ -18,14 +18,12 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategor
 /// dedicated <c>PUT /api/v1/admin/categories/{id}/poster</c> endpoint.
 /// </summary>
 /// <param name="Name">The display name of the category.</param>
-/// <param name="Slug">The URL-safe slug for the category.</param>
 /// <param name="Description">The description of the category.</param>
 /// <param name="IsFree">Whether content in this category requires no payment.</param>
 /// <param name="IsGossip">Whether this is the gossip category used for homepage feed fallbacks and the gossip strip.</param>
 /// <param name="IsExclusive">Whether this category is the exclusive show featured on the homepage.</param>
 internal record AdminCreateCategoryRequest(
     string Name,
-    string Slug,
     string Description,
     bool IsFree,
     bool IsGossip,
@@ -69,7 +67,6 @@ internal class AdminCreateCategoryEndpointV1 : ICarterModule
                     var command = new AdminCreateCategoryCommand(
                         ContentTypeId: contentTypeId,
                         Name: request.Name,
-                        Slug: request.Slug,
                         Description: request.Description,
                         IsFree: request.IsFree,
                         IsGossip: request.IsGossip,

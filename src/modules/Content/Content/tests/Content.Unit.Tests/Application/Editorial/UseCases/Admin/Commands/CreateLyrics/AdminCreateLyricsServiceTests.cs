@@ -38,7 +38,6 @@ public class AdminCreateLyricsServiceTests
             categoryId,
             "Song",
             "Artist",
-            "song-slug",
             "Lyrics text",
             "en",
             Guid.NewGuid(),
@@ -54,13 +53,13 @@ public class AdminCreateLyricsServiceTests
         // Arrange
         CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _lyricsRepositoryMock.SetupGetBySlug("song-slug", null);
+        _lyricsRepositoryMock.SetupGetBySlug(It.IsAny<string>(), null);
 
         // Act
         LyricsEntity lyrics = await _service.CreateAsync(Command(category.Id), CancellationToken.None);
 
         // Assert
-        lyrics.Slug.Value.Should().Be("song-slug");
+        lyrics.Slug.Value.Should().Be("song");
         lyrics.CustomerId.Should().BeNull();
         _lyricsRepositoryMock.VerifyAddCalled();
     }
@@ -72,28 +71,13 @@ public class AdminCreateLyricsServiceTests
         CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
         Guid customerId = Guid.NewGuid();
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _lyricsRepositoryMock.SetupGetBySlug("song-slug", null);
+        _lyricsRepositoryMock.SetupGetBySlug(It.IsAny<string>(), null);
 
         // Act
         LyricsEntity lyrics = await _service.CreateAsync(Command(category.Id, customerId), CancellationToken.None);
 
         // Assert
         lyrics.CustomerId.Should().Be(customerId);
-    }
-
-    [Fact]
-    public async Task CreateAsync_WhenTheSlugIsTaken_ShouldThrowConflictException()
-    {
-        // Arrange
-        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
-        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _lyricsRepositoryMock.SetupGetBySlug("song-slug", LyricsFactory.Create(category.Id));
-
-        // Act
-        Func<Task> act = async () => await _service.CreateAsync(Command(category.Id), CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
     }
 
     [Fact]

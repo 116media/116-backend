@@ -10,7 +10,6 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyric
 /// <param name="CategoryId">The category this lyrics page belongs to.</param>
 /// <param name="SongTitle">The title of the song.</param>
 /// <param name="ArtistName">The name of the performing artist.</param>
-/// <param name="Slug">The URL-safe slug for this lyrics page.</param>
 /// <param name="LyricsText">The full lyrics text of the song.</param>
 /// <param name="Language">The ISO 639-1 language code (e.g., "fr", "en", "ln").</param>
 /// <param name="AuthorId">The identity user UUID read from JWT claims.</param>
@@ -21,7 +20,6 @@ public record AdminCreateLyricsCommand(
     Guid CategoryId,
     string SongTitle,
     string ArtistName,
-    string Slug,
     string LyricsText,
     string Language,
     Guid AuthorId,

@@ -2,6 +2,7 @@ using _116.BuildingBlocks.Application.Exceptions;
 using _116.BuildingBlocks.Application.Exceptions.Messages;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategory.V1;
 using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.TestData.Factories;
@@ -53,14 +54,14 @@ public class AdminCreateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
         var body = await response.ReadAsAsync<AdminCreateCategoryResponse>();
         body.Category.Id.Should().NotBeEmpty();
         body.Category.Name.Should().Be(name);
-        body.Category.Slug.Should().Be(slug);
+        body.Category.Slug.Should().Be(SlugHelper.ToSlug(name));
         body.Category.ContentTypeId.Should().Be(contentType.Id);
 
         await using var verifyContext = CreateDbContext<ContentDbContext>();
         CategoryEntity? category = await verifyContext.Categories.FirstOrDefaultAsync(c => c.Id == body.Category.Id);
         category.Should().NotBeNull();
         category!.Name.Should().Be(name);
-        category.Slug.Value.Should().Be(slug);
+        category.Slug.Value.Should().Be(SlugHelper.ToSlug(name));
     }
 
     [Fact]
@@ -104,35 +105,6 @@ public class AdminCreateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
     }
 
     [Fact]
-    public async Task CreateCategory_WithDuplicateSlug_ReturnsConflict()
-    {
-        ContentTypeEntity contentType = await SeedContentTypeAsync();
-        await SeedAsync<ContentDbContext>(ctx =>
-        {
-            CategoryEntity existing = CategoryFactory.Create(contentType.Id, ShortName("dup"), "dup-slug-test");
-            ctx.Categories.Add(existing);
-        });
-
-        Client.AuthenticateAsSuperAdmin();
-        var request = new
-        {
-            Name = ShortName("dup2"),
-            Slug = "dup-slug-test",
-            Description = "Test",
-            IsFree = true,
-            IsGossip = false,
-            IsExclusive = false,
-        };
-
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/{contentType.Id}", request);
-
-        await response.ShouldBeProblem<ConflictException>(
-            HttpStatusCode.Conflict,
-            Localized<CategoryErrorMessage>(m => m.AlreadyExists("dup-slug-test"))
-        );
-    }
-
-    [Fact]
     public async Task CreateCategory_WithEmptyName_ReturnsValidationError()
     {
         ContentTypeEntity contentType = await SeedContentTypeAsync();
@@ -151,27 +123,6 @@ public class AdminCreateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
         var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/{contentType.Id}", request);
 
         await response.ShouldBeValidationProblem("Name", Localized<CategoryErrorMessage>(m => m.NameRequired()));
-    }
-
-    [Fact]
-    public async Task CreateCategory_WithEmptySlug_ReturnsValidationError()
-    {
-        ContentTypeEntity contentType = await SeedContentTypeAsync();
-
-        Client.AuthenticateAsSuperAdmin();
-        var request = new
-        {
-            Name = ShortName("es"),
-            Slug = "",
-            Description = "Test",
-            IsFree = true,
-            IsGossip = false,
-            IsExclusive = false,
-        };
-
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/{contentType.Id}", request);
-
-        await response.ShouldBeValidationProblem("Slug", Localized<CategoryErrorMessage>(m => m.SlugRequired()));
     }
 
     [Fact]

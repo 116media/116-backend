@@ -16,7 +16,5 @@ public class AdminCreateShortVideoValidator : AbstractValidator<AdminCreateShort
     public AdminCreateShortVideoValidator(ContentI18n i18n)
     {
         RuleFor(x => x.Title).ValidShortVideoTitle(i18n.ShortVideo.Msg);
-
-        RuleFor(x => x.Slug).ValidShortVideoSlug(i18n.ShortVideo.Msg);
     }
 }

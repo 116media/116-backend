@@ -30,7 +30,6 @@ public class AdminCreateCategoryValidatorTests
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: Guid.NewGuid().ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
@@ -44,28 +43,6 @@ public class AdminCreateCategoryValidatorTests
         result.IsValid.Should().BeTrue();
         result.Errors.Should().BeEmpty();
     }
-
-    [Fact]
-    public async Task Validate_WithValidSlugFormat_ShouldNotHaveErrors()
-    {
-        // Arrange
-        var command = new AdminCreateCategoryCommand(
-            ContentTypeId: Guid.NewGuid().ToString(),
-            Name: TestConstants.Category.ValidName,
-            Slug: "artist-profile",
-            Description: TestConstants.Category.ValidDescription,
-            IsFree: true,
-            IsGossip: false,
-            IsExclusive: false
-        );
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeTrue();
-    }
-
     #endregion
 
     #region ContentTypeId Validation Tests
@@ -77,7 +54,6 @@ public class AdminCreateCategoryValidatorTests
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: string.Empty,
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
@@ -108,7 +84,6 @@ public class AdminCreateCategoryValidatorTests
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: Guid.NewGuid().ToString(),
             Name: string.Empty,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
@@ -135,7 +110,6 @@ public class AdminCreateCategoryValidatorTests
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: Guid.NewGuid().ToString(),
             Name: null!,
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
@@ -162,7 +136,6 @@ public class AdminCreateCategoryValidatorTests
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: Guid.NewGuid().ToString(),
             Name: new string('a', TestConstants.Category.NameMaxLength + 1),
-            Slug: TestConstants.Category.ValidSlug,
             Description: TestConstants.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
@@ -184,91 +157,6 @@ public class AdminCreateCategoryValidatorTests
 
     #endregion
 
-    #region Slug Validation Tests
-
-    [Fact]
-    public async Task Validate_WithEmptySlug_ShouldHaveError()
-    {
-        // Arrange
-        var command = new AdminCreateCategoryCommand(
-            ContentTypeId: Guid.NewGuid().ToString(),
-            Name: TestConstants.Category.ValidName,
-            Slug: string.Empty,
-            Description: TestConstants.Category.ValidDescription,
-            IsFree: false,
-            IsGossip: false,
-            IsExclusive: false
-        );
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminCreateCategoryCommand.Slug)
-                && e.ErrorMessage == _i18n.Category.Msg.SlugRequired()
-            );
-    }
-
-    [Fact]
-    public async Task Validate_WithSlugExceedingMaxLength_ShouldHaveError()
-    {
-        // Arrange
-        var command = new AdminCreateCategoryCommand(
-            ContentTypeId: Guid.NewGuid().ToString(),
-            Name: TestConstants.Category.ValidName,
-            Slug: new string('a', TestConstants.Category.SlugMaxLength + 1),
-            Description: TestConstants.Category.ValidDescription,
-            IsFree: false,
-            IsGossip: false,
-            IsExclusive: false
-        );
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminCreateCategoryCommand.Slug)
-                && e.ErrorMessage == _i18n.Category.Msg.SlugTooLong(TestConstants.Category.SlugMaxLength)
-            );
-    }
-
-    [Fact]
-    public async Task Validate_WithUppercaseSlug_ShouldHaveError()
-    {
-        // Arrange
-        var command = new AdminCreateCategoryCommand(
-            ContentTypeId: Guid.NewGuid().ToString(),
-            Name: TestConstants.Category.ValidName,
-            Slug: "Artist Profile",
-            Description: TestConstants.Category.ValidDescription,
-            IsFree: false,
-            IsGossip: false,
-            IsExclusive: false
-        );
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminCreateCategoryCommand.Slug)
-                && e.ErrorMessage == _i18n.Category.Msg.SlugInvalidFormat()
-            );
-    }
-
-    #endregion
-
     #region Description Validation Tests
 
     [Fact]
@@ -278,7 +166,6 @@ public class AdminCreateCategoryValidatorTests
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: Guid.NewGuid().ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: new string('d', TestConstants.Category.DescriptionMaxLength + 1),
             IsFree: false,
             IsGossip: false,
@@ -305,7 +192,6 @@ public class AdminCreateCategoryValidatorTests
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: Guid.NewGuid().ToString(),
             Name: TestConstants.Category.ValidName,
-            Slug: TestConstants.Category.ValidSlug,
             Description: null!,
             IsFree: false,
             IsGossip: false,

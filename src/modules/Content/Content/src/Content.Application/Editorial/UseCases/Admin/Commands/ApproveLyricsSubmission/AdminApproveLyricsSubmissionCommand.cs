@@ -13,7 +13,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveLyri
 /// song is actually promoted.
 /// </param>
 /// <param name="ReviewerId">The identity user UUID of the moderator making the decision.</param>
-public record AdminApproveLyricsSubmissionCommand(Guid Id, string Slug, Guid ReviewerId)
+public record AdminApproveLyricsSubmissionCommand(Guid Id, Guid ReviewerId)
     : ICommand<AdminApproveLyricsSubmissionResult>;
 
 /// <summary>

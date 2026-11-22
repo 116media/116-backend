@@ -11,7 +11,6 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo
 /// <param name="Id">The unique identifier of the video to update.</param>
 /// <param name="CategoryId">The category this video belongs to.</param>
 /// <param name="Title">The video display title.</param>
-/// <param name="Slug">The URL-safe slug for this video.</param>
 /// <param name="Description">The description shown below the video player.</param>
 /// <param name="CustomerId">The B2B customer who commissioned this video. <c>null</c> for free content.</param>
 /// <param name="OrderItemId">The order item this video fulfils. Required when <c>CustomerId</c> is set.</param>
@@ -22,7 +21,6 @@ public record AdminUpdateVideoCommand(
     string Id,
     Guid CategoryId,
     string Title,
-    string Slug,
     string Description,
     Guid? CustomerId,
     Guid? OrderItemId,

@@ -8,6 +8,7 @@ public record PublicArticleDetailDto(
     Guid Id,
     Guid CategoryId,
     string CategoryName,
+    string CategorySlug,
     string Title,
     string Slug,
     string Headline,

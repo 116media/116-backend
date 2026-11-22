@@ -24,21 +24,8 @@ public class AdminUpdateVideoService(
         VideoEntity video = await videoRepository.GetByIdOrThrowAsync(id: id, cancellationToken: cancellationToken);
         await categoryRepository.GetByIdOrThrowAsync(id: command.CategoryId, cancellationToken: cancellationToken);
 
-        if (command.Slug != video.Slug)
-        {
-            VideoEntity? slugConflict = await videoRepository.GetBySlugAsync(
-                slug: command.Slug,
-                cancellationToken: cancellationToken
-            );
-
-            if (slugConflict is not null && slugConflict.Id != video.Id)
-            {
-                throw i18n.Video.SlugAlreadyExists(slug: command.Slug);
-            }
-        }
-
         video.Recategorize(categoryId: command.CategoryId);
-        video.Retitle(title: command.Title, slug: command.Slug);
+        video.Retitle(title: command.Title);
         video.ReviseDescription(description: command.Description);
         video.AssignCommission(
             customerId: command.CustomerId,

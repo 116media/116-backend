@@ -820,7 +820,7 @@ public class ArticleEntityTests
 
         // Act
         article.Recategorize(categoryId: newCategoryId);
-        article.Retitle(title: "Updated Title", slug: "updated-slug");
+        article.Retitle(title: "Updated Title");
         article.ReviseBody(headline: "Updated headline for the article", body: "<p>Updated body</p>");
         article.AssignCommission(customerId: customerId, orderItemId: orderItemId, socialBoost: true);
         article.ReviseSeo(metaTitle: "Updated Meta", metaDescription: "Updated description");
@@ -828,7 +828,7 @@ public class ArticleEntityTests
         // Assert
         article.CategoryId.Should().Be(newCategoryId);
         article.Title.Should().Be("Updated Title");
-        article.Slug.Value.Should().Be("updated-slug");
+        article.Slug.Value.Should().Be(TestConstants.Article.ValidSlug);
         article.Headline.Should().Be("Updated headline for the article");
         article.Body.Should().Be("<p>Updated body</p>");
         article.CustomerId.Should().Be(customerId);
@@ -854,7 +854,7 @@ public class ArticleEntityTests
 
         // Act & Assert
         article.Recategorize(categoryId: CategoryId).Should().BeFalse();
-        article.Retitle(title: article.Title, slug: article.Slug).Should().BeFalse();
+        article.Retitle(title: article.Title).Should().BeFalse();
         article.ReviseBody(headline: "A headline", body: "<p>Body</p>").Should().BeFalse();
         article.AssignCommission(customerId: null, orderItemId: null, socialBoost: false).Should().BeFalse();
         article.ReviseSeo(metaTitle: null, metaDescription: null).Should().BeFalse();
@@ -910,6 +910,51 @@ public class ArticleEntityTests
 
         // Assert
         article.DomainEvents.OfType<ArticleBodyImagesOrphanedEvent>().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ReplaceArtists_WhenAnArtistIsDropped_ShouldRemoveTheCredit()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        Guid keptArtistId = Guid.NewGuid();
+        Guid droppedArtistId = Guid.NewGuid();
+        article.ReplaceArtists([keptArtistId, droppedArtistId]);
+
+        // Act
+        bool changed = article.ReplaceArtists([keptArtistId]);
+
+        // Assert
+        changed.Should().BeTrue();
+        article.Artists.Select(credit => credit.ArtistId).Should().Equal(keptArtistId);
+    }
+
+    [Fact]
+    public void ReplaceArtists_WithTheSameSet_ShouldReturnFalse()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Article.ValidTitle,
+            TestConstants.Article.ValidSlug,
+            AuthorId
+        );
+        Guid artistId = Guid.NewGuid();
+        article.ReplaceArtists([artistId]);
+
+        // Act
+        bool changed = article.ReplaceArtists([artistId]);
+
+        // Assert
+        changed.Should().BeFalse();
+        article.Artists.Select(credit => credit.ArtistId).Should().Equal(artistId);
     }
 
     #endregion

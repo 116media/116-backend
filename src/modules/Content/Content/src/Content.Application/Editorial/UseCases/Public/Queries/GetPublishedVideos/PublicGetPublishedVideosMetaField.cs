@@ -13,7 +13,10 @@ public static class PublicGetPublishedVideosMetaField
         """
             Retrieves a paginated list of all published videos for public consumption.
             \n
-            Supports optional filtering by category, tag slug, and search term. Results are
+            Supports optional filtering by `category` and `tag`, each taking a slug, and by
+            search term.\n
+            `categorySlug` and `tagSlug` remain accepted as deprecated aliases.\n
+            Results are
             returned as a paginated list with summary information suitable for video feed
             and browsing views.
             \n

@@ -81,7 +81,6 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         AdminUpdateVideoRequest request = new AdminUpdateVideoRequestBuilder()
             .WithCategoryId(category.Id)
             .WithTitle("Updated Video Title")
-            .WithSlug(slug)
             .WithDescription("An updated video description for integration testing.")
             .WithSocialBoost(true)
             .WithMetaTitle("Updated meta title")
@@ -95,13 +94,13 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         AdminUpdateVideoResponse body = await response.ReadAsAsync<AdminUpdateVideoResponse>();
         body.Video.Id.Should().Be(video.Id);
         body.Video.Title.Should().Be(request.Title);
-        body.Video.Slug.Should().Be(slug);
+        body.Video.Slug.Should().Be(video.Slug.Value);
         body.Video.SocialBoost.Should().BeTrue();
 
         await using ContentDbContext verifyContext = CreateDbContext<ContentDbContext>();
         VideoEntity? persisted = await verifyContext.Videos.FindAsync(video.Id);
         persisted!.Title.Should().Be(request.Title);
-        persisted.Slug.Value.Should().Be(slug);
+        persisted.Slug.Value.Should().Be(body.Video.Slug);
         persisted.Description.Should().Be(request.Description);
         persisted.SocialBoost.Should().BeTrue();
     }
@@ -118,33 +117,6 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         await response.ShouldBeValidationProblem(
             "Title",
             Localized<VideoErrorMessage>(m => m.TitleTooLong(ContentConstants.MaxTitleLength))
-        );
-    }
-
-    [Fact]
-    public async Task UpdateVideo_WithInvalidSlug_ReturnsBadRequest()
-    {
-        Client.AuthenticateAsSuperAdmin();
-        Guid id = Guid.NewGuid();
-        AdminUpdateVideoRequest request = new AdminUpdateVideoRequestBuilder().WithSlug("INVALID SLUG!!!").Build();
-
-        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}", request);
-
-        await response.ShouldBeValidationProblem("Slug", Localized<VideoErrorMessage>(m => m.SlugInvalidFormat()));
-    }
-
-    [Fact]
-    public async Task UpdateVideo_WithSlugTooLong_ReturnsBadRequest()
-    {
-        Client.AuthenticateAsSuperAdmin();
-        Guid id = Guid.NewGuid();
-        AdminUpdateVideoRequest request = new AdminUpdateVideoRequestBuilder().WithSlug(new string('a', 300)).Build();
-
-        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}", request);
-
-        await response.ShouldBeValidationProblem(
-            "Slug",
-            Localized<VideoErrorMessage>(m => m.SlugTooLong(ContentConstants.MaxSlugLength))
         );
     }
 

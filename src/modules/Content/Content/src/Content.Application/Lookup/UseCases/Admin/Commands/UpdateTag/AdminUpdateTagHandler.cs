@@ -29,17 +29,7 @@ public class AdminUpdateTagHandler(
 
         TagEntity tag = await tagRepository.GetByIdOrThrowAsync(id: id, cancellationToken: cancellationToken);
 
-        TagEntity? existing = await tagRepository.GetBySlugAsync(
-            slug: command.Slug,
-            cancellationToken: cancellationToken
-        );
-
-        if (existing is not null && !string.Equals(tag.Slug, command.Slug, StringComparison.OrdinalIgnoreCase))
-        {
-            throw i18n.Tag.SlugAlreadyExists(slug: command.Slug);
-        }
-
-        tag.Update(name: command.Name, slug: command.Slug);
+        tag.Update(name: command.Name);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         var dto = tag.ToTagDto(mapper);

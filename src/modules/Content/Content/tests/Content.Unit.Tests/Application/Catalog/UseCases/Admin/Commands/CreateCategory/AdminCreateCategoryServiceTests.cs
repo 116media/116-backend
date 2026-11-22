@@ -35,44 +35,11 @@ public class AdminCreateCategoryServiceTests
         return new AdminCreateCategoryCommand(
             contentTypeId.ToString(),
             "Name",
-            "slug",
             "Description",
             true,
             false,
             isExclusive
         );
-    }
-
-    [Fact]
-    public async Task CreateAsync_WithAFreeSlug_ShouldStageTheCategory()
-    {
-        // Arrange
-        ContentTypeEntity contentType = ContentTypeFactory.Create("Video");
-        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
-        _categoryRepositoryMock.SetupGetBySlug("slug", null);
-
-        // Act
-        CategoryEntity category = await _service.CreateAsync(Command(contentType.Id), CancellationToken.None);
-
-        // Assert
-        category.Slug.Value.Should().Be("slug");
-        category.ContentTypeId.Should().Be(contentType.Id);
-        _categoryRepositoryMock.VerifyAddCalled();
-    }
-
-    [Fact]
-    public async Task CreateAsync_WhenTheSlugIsTaken_ShouldThrowConflictException()
-    {
-        // Arrange
-        ContentTypeEntity contentType = ContentTypeFactory.Create("Video");
-        _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
-        _categoryRepositoryMock.SetupGetBySlug("slug", CategoryFactory.Create(contentType.Id));
-
-        // Act
-        Func<Task> act = async () => await _service.CreateAsync(Command(contentType.Id), CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
     }
 
     [Fact]

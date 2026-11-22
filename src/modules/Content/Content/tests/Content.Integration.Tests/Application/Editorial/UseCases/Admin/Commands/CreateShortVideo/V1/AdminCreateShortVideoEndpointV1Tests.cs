@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateShortVideo.V1;
 using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
@@ -60,12 +61,12 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
         AdminCreateShortVideoResponse body = await response.ReadAsAsync<AdminCreateShortVideoResponse>();
         body.ShortVideo.Id.Should().NotBeEmpty();
         body.ShortVideo.Title.Should().Be("Test Short");
-        body.ShortVideo.Slug.Should().Be(slug);
+        body.ShortVideo.Slug.Should().MatchRegex($"^{SlugHelper.ToSlug("Test Short")}-[a-z0-9]{{8}}$");
 
         await using ContentDbContext verifyContext = CreateDbContext<ContentDbContext>();
         ShortVideoEntity? persisted = await verifyContext.ShortVideos.FindAsync(body.ShortVideo.Id);
         persisted.Should().NotBeNull();
-        persisted!.Slug.Value.Should().Be(slug);
+        persisted!.Slug.Value.Should().MatchRegex($"^{SlugHelper.ToSlug("Test Short")}-[a-z0-9]{{8}}$");
         persisted.VideoFileId.Should().BeNull();
         persisted.IsActive.Should().BeFalse();
     }
@@ -81,29 +82,6 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
     }
 
     [Fact]
-    public async Task CreateShortVideo_WithEmptySlug_ShouldReturnBadRequest()
-    {
-        Client.AuthenticateAsSuperAdmin();
-
-        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Shorts, BuildRequest("Valid Title", string.Empty));
-
-        await response.ShouldBeValidationProblem("Slug", Localized<ShortVideoErrorMessage>(m => m.SlugRequired()));
-    }
-
-    [Fact]
-    public async Task CreateShortVideo_WithInvalidSlug_ShouldReturnBadRequest()
-    {
-        Client.AuthenticateAsSuperAdmin();
-
-        var response = await Client.PostAsJsonAsync(
-            ApiRoutes.Admin.Shorts,
-            BuildRequest("Valid Title", "INVALID SLUG!!!")
-        );
-
-        await response.ShouldBeValidationProblem("Slug", Localized<ShortVideoErrorMessage>(m => m.SlugInvalidFormat()));
-    }
-
-    [Fact]
     public async Task CreateShortVideo_WithTitleTooLong_ShouldReturnBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
@@ -116,22 +94,6 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
         await response.ShouldBeValidationProblem(
             "Title",
             Localized<ShortVideoErrorMessage>(m => m.TitleTooLong(ContentConstants.MaxShortVideoTitleLength))
-        );
-    }
-
-    [Fact]
-    public async Task CreateShortVideo_WithSlugTooLong_ShouldReturnBadRequest()
-    {
-        Client.AuthenticateAsSuperAdmin();
-
-        var response = await Client.PostAsJsonAsync(
-            ApiRoutes.Admin.Shorts,
-            BuildRequest("Valid Title", new string('a', 300))
-        );
-
-        await response.ShouldBeValidationProblem(
-            "Slug",
-            Localized<ShortVideoErrorMessage>(m => m.SlugTooLong(ContentConstants.MaxSlugLength))
         );
     }
 }

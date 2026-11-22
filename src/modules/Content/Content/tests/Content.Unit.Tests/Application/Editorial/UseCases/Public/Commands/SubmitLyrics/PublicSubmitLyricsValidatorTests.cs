@@ -34,7 +34,6 @@ public class PublicSubmitLyricsValidatorTests
             ArtistName: artistName,
             LyricsText: lyricsText ?? TestConstants.Lyrics.ValidLyricsText,
             Language: language ?? TestConstants.Lyrics.ValidLanguage,
-            Slug: slug,
             UserId: Guid.NewGuid()
         );
 
@@ -175,76 +174,6 @@ public class PublicSubmitLyricsValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(PublicSubmitLyricsCommand.Language)
                 && e.ErrorMessage == _i18n.Lyrics.Msg.LanguageTooLong(TestConstants.Lyrics.LanguageMaxLength)
-            );
-    }
-
-    #endregion
-
-    #region Optional Slug Validation Tests
-
-    [Fact]
-    public async Task Validate_WithNullSlug_ShouldNotHaveErrors()
-    {
-        // Arrange
-        var command = BuildValidCommand(slug: null);
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeTrue();
-        result.Errors.Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task Validate_WithWhitespaceSlug_ShouldNotHaveErrors()
-    {
-        // Arrange
-        var command = BuildValidCommand(slug: "   ");
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeTrue();
-        result.Errors.Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task Validate_WithSlugExceedingMaxLength_ShouldHaveError()
-    {
-        // Arrange
-        var command = BuildValidCommand(slug: new string('a', TestConstants.Lyrics.SlugMaxLength + 1));
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(PublicSubmitLyricsCommand.Slug)
-                && e.ErrorMessage == _i18n.Lyrics.Msg.SlugTooLong(TestConstants.Lyrics.SlugMaxLength)
-            );
-    }
-
-    [Fact]
-    public async Task Validate_WithUppercaseSlug_ShouldHaveError()
-    {
-        // Arrange
-        var command = BuildValidCommand(slug: "Invalid-Slug");
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(PublicSubmitLyricsCommand.Slug)
-                && e.ErrorMessage == _i18n.Lyrics.Msg.SlugInvalidFormat()
             );
     }
 

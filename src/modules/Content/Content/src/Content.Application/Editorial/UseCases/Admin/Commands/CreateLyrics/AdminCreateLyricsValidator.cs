@@ -21,8 +21,6 @@ public class AdminCreateLyricsValidator : AbstractValidator<AdminCreateLyricsCom
 
         RuleFor(x => x.ArtistName).ValidArtistName(i18n.Lyrics.Msg);
 
-        RuleFor(x => x.Slug).ValidLyricsSlug(i18n.Lyrics.Msg);
-
         RuleFor(x => x.LyricsText).ValidLyricsText(i18n.Lyrics.Msg);
 
         RuleFor(x => x.Language).ValidLyricsLanguage(i18n.Lyrics.Msg);

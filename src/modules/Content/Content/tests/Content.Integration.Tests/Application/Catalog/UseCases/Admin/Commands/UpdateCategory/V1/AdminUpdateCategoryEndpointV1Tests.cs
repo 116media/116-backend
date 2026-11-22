@@ -55,14 +55,14 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
         var body = await response.ReadAsAsync<AdminUpdateCategoryResponse>();
         body.Category.Id.Should().Be(category.Id);
         body.Category.Name.Should().Be(name);
-        body.Category.Slug.Should().Be(slug);
+        body.Category.Slug.Should().Be(category.Slug.Value);
         body.Category.Description.Should().Be("Updated");
 
         await using var verifyContext = CreateDbContext<ContentDbContext>();
         CategoryEntity? updated = await verifyContext.Categories.FindAsync(category.Id);
         updated.Should().NotBeNull();
         updated!.Name.Should().Be(name);
-        updated.Slug.Value.Should().Be(slug);
+        updated.Slug.Value.Should().Be(category.Slug.Value);
         updated.Description.Should().Be("Updated");
     }
 
@@ -189,28 +189,6 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
     }
 
     [Fact]
-    public async Task UpdateCategory_WithSlugTooLong_ReturnsBadRequest()
-    {
-        Client.AuthenticateAsSuperAdmin();
-        Guid id = Guid.NewGuid();
-        var request = new
-        {
-            Name = ShortName("sl"),
-            Slug = new string('a', 200),
-            Description = "Test",
-            IsGossip = false,
-            IsExclusive = false,
-        };
-
-        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{id}", request);
-
-        await response.ShouldBeValidationProblem(
-            "Slug",
-            Localized<CategoryErrorMessage>(m => m.SlugTooLong(ContentConstants.MaxCategorySlugLength))
-        );
-    }
-
-    [Fact]
     public async Task UpdateCategory_WithDescriptionTooLong_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
@@ -230,25 +208,6 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
             "Description",
             Localized<CategoryErrorMessage>(m => m.DescriptionTooLong(ContentConstants.MaxCategoryDescriptionLength))
         );
-    }
-
-    [Fact]
-    public async Task UpdateCategory_WithInvalidSlugFormat_ReturnsBadRequest()
-    {
-        Client.AuthenticateAsSuperAdmin();
-        Guid id = Guid.NewGuid();
-        var request = new
-        {
-            Name = ShortName("sf"),
-            Slug = "INVALID SLUG!!!",
-            Description = "Test",
-            IsGossip = false,
-            IsExclusive = false,
-        };
-
-        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{id}", request);
-
-        await response.ShouldBeValidationProblem("Slug", Localized<CategoryErrorMessage>(m => m.SlugInvalidFormat()));
     }
 
     [Fact]

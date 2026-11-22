@@ -126,7 +126,6 @@ public class AdminUpdateVideoRequestBuilder
         return new AdminUpdateVideoRequest(
             CategoryId: _categoryId,
             Title: _title,
-            Slug: _slug,
             Description: _description,
             CustomerId: _customerId,
             OrderItemId: _orderItemId,

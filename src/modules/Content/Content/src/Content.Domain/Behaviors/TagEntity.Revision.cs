@@ -10,25 +10,19 @@ namespace _116.Content.Domain.Entities;
 public partial class TagEntity
 {
     /// <summary>
-    /// Updates the tag's name and slug.
+    /// Updates the tag's name. The slug is assigned once at creation and never follows the name,
+    /// so a published URL keeps resolving.
     /// </summary>
     /// <param name="name">The new display name for the tag.</param>
-    /// <param name="slug">The new URL-safe slug for the tag.</param>
-    /// <exception cref="ContentRuleException">Thrown when name or slug are empty or whitespace.</exception>
-    public void Update(string name, string slug)
+    /// <exception cref="ContentRuleException">Thrown when the name is empty or whitespace.</exception>
+    public void Update(string name)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
             throw new ContentRuleException(ContentRuleCodes.TagNameRequired);
         }
 
-        if (string.IsNullOrWhiteSpace(value: slug))
-        {
-            throw new ContentRuleException(ContentRuleCodes.TagSlugRequired);
-        }
-
         Name = name;
-        Slug = slug;
 
         AddDomainEvent(new TagGraphChangedEvent(TagId: Id));
     }

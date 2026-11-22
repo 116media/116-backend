@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyrics.Contracts;
 using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 
@@ -24,17 +25,14 @@ public class AdminCreateLyricsService(
     {
         await categoryRepository.GetByIdOrThrowAsync(id: command.CategoryId, cancellationToken: cancellationToken);
 
-        LyricsEntity? existing = await lyricsRepository.GetBySlugAsync(
-            slug: command.Slug,
+        string slug = await SlugHelper.ToAvailableSlugAsync(
+            name: command.SongTitle,
+            isTakenAsync: async (candidate, ct) =>
+                await lyricsRepository.GetBySlugAsync(slug: candidate, cancellationToken: ct) is not null,
             cancellationToken: cancellationToken
         );
 
-        if (existing is not null)
-        {
-            throw i18n.Lyrics.SlugAlreadyExists(slug: command.Slug);
-        }
-
-        LyricsEntity lyrics = Build(command);
+        LyricsEntity lyrics = Build(command, slug);
 
         if (command.VideoId is { } videoId)
         {
@@ -46,7 +44,7 @@ public class AdminCreateLyricsService(
         return lyrics;
     }
 
-    private static LyricsEntity Build(AdminCreateLyricsCommand command)
+    private static LyricsEntity Build(AdminCreateLyricsCommand command, string slug)
     {
         return command.CustomerId.HasValue
             ? LyricsEntity.CreatePaid(
@@ -59,7 +57,7 @@ public class AdminCreateLyricsService(
                 artistName: command.ArtistName,
                 lyricsText: command.LyricsText,
                 language: command.Language,
-                slug: command.Slug,
+                slug: slug,
                 authorId: command.AuthorId
             )
             : LyricsEntity.CreateFree(
@@ -70,7 +68,7 @@ public class AdminCreateLyricsService(
                 artistName: command.ArtistName,
                 lyricsText: command.LyricsText,
                 language: command.Language,
-                slug: command.Slug,
+                slug: slug,
                 authorId: command.AuthorId
             );
     }

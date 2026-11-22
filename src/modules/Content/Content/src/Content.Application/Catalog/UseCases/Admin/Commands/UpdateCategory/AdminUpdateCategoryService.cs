@@ -34,16 +34,6 @@ public class AdminUpdateCategoryService(
             cancellationToken: cancellationToken
         );
 
-        CategoryEntity? slugConflict = await categoryRepository.GetBySlugAsync(
-            slug: command.Slug,
-            cancellationToken: cancellationToken
-        );
-
-        if (slugConflict is not null && slugConflict.Id != id)
-        {
-            throw i18n.Category.AlreadyExists(slug: command.Slug);
-        }
-
         if (command.IsExclusive)
         {
             if (!category.IsActive)

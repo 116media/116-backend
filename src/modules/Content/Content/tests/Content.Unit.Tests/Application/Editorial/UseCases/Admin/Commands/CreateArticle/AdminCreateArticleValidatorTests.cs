@@ -31,7 +31,6 @@ public class AdminCreateArticleValidatorTests
         var command = new AdminCreateArticleCommand(
             CategoryId: Guid.NewGuid(),
             Title: TestConstants.Article.ValidTitle,
-            Slug: TestConstants.Article.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null
@@ -54,7 +53,6 @@ public class AdminCreateArticleValidatorTests
         var command = new AdminCreateArticleCommand(
             CategoryId: Guid.NewGuid(),
             Title: TestConstants.Article.ValidTitle,
-            Slug: TestConstants.Article.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: customerId,
             OrderItemId: orderItemId
@@ -79,7 +77,6 @@ public class AdminCreateArticleValidatorTests
         var command = new AdminCreateArticleCommand(
             CategoryId: Guid.Empty,
             Title: TestConstants.Article.ValidTitle,
-            Slug: TestConstants.Article.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null
@@ -109,7 +106,6 @@ public class AdminCreateArticleValidatorTests
         var command = new AdminCreateArticleCommand(
             CategoryId: Guid.NewGuid(),
             Title: string.Empty,
-            Slug: TestConstants.Article.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null
@@ -135,7 +131,6 @@ public class AdminCreateArticleValidatorTests
         var command = new AdminCreateArticleCommand(
             CategoryId: Guid.NewGuid(),
             Title: new string('a', TestConstants.Article.TitleMaxLength + 1),
-            Slug: TestConstants.Article.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null
@@ -156,88 +151,6 @@ public class AdminCreateArticleValidatorTests
 
     #endregion
 
-    #region Slug Validation Tests
-
-    [Fact]
-    public async Task Validate_WithEmptySlug_ShouldHaveError()
-    {
-        // Arrange
-        var command = new AdminCreateArticleCommand(
-            CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Article.ValidTitle,
-            Slug: string.Empty,
-            AuthorId: Guid.NewGuid(),
-            CustomerId: null,
-            OrderItemId: null
-        );
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminCreateArticleCommand.Slug)
-                && e.ErrorMessage == _i18n.Article.Msg.SlugRequired()
-            );
-    }
-
-    [Fact]
-    public async Task Validate_WithSlugExceedingMaxLength_ShouldHaveError()
-    {
-        // Arrange
-        var command = new AdminCreateArticleCommand(
-            CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Article.ValidTitle,
-            Slug: new string('a', TestConstants.Article.SlugMaxLength + 1),
-            AuthorId: Guid.NewGuid(),
-            CustomerId: null,
-            OrderItemId: null
-        );
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminCreateArticleCommand.Slug)
-                && e.ErrorMessage == _i18n.Article.Msg.SlugTooLong(TestConstants.Article.SlugMaxLength)
-            );
-    }
-
-    [Fact]
-    public async Task Validate_WithUppercaseSlug_ShouldHaveError()
-    {
-        // Arrange
-        var command = new AdminCreateArticleCommand(
-            CategoryId: Guid.NewGuid(),
-            Title: TestConstants.Article.ValidTitle,
-            Slug: "Invalid-Slug",
-            AuthorId: Guid.NewGuid(),
-            CustomerId: null,
-            OrderItemId: null
-        );
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminCreateArticleCommand.Slug)
-                && e.ErrorMessage == _i18n.Article.Msg.SlugInvalidFormat()
-            );
-    }
-
-    #endregion
-
     #region Conditional OrderItemId/CustomerId Validation Tests
 
     [Fact]
@@ -247,7 +160,6 @@ public class AdminCreateArticleValidatorTests
         var command = new AdminCreateArticleCommand(
             CategoryId: Guid.NewGuid(),
             Title: TestConstants.Article.ValidTitle,
-            Slug: TestConstants.Article.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: Guid.NewGuid(),
             OrderItemId: null
@@ -273,7 +185,6 @@ public class AdminCreateArticleValidatorTests
         var command = new AdminCreateArticleCommand(
             CategoryId: Guid.NewGuid(),
             Title: TestConstants.Article.ValidTitle,
-            Slug: TestConstants.Article.ValidSlug,
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: Guid.NewGuid()

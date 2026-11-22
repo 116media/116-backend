@@ -26,6 +26,11 @@ public interface IVideoQueryBuilder
     IVideoQueryBuilder WithCategory(Guid? categoryId);
 
     /// <summary>
+    /// Adds a category-slug filter to the query.
+    /// </summary>
+    IVideoQueryBuilder WithCategorySlug(string? categorySlug);
+
+    /// <summary>
     /// Adds a tag-slug filter to the query.
     /// </summary>
     IVideoQueryBuilder WithTag(string? tagSlug);
@@ -35,5 +40,6 @@ public interface IVideoQueryBuilder
     /// Returns null if no filters were applied.
     /// </summary>
     /// <param name="tags">The tag rows the tag-slug filter probes.</param>
-    Specification<VideoEntity>? Build(IQueryable<TagEntity> tags);
+    /// <param name="categories">The category rows the category-slug filter probes.</param>
+    Specification<VideoEntity>? Build(IQueryable<TagEntity> tags, IQueryable<CategoryEntity> categories);
 }

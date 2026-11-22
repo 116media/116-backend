@@ -7,16 +7,18 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishe
 
 /// <summary>
 /// Query for retrieving a paginated list of published videos for public consumption.
-/// Supports optional filtering by category, tag slug, and search term.
+/// Supports optional filtering by category (identifier or slug), tag slug, and search term.
 /// </summary>
 /// <param name="PaginatedRequest">Pagination parameters (page index and page size).</param>
 /// <param name="Search">Optional search term matched against title, description, meta title, and meta description.</param>
 /// <param name="CategoryId">Optional filter by category identifier.</param>
+/// <param name="CategorySlug">Optional filter by category slug, preferred over the identifier in public URLs.</param>
 /// <param name="TagSlug">Optional filter by tag slug.</param>
 public record PublicGetPublishedVideosQuery(
     PaginatedRequest PaginatedRequest,
     string? Search,
     Guid? CategoryId,
+    string? CategorySlug,
     string? TagSlug
 ) : IQuery<PublicGetPublishedVideosResult>, IConditionallyCacheableRequest
 {
@@ -29,7 +31,7 @@ public record PublicGetPublishedVideosQuery(
     /// <inheritdoc />
     public string CacheKey =>
         $"published_videos:{PaginatedRequest.PageIndex}:{PaginatedRequest.PageSize}"
-        + $":{CategoryId?.ToString() ?? "all"}:{TagSlug ?? "all"}";
+        + $":{CategoryId?.ToString() ?? "all"}:{CategorySlug ?? "all"}:{TagSlug ?? "all"}";
 
     /// <inheritdoc />
     public TimeSpan Ttl => TimeSpan.FromMinutes(10);

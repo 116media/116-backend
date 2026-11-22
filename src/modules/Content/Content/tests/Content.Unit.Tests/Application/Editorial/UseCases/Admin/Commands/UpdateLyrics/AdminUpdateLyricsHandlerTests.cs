@@ -1,5 +1,6 @@
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyrics;
+using _116.Content.Application.Shared.Helpers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -71,7 +72,6 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
             CategoryId: categoryId,
             SongTitle: TestConstants.Lyrics.ValidSongTitle,
             ArtistName: TestConstants.Lyrics.ValidArtistName,
-            Slug: slug ?? lyrics.Slug,
             LyricsText: TestConstants.Lyrics.ValidLyricsText,
             Language: TestConstants.Lyrics.ValidLanguage,
             VideoId: videoId,
@@ -93,6 +93,8 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
 
+        string slugBeforeUpdate = lyrics.Slug.Value;
+
         // Act
         AdminUpdateLyricsResult result = await _handler.Handle(command, CancellationToken.None);
 
@@ -100,7 +102,7 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
         lyrics.CategoryId.Should().Be(category.Id);
         lyrics.SongTitle.Should().Be(TestConstants.Lyrics.ValidSongTitle);
         lyrics.ArtistName.Should().Be(TestConstants.Lyrics.ValidArtistName);
-        lyrics.Slug.Value.Should().Be(command.Slug);
+        lyrics.Slug.Value.Should().Be(slugBeforeUpdate);
         lyrics.LyricsText.Should().Be(TestConstants.Lyrics.ValidLyricsText);
         lyrics.Language.Should().Be(TestConstants.Lyrics.ValidLanguage);
         lyrics.VideoId.Should().BeNull();
@@ -203,28 +205,5 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
         lyrics.CategoryId.Should().Be(CategoryId);
         _unitOfWorkMock.VerifyCommitNotCalled();
     }
-
-    [Fact]
-    public async Task Handle_WhenSlugConflictsWithAnotherLyrics_ShouldThrowConflictException()
-    {
-        // Arrange
-        CategoryEntity category = CategoryFactory.Create(CategoryId);
-        LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, "original-lyrics-slug");
-        AdminUpdateLyricsCommand command = BuildCommand(lyrics, category.Id, slug: TestConstants.Lyrics.ValidSlug);
-        LyricsEntity conflicting = LyricsFactory.CreateWithSlug(CategoryId, command.Slug);
-
-        _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
-        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
-        _lyricsRepositoryMock.SetupGetBySlug(command.Slug, conflicting);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
-        lyrics.Slug.Value.Should().Be("original-lyrics-slug");
-        _unitOfWorkMock.VerifyCommitNotCalled();
-    }
-
     #endregion
 }

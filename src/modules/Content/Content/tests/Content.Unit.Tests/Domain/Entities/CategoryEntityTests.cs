@@ -83,20 +83,6 @@ public class CategoryEntityTests
     #endregion
 
     #region Rename / Redescribe
-
-    [Fact]
-    public void Rename_WithValidArguments_ShouldSetNameAndSlug()
-    {
-        Guid contentTypeId = Guid.NewGuid();
-        CategoryEntity category = CategoryFactory.Create(contentTypeId);
-
-        bool changed = category.Rename("New Name", "new-slug");
-
-        changed.Should().BeTrue();
-        category.Name.Should().Be("New Name");
-        category.Slug.Value.Should().Be("new-slug");
-    }
-
     [Fact]
     public void Rename_WithTheSameValues_ShouldReportUnchangedAndRaiseNothing()
     {
@@ -104,7 +90,7 @@ public class CategoryEntityTests
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
         category.ClearDomainEvents();
 
-        bool changed = category.Rename(category.Name, category.Slug);
+        bool changed = category.Rename(category.Name);
 
         changed.Should().BeFalse();
         category.DomainEvents.Should().BeEmpty();
@@ -139,22 +125,10 @@ public class CategoryEntityTests
         Guid contentTypeId = Guid.NewGuid();
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
 
-        Action act = () => category.Rename("", "valid-slug");
+        Action act = () => category.Rename("");
 
         act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CategoryNameRequired);
     }
-
-    [Fact]
-    public void Rename_WithEmptySlug_ShouldThrowBadRequestException()
-    {
-        Guid contentTypeId = Guid.NewGuid();
-        CategoryEntity category = CategoryFactory.Create(contentTypeId);
-
-        Action act = () => category.Rename("Valid Name", "  ");
-
-        act.Should().Throw<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.CategorySlugRequired);
-    }
-
     #endregion
 
     #region EnsureCommissionable
@@ -471,7 +445,7 @@ public class CategoryEntityTests
         entity.ClearDomainEvents();
 
         // Act
-        entity.Rename("Culture", "culture");
+        entity.Rename("Culture");
 
         // Assert
         entity.DomainEvents.OfType<CategoryChangedEvent>().Should().ContainSingle();
@@ -485,7 +459,7 @@ public class CategoryEntityTests
         entity.ClearDomainEvents();
 
         // Act
-        entity.Rename("Culture", "culture");
+        entity.Rename("Culture");
         entity.Redescribe("Another description");
         entity.Reclassify(isGossip: true, isExclusive: false, isDefaultForLyrics: false);
 

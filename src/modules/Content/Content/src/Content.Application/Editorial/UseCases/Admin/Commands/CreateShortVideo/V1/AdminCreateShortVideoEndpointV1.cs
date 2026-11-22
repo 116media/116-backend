@@ -22,7 +22,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateShort
 /// <param name="Title">The display title of the short video.</param>
 /// <param name="Slug">The URL-safe slug for the short video permalink.</param>
 /// <param name="VideoId">Optional parent full video identifier. When provided, creates a teaser.</param>
-internal record AdminCreateShortVideoRequest(string Title, string Slug, Guid? VideoId);
+internal record AdminCreateShortVideoRequest(string Title, Guid? VideoId);
 
 /// <summary>
 /// Response model for successful short video creation.
@@ -63,7 +63,6 @@ internal class AdminCreateShortVideoEndpointV1 : ICarterModule
 
                     var command = new AdminCreateShortVideoCommand(
                         Title: request.Title,
-                        Slug: request.Slug,
                         AuthorId: authorId,
                         VideoId: request.VideoId
                     );

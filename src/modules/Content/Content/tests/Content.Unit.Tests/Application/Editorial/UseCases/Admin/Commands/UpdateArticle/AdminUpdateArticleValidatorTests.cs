@@ -27,7 +27,6 @@ public class AdminUpdateArticleValidatorTests
             Id: Guid.NewGuid().ToString(),
             CategoryId: Guid.NewGuid(),
             Title: TestConstants.Article.ValidTitle,
-            Slug: TestConstants.Article.ValidSlug,
             Headline: TestConstants.Article.ValidHeadline,
             Body: TestConstants.Article.ValidBody,
             CustomerId: null,
@@ -172,54 +171,6 @@ public class AdminUpdateArticleValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.Title)
                 && e.ErrorMessage == _i18n.Article.Msg.TitleTooLong(TestConstants.Article.TitleMaxLength)
-            );
-    }
-
-    #endregion
-
-    #region Slug Validation Tests
-
-    [Fact]
-    public async Task Validate_WithEmptySlug_ShouldHaveError()
-    {
-        // Arrange
-        var command = ValidCommand() with
-        {
-            Slug = string.Empty,
-        };
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateArticleCommand.Slug)
-                && e.ErrorMessage == _i18n.Article.Msg.SlugRequired()
-            );
-    }
-
-    [Fact]
-    public async Task Validate_WithUppercaseSlug_ShouldHaveError()
-    {
-        // Arrange
-        var command = ValidCommand() with
-        {
-            Slug = "Invalid-Slug",
-        };
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateArticleCommand.Slug)
-                && e.ErrorMessage == _i18n.Article.Msg.SlugInvalidFormat()
             );
     }
 
