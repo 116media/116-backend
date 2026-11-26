@@ -20,7 +20,7 @@ public class AdminGetCustomerOrdersHandler(
     /// <inheritdoc />
     public async Task<AdminGetCustomerOrdersResult> Handle(
         AdminGetCustomerOrdersQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageSize = query.PaginatedRequest.PageSize;

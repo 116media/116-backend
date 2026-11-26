@@ -119,7 +119,7 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
         List<StreamingLinkEntity> spotifyRows = await ctx
             .StreamingLinks.Where(l => l.AlbumId == album.Id && l.Platform == EnumStreamingPlatform.Spotify)
             .ToListAsync();
-        spotifyRows.Should().HaveCount(1);
+        spotifyRows.Should().ContainSingle();
         spotifyRows[0].Url.Should().Be("https://open.spotify.com/album/replaced");
     }
 

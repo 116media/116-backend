@@ -161,11 +161,7 @@ public class DomainEventPublisher(
     /// <param name="eventType">The concrete domain event type, for logging.</param>
     /// <param name="domainEvent">The event being published, for logging.</param>
     /// <returns>The handlers that could be constructed, in registration order.</returns>
-    private IReadOnlyList<object> ResolveHandlersIndividually(
-        Type handlerServiceType,
-        Type eventType,
-        IDomainEvent domainEvent
-    )
+    private List<object> ResolveHandlersIndividually(Type handlerServiceType, Type eventType, IDomainEvent domainEvent)
     {
         var handlers = new List<object>();
 

@@ -21,7 +21,7 @@ public class PublicUnbookmarkShortVideoHandler(
     /// <inheritdoc />
     public async Task<PublicUnbookmarkShortVideoResult> Handle(
         PublicUnbookmarkShortVideoCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         await shortVideoRepository.ExistsOrThrowAsync(

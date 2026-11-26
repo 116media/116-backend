@@ -24,7 +24,7 @@ public class AdminUpdateArticleTagsHandler(
     /// <inheritdoc />
     public async Task<AdminUpdateArticleTagsResult> Handle(
         AdminUpdateArticleTagsCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid articleId = Guid.Parse(command.ArticleId);

@@ -22,7 +22,7 @@ public class AdminSoftDeletePermissionHandler(
     /// <inheritdoc />
     public async Task<AdminSoftDeletePermissionResult> Handle(
         AdminSoftDeletePermissionCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid permissionId = Guid.Parse(input: command.PermissionId);

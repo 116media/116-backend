@@ -30,7 +30,7 @@ public class PublicGetVideoPromotionFeedHandler(
     /// <inheritdoc />
     public async Task<PublicGetVideoPromotionFeedResult> Handle(
         PublicGetVideoPromotionFeedQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         IReadOnlyList<VideoEntity> spot1Videos = await videoRepository.GetActivePromotedBySpotAsync(
@@ -227,7 +227,7 @@ public class PublicGetVideoPromotionFeedHandler(
     /// An ordered list of up to <paramref name="stripSize" /> free video summaries.
     /// May be shorter if the queue is exhausted.
     /// </returns>
-    private static IReadOnlyList<PublicVideoSummaryDto> BuildFreeVideoStrip(
+    private static List<PublicVideoSummaryDto> BuildFreeVideoStrip(
         Queue<VideoEntity> freeQueue,
         int stripSize,
         IReadOnlyDictionary<Guid, FileReferenceDto> thumbnails,

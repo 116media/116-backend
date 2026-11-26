@@ -16,7 +16,7 @@ public class AdminGetArticleByIdHandler(IArticleRepository articleRepository, IA
     /// <inheritdoc />
     public async Task<AdminGetArticleByIdResult> Handle(
         AdminGetArticleByIdQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArticleEntity article = await articleRepository.GetByIdOrThrowAsync(

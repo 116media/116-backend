@@ -16,5 +16,7 @@ public class TestContainersFixture : IAsyncLifetime
     {
         await TestPostgresContainer.ShutdownAsync();
         await TestRedisContainer.ShutdownAsync();
+
+        GC.SuppressFinalize(this);
     }
 }

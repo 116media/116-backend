@@ -18,7 +18,7 @@ public class TranslationErrors(TranslationErrorMessage i18n)
     /// <summary>
     /// Throws when a lyrics translation is not found by its identifier.
     /// </summary>
-    public NotFoundException NotFound(Guid id)
+    public static NotFoundException NotFound(Guid id)
     {
         return new NotFoundException("Translation", "id", keyValue: id);
     }
@@ -26,7 +26,7 @@ public class TranslationErrors(TranslationErrorMessage i18n)
     /// <summary>
     /// Throws when a translation revision is not found by its identifier.
     /// </summary>
-    public NotFoundException RevisionNotFound(Guid id)
+    public static NotFoundException RevisionNotFound(Guid id)
     {
         return new NotFoundException("Translation revision", "id", keyValue: id);
     }

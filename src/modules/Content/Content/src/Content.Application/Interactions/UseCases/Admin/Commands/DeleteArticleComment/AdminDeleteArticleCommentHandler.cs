@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -14,19 +14,17 @@ namespace _116.Content.Application.Interactions.UseCases.Admin.Commands.DeleteAr
 /// </summary>
 /// <param name="articleCommentRepository">Repository for article comment data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 /// <param name="timeProvider">Clock stamping the deletion time.</param>
 public class AdminDeleteArticleCommentHandler(
     IArticleCommentRepository articleCommentRepository,
     IContentUnitOfWork unitOfWork,
-    ContentI18n i18n,
     TimeProvider timeProvider
 ) : ICommandHandler<AdminDeleteArticleCommentCommand, AdminDeleteArticleCommentResult>
 {
     /// <inheritdoc />
     public async Task<AdminDeleteArticleCommentResult> Handle(
         AdminDeleteArticleCommentCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArticleCommentEntity? comment = await articleCommentRepository.GetCommentByIdAsync(
@@ -37,7 +35,7 @@ public class AdminDeleteArticleCommentHandler(
 
         if (comment is null)
         {
-            throw i18n.ArticleInteraction.CommentNotFound(commentId: command.CommentId);
+            throw ArticleInteractionErrors.CommentNotFound(commentId: command.CommentId);
         }
 
         if (comment.SoftDelete(now: timeProvider.GetUtcNow()))

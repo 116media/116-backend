@@ -587,8 +587,8 @@ public class VideoRepositoryTests : IDisposable
 
         // Assert
         result.Should().ContainSingle();
-        result.First().IsPromoted.Should().BeTrue();
-        result.First().Status.Should().Be(EnumContentStatus.Published);
+        result[0].IsPromoted.Should().BeTrue();
+        result[0].Status.Should().Be(EnumContentStatus.Published);
     }
 
     [Fact]

@@ -22,7 +22,7 @@ public class PublicMarkAllNotificationsReadHandler(
     /// </summary>
     public async Task<PublicMarkAllNotificationsReadResult> Handle(
         PublicMarkAllNotificationsReadCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         IReadOnlyList<NotificationEntity> unread = await notificationRepository.GetUnreadForUserAsync(

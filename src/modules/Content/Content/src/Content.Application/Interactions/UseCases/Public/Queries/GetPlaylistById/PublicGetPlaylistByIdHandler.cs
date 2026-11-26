@@ -22,7 +22,7 @@ public class PublicGetPlaylistByIdHandler(
     /// <inheritdoc />
     public async Task<PublicGetPlaylistByIdResult> Handle(
         PublicGetPlaylistByIdQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         PlaylistEntity? playlist = await playlistRepository.GetByIdWithVideosAsync(

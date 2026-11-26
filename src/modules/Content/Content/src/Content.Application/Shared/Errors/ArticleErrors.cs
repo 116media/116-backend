@@ -17,7 +17,7 @@ public class ArticleErrors(ArticleErrorMessage i18n)
     /// <summary>
     /// Throws when an article is not found by its identifier.
     /// </summary>
-    public NotFoundException NotFound(Guid id)
+    public static NotFoundException NotFound(Guid id)
     {
         return new NotFoundException("Article", "id", keyValue: id);
     }

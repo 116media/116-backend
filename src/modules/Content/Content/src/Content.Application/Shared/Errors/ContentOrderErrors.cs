@@ -17,7 +17,7 @@ public class ContentOrderErrors(ContentOrderErrorMessage i18n)
     /// <summary>
     /// Throws when a content order is not found by its identifier.
     /// </summary>
-    public NotFoundException NotFound(Guid id)
+    public static NotFoundException NotFound(Guid id)
     {
         return new NotFoundException("ContentOrder", "id", keyValue: id);
     }
@@ -25,7 +25,7 @@ public class ContentOrderErrors(ContentOrderErrorMessage i18n)
     /// <summary>
     /// Throws when a content order item is not found by its identifier.
     /// </summary>
-    public NotFoundException ItemNotFound(Guid itemId)
+    public static NotFoundException ItemNotFound(Guid itemId)
     {
         return new NotFoundException("ContentOrderItem", "id", keyValue: itemId);
     }
@@ -41,7 +41,7 @@ public class ContentOrderErrors(ContentOrderErrorMessage i18n)
     /// <summary>
     /// Throws when a payment record is not found for the given order.
     /// </summary>
-    public NotFoundException PaymentNotFound(Guid orderId)
+    public static NotFoundException PaymentNotFound(Guid orderId)
     {
         return new NotFoundException("ContentPayment", "orderId", keyValue: orderId);
     }
@@ -57,7 +57,7 @@ public class ContentOrderErrors(ContentOrderErrorMessage i18n)
     /// <summary>
     /// Throws when a content item tier is not found by its identifier.
     /// </summary>
-    public NotFoundException ItemTierNotFound(Guid tierId)
+    public static NotFoundException ItemTierNotFound(Guid tierId)
     {
         return new NotFoundException("ContentItemTier", "id", keyValue: tierId);
     }

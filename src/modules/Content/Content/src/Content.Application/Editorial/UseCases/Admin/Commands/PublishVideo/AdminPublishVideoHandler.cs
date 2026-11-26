@@ -24,7 +24,7 @@ public class AdminPublishVideoHandler(
     /// <inheritdoc />
     public async Task<AdminPublishVideoResult> Handle(
         AdminPublishVideoCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);

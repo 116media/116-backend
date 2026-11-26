@@ -40,7 +40,7 @@ public class PublicMarkAllNotificationsReadHandlerTests
 
         result.MarkedCount.Should().Be(2);
         unread.Should().OnlyContain(n => n.ReadAt != null);
-        unread.Select(n => n.ReadAt).Distinct().Should().HaveCount(1);
+        unread.Select(n => n.ReadAt).Distinct().Should().ContainSingle();
         _unitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 

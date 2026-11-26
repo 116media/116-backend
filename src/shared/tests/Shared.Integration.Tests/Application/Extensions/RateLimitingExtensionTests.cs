@@ -24,6 +24,8 @@ namespace _116.Shared.Integration.Tests.Application.Extensions;
 [Collection("RateLimiting")]
 public class RateLimitingExtensionTests(RateLimitedPostgresFixture db) : IDisposable
 {
+    private static readonly JsonSerializerOptions WebJson = new(JsonSerializerDefaults.Web);
+
     private readonly HttpClient _client = db.Api.CreateClient();
 
     /// <inheritdoc />
@@ -178,10 +180,7 @@ public class RateLimitingExtensionTests(RateLimitedPostgresFixture db) : IDispos
         string raw = await response.Content.ReadAsStringAsync();
         raw.Should().NotBeNullOrWhiteSpace();
 
-        ProblemDetails? problem = JsonSerializer.Deserialize<ProblemDetails>(
-            raw,
-            new JsonSerializerOptions(JsonSerializerDefaults.Web)
-        );
+        ProblemDetails? problem = JsonSerializer.Deserialize<ProblemDetails>(raw, WebJson);
 
         problem.Should().NotBeNull();
         problem!.Status.Should().Be((int)HttpStatusCode.TooManyRequests);

@@ -15,13 +15,11 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem
 /// <param name="promotionLevelRepository">Repository for promotion level data access operations.</param>
 /// <param name="packageRepository">Repository for package data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="categoryErrors">Category domain error service.</param>
 public class AdminAddOrderItemService(
     ICategoryRepository categoryRepository,
     IPromotionLevelRepository promotionLevelRepository,
     IPackageRepository packageRepository,
-    IContentUnitOfWork unitOfWork,
-    CategoryErrors categoryErrors
+    IContentUnitOfWork unitOfWork
 ) : IAddOrderItemService
 {
     /// <inheritdoc />
@@ -94,6 +92,6 @@ public class AdminAddOrderItemService(
             return (item, category.Name, promoLevel?.Name);
         }
 
-        throw categoryErrors.NotFound(id: categoryId);
+        throw CategoryErrors.NotFound(id: categoryId);
     }
 }

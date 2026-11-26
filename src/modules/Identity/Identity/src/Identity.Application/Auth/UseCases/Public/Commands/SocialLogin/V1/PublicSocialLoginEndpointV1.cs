@@ -88,11 +88,19 @@ internal class PublicSocialLoginEndpointV1 : ICarterModule
                         return Results.Ok(value: webResponse);
                     }
 
+                    // A mobile client carries the refresh token in the body, so its absence
+                    // is a server fault rather than a response with a missing field.
+                    string? refreshToken = result.Authentication.RefreshToken;
+                    if (refreshToken is null)
+                    {
+                        throw new InvalidOperationException("The authentication result carried no refresh token.");
+                    }
+
                     var mobileResponse = new PublicSocialLoginMobileResponse(
                         User: result.Authentication.User.ToPublicUserResponseDto(),
                         AccessToken: result.Authentication.AccessToken,
                         AccessTokenExpiresAt: result.Authentication.AccessTokenExpiresAt,
-                        RefreshToken: result.Authentication.RefreshToken,
+                        RefreshToken: refreshToken,
                         RefreshTokenExpiresAt: result.Authentication.RefreshTokenExpiresAt,
                         TokenType: result.Authentication.TokenType
                     );

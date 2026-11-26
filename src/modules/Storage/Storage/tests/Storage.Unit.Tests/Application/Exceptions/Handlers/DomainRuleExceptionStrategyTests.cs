@@ -41,7 +41,7 @@ public class DomainRuleExceptionStrategyTests
     public void ExceptionType_ShouldReturnStorageRuleExceptionType()
     {
         // Act & Assert
-        _strategy.ExceptionType.Should().Be(typeof(StorageRuleException));
+        _strategy.ExceptionType.Should().Be<StorageRuleException>();
     }
 
     [Fact]
@@ -110,6 +110,6 @@ public class DomainRuleExceptionStrategyTests
         problem.Detail.Should().NotBeNullOrWhiteSpace(code);
         problem.Detail.Should().NotBe(code, "the catalog must phrase the rule, not echo its code");
         problem.Title.Should().NotBeNullOrWhiteSpace(code);
-        problem.Status.Should().BeGreaterThan(0, code);
+        problem.Status.Should().BePositive(code);
     }
 }

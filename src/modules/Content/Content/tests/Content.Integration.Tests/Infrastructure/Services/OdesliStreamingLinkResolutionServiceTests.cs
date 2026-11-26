@@ -178,7 +178,7 @@ public class OdesliStreamingLinkResolutionServiceTests
         IReadOnlyDictionary<EnumStreamingPlatform, string> result = await CreateService(server.BaseUrl)
             .ResolveAsync(SourceUrl);
 
-        result.Should().HaveCount(1);
+        result.Should().ContainSingle();
         result[EnumStreamingPlatform.Tidal].Should().Be("https://listen.tidal.com/album/4");
     }
 

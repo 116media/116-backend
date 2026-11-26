@@ -29,7 +29,10 @@ public class AdminGetVideoByIdHandler(
 ) : IQueryHandler<AdminGetVideoByIdQuery, AdminGetVideoByIdResult>
 {
     /// <inheritdoc />
-    public async Task<AdminGetVideoByIdResult> Handle(AdminGetVideoByIdQuery query, CancellationToken cancellationToken)
+    public async Task<AdminGetVideoByIdResult> Handle(
+        AdminGetVideoByIdQuery query,
+        CancellationToken cancellationToken = default
+    )
     {
         VideoEntity video = await videoRepository.GetByIdOrThrowAsync(
             id: query.Id,

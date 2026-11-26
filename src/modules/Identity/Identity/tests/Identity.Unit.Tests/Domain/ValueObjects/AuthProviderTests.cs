@@ -49,7 +49,7 @@ public class AuthProviderTests
         var invalidEnum = (EnumAuthProvider)999;
 
         // Act & Assert
-        Action act = () => new AuthProvider(invalidEnum);
+        Action act = () => _ = new AuthProvider(invalidEnum);
         act.Should()
             .ThrowExactly<IdentityRuleException>()
             .Which.Code.Should()
@@ -104,7 +104,7 @@ public class AuthProviderTests
     public void Constructor_WithInvalidStringValue_ShouldThrowArgumentException()
     {
         // Act & Assert
-        Action act = () => new AuthProvider("InvalidProvider");
+        Action act = () => _ = new AuthProvider("InvalidProvider");
         act.Should()
             .ThrowExactly<IdentityRuleException>()
             .Which.Code.Should()
@@ -115,7 +115,7 @@ public class AuthProviderTests
     public void Constructor_WithEmptyString_ShouldThrowArgumentException()
     {
         // Act & Assert
-        Action act = () => new AuthProvider(string.Empty);
+        Action act = () => _ = new AuthProvider(string.Empty);
         act.Should()
             .ThrowExactly<IdentityRuleException>()
             .Which.Code.Should()
@@ -126,7 +126,7 @@ public class AuthProviderTests
     public void Constructor_WithNullString_ShouldThrowArgumentException()
     {
         // Act & Assert
-        Action act = () => new AuthProvider((string)null!);
+        Action act = () => _ = new AuthProvider((string)null!);
         act.Should()
             .ThrowExactly<IdentityRuleException>()
             .Which.Code.Should()

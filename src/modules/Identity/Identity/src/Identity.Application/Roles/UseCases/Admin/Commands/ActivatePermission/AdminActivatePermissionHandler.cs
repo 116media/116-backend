@@ -30,7 +30,7 @@ public class AdminActivatePermissionHandler(
     /// <returns>A <see cref="AdminActivatePermissionResult" /> containing the activated permission.</returns>
     public async Task<AdminActivatePermissionResult> Handle(
         AdminActivatePermissionCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid permissionId = Guid.Parse(input: command.PermissionId);

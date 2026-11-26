@@ -26,7 +26,7 @@ public class SessionErrors(AuthenticationErrorMessage authentication)
     /// <summary>
     /// Throws when a session is not found.
     /// </summary>
-    public NotFoundException SessionNotFound(Guid sessionId)
+    public static NotFoundException SessionNotFound(Guid sessionId)
     {
         return new NotFoundException("Session", key: sessionId);
     }

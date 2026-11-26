@@ -19,7 +19,7 @@ public class AdminGetAllCustomersHandler(ICustomerRepository customerRepository,
     /// <inheritdoc />
     public async Task<AdminGetAllCustomersResult> Handle(
         AdminGetAllCustomersQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageSize = query.PaginatedRequest.PageSize;

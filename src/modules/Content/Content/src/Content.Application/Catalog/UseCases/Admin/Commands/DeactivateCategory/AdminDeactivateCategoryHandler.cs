@@ -24,7 +24,7 @@ public class AdminDeactivateCategoryHandler(
     /// <inheritdoc />
     public async Task<AdminDeactivateCategoryResult> Handle(
         AdminDeactivateCategoryCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);

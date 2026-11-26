@@ -12,8 +12,6 @@ namespace _116.Identity.Unit.Tests.Domain.ValueObjects;
 /// </summary>
 public class VisitorPermissionsTests
 {
-    private readonly UserErrors _userErrors = TestErrorsFactory.CreateUserErrors();
-
     #region Content Permissions Tests
 
     [Fact]

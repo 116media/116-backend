@@ -22,7 +22,7 @@ public class ArticleErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = _errors.NotFound(id);
+        NotFoundException exception = ArticleErrors.NotFound(id);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();

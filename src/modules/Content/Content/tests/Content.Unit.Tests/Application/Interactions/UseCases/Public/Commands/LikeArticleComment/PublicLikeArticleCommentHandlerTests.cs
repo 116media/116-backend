@@ -29,11 +29,7 @@ public class PublicLikeArticleCommentHandlerTests : BaseContentHandlerTest
     {
         _articleCommentRepositoryMock = MockArticleCommentRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new PublicLikeArticleCommentHandler(
-            _articleCommentRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentI18n()
-        );
+        _handler = new PublicLikeArticleCommentHandler(_articleCommentRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
     [Fact]

@@ -24,7 +24,7 @@ public class PublicVoteOnLyricsRevisionHandler(
     /// <inheritdoc />
     public async Task<PublicVoteOnLyricsRevisionResult> Handle(
         PublicVoteOnLyricsRevisionCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         LyricsRevisionVoteData tally = await voteService.CastVoteAsync(

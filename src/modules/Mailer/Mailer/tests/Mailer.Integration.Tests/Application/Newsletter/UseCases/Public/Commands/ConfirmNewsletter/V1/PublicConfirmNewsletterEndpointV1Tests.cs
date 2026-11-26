@@ -95,7 +95,7 @@ public class PublicConfirmNewsletterEndpointV1Tests(PostgresFixture db) : BaseAp
         var response = await Client.GetAsync($"{ApiRoutes.Public.Newsletter}/confirm/{seeded.ConfirmationToken}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        response.Content.Headers.ContentType?.MediaType.Should().Be("text/html");
+        response.Content.Headers.ContentType!.MediaType.Should().Be("text/html");
 
         string html = await response.Content.ReadAsStringAsync();
         html.Should().Contain("<form method=\"post\"");

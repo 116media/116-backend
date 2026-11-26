@@ -19,7 +19,7 @@ public class PublicGetPopularVideosHandler(IVideoRepository videoRepository, IVi
     /// <inheritdoc />
     public async Task<PublicGetPopularVideosResult> Handle(
         PublicGetPopularVideosQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         IReadOnlyList<VideoEntity> videos = await videoRepository.GetPopularVideosAsync(

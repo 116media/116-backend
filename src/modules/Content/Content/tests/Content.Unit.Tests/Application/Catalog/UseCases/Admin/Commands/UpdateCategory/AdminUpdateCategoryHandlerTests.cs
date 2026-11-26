@@ -60,7 +60,6 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
         _contentTypeRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
         CategoryEntity category = CategoryFactory.Create(contentType.Id);
         string newName = TestConstants.Category.AnotherValidName;
-        string newSlug = TestConstants.Category.AnotherValidSlug;
 
         var command = new AdminUpdateCategoryCommand(
             Id: category.Id.ToString(),

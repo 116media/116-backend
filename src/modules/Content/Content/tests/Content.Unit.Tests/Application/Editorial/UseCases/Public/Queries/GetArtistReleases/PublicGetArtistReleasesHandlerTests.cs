@@ -33,8 +33,7 @@ public class PublicGetArtistReleasesHandlerTests
         _handler = new PublicGetArtistReleasesHandler(
             _artistRepositoryMock.Object,
             _albumRepositoryMock.Object,
-            new AlbumDtoService(fileStorageMock.Object),
-            TestErrorsFactory.CreateContentI18n()
+            new AlbumDtoService(fileStorageMock.Object)
         );
     }
 

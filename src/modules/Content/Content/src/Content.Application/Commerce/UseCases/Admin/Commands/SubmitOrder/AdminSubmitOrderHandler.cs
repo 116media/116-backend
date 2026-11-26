@@ -1,6 +1,6 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder.Contracts;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 
@@ -11,17 +11,15 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder;
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="submitOrderService">Service for the order submission flow.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminSubmitOrderHandler(
     IContentOrderRepository contentOrderRepository,
-    ISubmitOrderService submitOrderService,
-    ContentI18n i18n
+    ISubmitOrderService submitOrderService
 ) : ICommandHandler<AdminSubmitOrderCommand, AdminSubmitOrderResult>
 {
     /// <inheritdoc />
     public async Task<AdminSubmitOrderResult> Handle(
         AdminSubmitOrderCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid orderId = Guid.Parse(command.OrderId);
@@ -37,6 +35,6 @@ public class AdminSubmitOrderHandler(
             return new AdminSubmitOrderResult(IsSuccess: true);
         }
 
-        throw i18n.ContentOrder.NotFound(id: orderId);
+        throw ContentOrderErrors.NotFound(id: orderId);
     }
 }

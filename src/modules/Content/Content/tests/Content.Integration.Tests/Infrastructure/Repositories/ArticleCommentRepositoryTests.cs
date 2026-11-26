@@ -35,7 +35,7 @@ public class ArticleCommentRepositoryTests(PostgresFixture postgres) : BaseRepos
 
         IReadOnlyDictionary<Guid, int> counts = await repository.GetReplyCountsAsync([parent.Id]);
 
-        counts[parent.Id].Should().Be(1);
+        counts.Should().Contain(parent.Id, 1);
     }
 
     [Fact]

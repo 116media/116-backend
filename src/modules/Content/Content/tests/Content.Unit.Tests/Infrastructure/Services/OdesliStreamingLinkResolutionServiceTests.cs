@@ -100,7 +100,7 @@ public class OdesliStreamingLinkResolutionServiceTests
             .ResolveAsync(SourceUrl);
 
         // Assert — only the https Spotify link survives.
-        result.Should().HaveCount(1);
+        result.Should().ContainSingle();
         result.Should().ContainKey(EnumStreamingPlatform.Spotify);
     }
 

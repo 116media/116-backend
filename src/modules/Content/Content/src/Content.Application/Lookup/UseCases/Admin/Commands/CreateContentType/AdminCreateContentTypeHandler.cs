@@ -25,7 +25,7 @@ public class AdminCreateContentTypeHandler(
     /// <inheritdoc />
     public async Task<AdminCreateContentTypeResult> Handle(
         AdminCreateContentTypeCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         bool exists = await contentTypeRepository.ExistsByNameAsync(

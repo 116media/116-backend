@@ -19,7 +19,7 @@ public class PublicGetOwnSharedArticlesHandler(
     /// <inheritdoc />
     public async Task<PublicGetOwnSharedArticlesResult> Handle(
         PublicGetOwnSharedArticlesQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageIndex = query.PaginatedRequest.PageIndex;

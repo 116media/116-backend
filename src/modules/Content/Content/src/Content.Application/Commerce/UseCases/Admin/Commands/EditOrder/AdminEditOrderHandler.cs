@@ -20,7 +20,10 @@ public class AdminEditOrderHandler(
 ) : ICommandHandler<AdminEditOrderCommand, AdminEditOrderResult>
 {
     /// <inheritdoc />
-    public async Task<AdminEditOrderResult> Handle(AdminEditOrderCommand command, CancellationToken cancellationToken)
+    public async Task<AdminEditOrderResult> Handle(
+        AdminEditOrderCommand command,
+        CancellationToken cancellationToken = default
+    )
     {
         ContentOrderEntity order = await editOrderService.EditAsync(
             orderId: Guid.Parse(command.OrderId),

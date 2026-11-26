@@ -36,7 +36,7 @@ public class SubmissionErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException ex = _errors.NotFound(id);
+        NotFoundException ex = SubmissionErrors.NotFound(id);
 
         // Assert
         ex.Should().BeOfType<NotFoundException>();

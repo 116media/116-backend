@@ -20,7 +20,10 @@ public class AdminVerifyOtpHandler(
 ) : ICommandHandler<AdminVerifyOtpCommand, AdminVerifyOtpResult>
 {
     /// <inheritdoc />
-    public async Task<AdminVerifyOtpResult> Handle(AdminVerifyOtpCommand command, CancellationToken cancellationToken)
+    public async Task<AdminVerifyOtpResult> Handle(
+        AdminVerifyOtpCommand command,
+        CancellationToken cancellationToken = default
+    )
     {
         var email = new Email(value: command.Email);
         var purpose = new OtpPurpose(value: command.Purpose);

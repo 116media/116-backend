@@ -34,11 +34,7 @@ public class AdminAddPackageSlotHandlerTests : BaseContentHandlerTest
         _categoryRepositoryMock = MockCategoryRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminAddPackageSlotHandler(
-            new AdminAddPackageSlotService(
-                _packageRepositoryMock.Object,
-                _categoryRepositoryMock.Object,
-                TestErrorsFactory.CreateContentI18n()
-            ),
+            new AdminAddPackageSlotService(_packageRepositoryMock.Object, _categoryRepositoryMock.Object),
             _unitOfWorkMock.Object,
             CreatePackageDtoService()
         );

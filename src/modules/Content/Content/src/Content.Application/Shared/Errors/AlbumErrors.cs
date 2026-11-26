@@ -17,7 +17,7 @@ public class AlbumErrors(AlbumErrorMessage i18n)
     /// <summary>
     /// Throws when an album is not found by its identifier.
     /// </summary>
-    public NotFoundException NotFound(Guid id)
+    public static NotFoundException NotFound(Guid id)
     {
         return new NotFoundException("Album", "id", keyValue: id);
     }

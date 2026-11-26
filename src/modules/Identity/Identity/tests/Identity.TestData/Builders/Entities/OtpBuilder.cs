@@ -19,7 +19,7 @@ public class OtpBuilder
     /// The production OTP service, so a built OTP stores its code exactly the way the application
     /// does and the real verification path accepts the plaintext handed to the builder.
     /// </summary>
-    private static readonly IOtpService Hasher = new OtpService(TestConstants.Otp.Pepper, TimeProvider.System);
+    private static readonly OtpService Hasher = new OtpService(TestConstants.Otp.Pepper, TimeProvider.System);
 
     private readonly Faker _faker = TestFaker.Create();
 

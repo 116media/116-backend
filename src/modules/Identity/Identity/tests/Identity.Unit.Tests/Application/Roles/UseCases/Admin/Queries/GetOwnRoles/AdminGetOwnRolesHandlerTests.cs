@@ -57,7 +57,7 @@ public class AdminGetOwnRolesHandlerTests : BaseHandlerTest
 
         // Assert
         result.Roles.Should().ContainSingle();
-        RoleWithPermissionsDto roleDto = result.Roles.First();
+        RoleWithPermissionsDto roleDto = result.Roles[0];
         roleDto.Id.Should().Be(role.Id);
         roleDto.Name.Should().Be(role.Name);
         roleDto.Description.Should().Be(role.Description);
@@ -136,6 +136,6 @@ public class AdminGetOwnRolesHandlerTests : BaseHandlerTest
 
         // Assert
         result.Roles.Should().ContainSingle();
-        result.Roles.First().Permissions.Should().HaveCount(2);
+        result.Roles[0].Permissions.Should().HaveCount(2);
     }
 }

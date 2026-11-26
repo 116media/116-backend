@@ -21,7 +21,7 @@ public class AdminCreateArtistHandler(
     /// <inheritdoc />
     public async Task<AdminCreateArtistResult> Handle(
         AdminCreateArtistCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArtistEntity artist = await createArtistService.CreateAsync(command, cancellationToken);

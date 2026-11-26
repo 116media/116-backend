@@ -18,7 +18,7 @@ public class LyricsRevisionErrors(LyricsRevisionErrorMessage i18n)
     /// <summary>
     /// Throws when a lyrics revision is not found by its identifier.
     /// </summary>
-    public NotFoundException RevisionNotFound(Guid id)
+    public static NotFoundException RevisionNotFound(Guid id)
     {
         return new NotFoundException("Lyrics revision", "id", keyValue: id);
     }

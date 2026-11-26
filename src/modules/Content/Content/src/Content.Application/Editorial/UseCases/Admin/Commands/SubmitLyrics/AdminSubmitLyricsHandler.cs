@@ -24,7 +24,7 @@ public class AdminSubmitLyricsHandler(
     /// <inheritdoc />
     public async Task<AdminSubmitLyricsResult> Handle(
         AdminSubmitLyricsCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);

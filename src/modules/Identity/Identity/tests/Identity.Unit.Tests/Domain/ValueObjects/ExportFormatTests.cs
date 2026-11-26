@@ -48,7 +48,7 @@ public class ExportFormatTests
         var invalidEnum = (EnumSessionExportFormat)999;
 
         // Act & Assert
-        Action act = () => new ExportFormat(invalidEnum);
+        Action act = () => _ = new ExportFormat(invalidEnum);
         act.Should()
             .ThrowExactly<IdentityRuleException>()
             .Which.Code.Should()
@@ -102,7 +102,7 @@ public class ExportFormatTests
     public void Constructor_WithInvalidStringValue_ShouldThrowArgumentException()
     {
         // Act & Assert
-        Action act = () => new ExportFormat("InvalidFormat");
+        Action act = () => _ = new ExportFormat("InvalidFormat");
         act.Should()
             .ThrowExactly<IdentityRuleException>()
             .Which.Code.Should()
@@ -113,7 +113,7 @@ public class ExportFormatTests
     public void Constructor_WithEmptyString_ShouldThrowArgumentException()
     {
         // Act & Assert
-        Action act = () => new ExportFormat(string.Empty);
+        Action act = () => _ = new ExportFormat(string.Empty);
         act.Should()
             .ThrowExactly<IdentityRuleException>()
             .Which.Code.Should()
@@ -124,7 +124,7 @@ public class ExportFormatTests
     public void Constructor_WithNullString_ShouldThrowArgumentException()
     {
         // Act & Assert
-        Action act = () => new ExportFormat((string)null!);
+        Action act = () => _ = new ExportFormat((string)null!);
         act.Should()
             .ThrowExactly<IdentityRuleException>()
             .Which.Code.Should()

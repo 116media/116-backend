@@ -25,7 +25,7 @@ public class AdminUploadShortVideoFileHandler(
     /// <inheritdoc />
     public async Task<AdminUploadShortVideoFileResult> Handle(
         AdminUploadShortVideoFileCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid shortVideoId = Guid.Parse(command.ShortVideoId);

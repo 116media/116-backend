@@ -2,7 +2,7 @@ using _116.BuildingBlocks.Application.CQRS;
 using _116.BuildingBlocks.Application.Pagination;
 using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.DTOs;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -17,18 +17,16 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistRe
 /// <param name="artistRepository">Repository for artist profile data access operations.</param>
 /// <param name="albumRepository">Repository for album data access operations.</param>
 /// <param name="albumDtoService">Builds album projections with their covers resolved.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetArtistReleasesHandler(
     IArtistRepository artistRepository,
     IAlbumRepository albumRepository,
-    IAlbumDtoService albumDtoService,
-    ContentI18n i18n
+    IAlbumDtoService albumDtoService
 ) : IQueryHandler<PublicGetArtistReleasesQuery, PublicGetArtistReleasesResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetArtistReleasesResult> Handle(
         PublicGetArtistReleasesQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArtistEntity? artist = await artistRepository.GetBySlugAsync(
@@ -38,7 +36,7 @@ public class PublicGetArtistReleasesHandler(
 
         if (artist is null)
         {
-            throw i18n.Artist.NotFound(id: Guid.Empty);
+            throw ArtistErrors.NotFound(id: Guid.Empty);
         }
 
         (List<AlbumEntity> albums, int totalCount) = await albumRepository.GetByArtistAsync(

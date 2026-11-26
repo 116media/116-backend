@@ -25,7 +25,7 @@ public class PublicSubmitLyricsHandler(
     /// <inheritdoc />
     public async Task<PublicSubmitLyricsResult> Handle(
         PublicSubmitLyricsCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArtistEntity? ownedArtist = await submitService.FindOwnedArtistAsync(

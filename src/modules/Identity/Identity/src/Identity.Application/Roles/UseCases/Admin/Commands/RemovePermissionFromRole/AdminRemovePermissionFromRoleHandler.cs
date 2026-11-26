@@ -26,7 +26,7 @@ public class AdminRemovePermissionFromRoleHandler(
     /// <inheritdoc />
     public async Task<AdminRemovePermissionFromRoleResult> Handle(
         AdminRemovePermissionFromRoleCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid roleId = Guid.Parse(input: command.RoleId);

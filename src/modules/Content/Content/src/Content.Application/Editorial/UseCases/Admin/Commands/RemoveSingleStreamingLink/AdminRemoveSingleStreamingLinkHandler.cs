@@ -19,7 +19,7 @@ public class AdminRemoveSingleStreamingLinkHandler(
     /// <inheritdoc />
     public async Task<AdminRemoveSingleStreamingLinkResult> Handle(
         AdminRemoveSingleStreamingLinkCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         StreamingLinkEntity? existing = await streamingLinkRepository.GetByLyricsAndPlatformAsync(

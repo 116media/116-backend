@@ -37,7 +37,6 @@ public class OrderPaymentServiceTests
         _unitOfWorkMock = MockContentUnitOfWork.Create().SetupExecuteInTransaction<FileReferenceDto>();
         _service = new OrderPaymentService(
             _orderRepositoryMock.Object,
-            TestErrorsFactory.CreateContentOrderErrors(),
             _fileStorageMock.Object,
             _unitOfWorkMock.Object
         );

@@ -24,7 +24,7 @@ public class AdminCreatePackageHandler(
     /// <inheritdoc />
     public async Task<AdminCreatePackageResult> Handle(
         AdminCreatePackageCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         var package = PackageEntity.Create(id: Guid.NewGuid(), name: command.Name, description: command.Description);

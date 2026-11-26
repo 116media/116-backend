@@ -29,7 +29,7 @@ public class PublicSocialLoginHandler(
     /// <inheritdoc />
     public async Task<PublicSocialLoginResult> Handle(
         PublicSocialLoginCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         EnumAuthProvider provider = new AuthProvider(value: command.Provider).Value;

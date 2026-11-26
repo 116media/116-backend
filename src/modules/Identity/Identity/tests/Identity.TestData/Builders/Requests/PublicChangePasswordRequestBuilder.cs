@@ -12,8 +12,6 @@ namespace _116.Identity.TestData.Builders.Requests;
 /// </summary>
 public class PublicChangePasswordRequestBuilder
 {
-    private readonly Faker _faker = TestFaker.Create();
-
     private string _oldPassword;
     private string _newPassword;
 

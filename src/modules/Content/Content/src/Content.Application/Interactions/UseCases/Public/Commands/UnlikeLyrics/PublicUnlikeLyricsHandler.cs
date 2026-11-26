@@ -21,7 +21,7 @@ public class PublicUnlikeLyricsHandler(
     /// <inheritdoc />
     public async Task<PublicUnlikeLyricsResult> Handle(
         PublicUnlikeLyricsCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         await lyricsRepository.ExistsOrThrowAsync(lyricsId: command.LyricsId, cancellationToken: cancellationToken);

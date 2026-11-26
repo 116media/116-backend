@@ -25,7 +25,7 @@ public class AdminGetAllArticlesHandler(
     /// <inheritdoc />
     public async Task<AdminGetAllArticlesResult> Handle(
         AdminGetAllArticlesQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageSize = query.PaginatedRequest.PageSize;

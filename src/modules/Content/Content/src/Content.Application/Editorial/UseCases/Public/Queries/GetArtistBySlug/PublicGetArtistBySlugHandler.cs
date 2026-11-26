@@ -3,7 +3,7 @@ using _116.BuildingBlocks.Application.Pagination;
 using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistBySlug.Contracts;
 using _116.Content.Application.Shared.DTOs;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 
@@ -16,18 +16,16 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArtistBy
 /// <param name="artistRepository">Repository resolving the artist and its totals.</param>
 /// <param name="artistDtoService">Service assembling the artist DTO.</param>
 /// <param name="pageService">Service paging the artist's lyrics and videos.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetArtistBySlugHandler(
     IArtistRepository artistRepository,
     IArtistDtoService artistDtoService,
-    IPublicArtistPageService pageService,
-    ContentI18n i18n
+    IPublicArtistPageService pageService
 ) : IQueryHandler<PublicGetArtistBySlugQuery, PublicGetArtistBySlugResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetArtistBySlugResult> Handle(
         PublicGetArtistBySlugQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArtistEntity? artist = await artistRepository.GetBySlugAsync(
@@ -37,7 +35,7 @@ public class PublicGetArtistBySlugHandler(
 
         if (artist is null)
         {
-            throw i18n.Artist.NotFound(id: Guid.Empty);
+            throw ArtistErrors.NotFound(id: Guid.Empty);
         }
 
         ArtistTotals totals = await artistRepository.GetTotalsAsync(
@@ -48,7 +46,7 @@ public class PublicGetArtistBySlugHandler(
         // An empty profile is not served, so unclaimed stubs never become crawlable dead pages.
         if (totals.Songs + totals.Videos + totals.Albums + totals.Mixtapes + totals.News == 0)
         {
-            throw i18n.Artist.NotFound(id: artist.Id);
+            throw ArtistErrors.NotFound(id: artist.Id);
         }
 
         IReadOnlyList<ArtistSocialLinkEntity> socialLinks = artist.SocialLinks.OrderBy(link => link.Platform).ToList();

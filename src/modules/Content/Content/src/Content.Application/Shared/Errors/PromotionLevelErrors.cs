@@ -25,7 +25,7 @@ public class PromotionLevelErrors(PromotionLevelErrorMessage i18n)
     /// <summary>
     /// Throws when a promotion level is not found by its identifier.
     /// </summary>
-    public NotFoundException NotFound(Guid id)
+    public static NotFoundException NotFound(Guid id)
     {
         return new NotFoundException("PromotionLevel", "id", keyValue: id);
     }

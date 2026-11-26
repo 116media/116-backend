@@ -25,7 +25,7 @@ public class AdminUpdateCategoryHandler(
     /// <inheritdoc />
     public async Task<AdminUpdateCategoryResult> Handle(
         AdminUpdateCategoryCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         CategoryEntity category = await updateCategoryService.EnsureUpdatableAsync(command, cancellationToken);

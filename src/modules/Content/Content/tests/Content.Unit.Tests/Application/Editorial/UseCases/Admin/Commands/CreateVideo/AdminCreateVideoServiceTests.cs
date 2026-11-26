@@ -22,11 +22,7 @@ public class AdminCreateVideoServiceTests
 
     public AdminCreateVideoServiceTests()
     {
-        _service = new AdminCreateVideoService(
-            _categoryRepositoryMock.Object,
-            _videoRepositoryMock.Object,
-            TestErrorsFactory.CreateContentI18n()
-        );
+        _service = new AdminCreateVideoService(_categoryRepositoryMock.Object, _videoRepositoryMock.Object);
     }
 
     private static AdminCreateVideoCommand Command(Guid categoryId, DateTimeOffset? shootingScheduledAt = null)

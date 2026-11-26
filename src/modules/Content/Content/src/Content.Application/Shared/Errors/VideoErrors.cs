@@ -17,7 +17,7 @@ public class VideoErrors(VideoErrorMessage i18n)
     /// <summary>
     /// Throws when a video is not found by its identifier.
     /// </summary>
-    public NotFoundException NotFound(Guid id)
+    public static NotFoundException NotFound(Guid id)
     {
         return new NotFoundException("Video", "id", keyValue: id);
     }

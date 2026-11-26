@@ -22,7 +22,7 @@ public class AdminAddPackageSlotHandler(
     /// <inheritdoc />
     public async Task<AdminAddPackageSlotResult> Handle(
         AdminAddPackageSlotCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         PackageEntity package = await addSlotService.AddSlotAsync(

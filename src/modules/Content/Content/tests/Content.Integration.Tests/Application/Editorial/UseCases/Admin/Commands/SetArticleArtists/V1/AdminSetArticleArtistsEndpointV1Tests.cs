@@ -108,7 +108,7 @@ public class AdminSetArticleArtistsEndpointV1Tests(PostgresFixture db) : BaseApi
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         List<ArticleArtistEntity> rows = await ctx.ArticleArtists.Where(aa => aa.ArticleId == article.Id).ToListAsync();
-        rows.Should().HaveCount(1);
+        rows.Should().ContainSingle();
         rows[0].ArtistId.Should().Be(artistB.Id);
     }
 

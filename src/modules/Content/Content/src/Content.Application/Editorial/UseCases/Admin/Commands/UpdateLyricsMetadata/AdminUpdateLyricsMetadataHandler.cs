@@ -21,7 +21,7 @@ public class AdminUpdateLyricsMetadataHandler(
     /// <inheritdoc />
     public async Task<AdminUpdateLyricsMetadataResult> Handle(
         AdminUpdateLyricsMetadataCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         LyricsEntity lyrics = await lyricsRepository.GetByIdOrThrowAsync(

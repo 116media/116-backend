@@ -32,7 +32,7 @@ public class SessionErrorsTests
         var sessionId = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = _errors.SessionNotFound(sessionId);
+        NotFoundException exception = SessionErrors.SessionNotFound(sessionId);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();

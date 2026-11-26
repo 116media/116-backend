@@ -23,7 +23,7 @@ public class AdminGetAllPermissionsHandler(IPermissionRepository permissionRepos
     /// <returns>A <see cref="AdminGetAllPermissionsResult" /> containing paginated permission DTOs.</returns>
     public async Task<AdminGetAllPermissionsResult> Handle(
         AdminGetAllPermissionsQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageSize = query.PaginatedRequest.PageSize;

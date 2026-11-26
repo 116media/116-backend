@@ -26,7 +26,7 @@ public class PublicUnsubscribeNewsletterHandler(
     /// </summary>
     public async Task<PublicUnsubscribeNewsletterResult> Handle(
         PublicUnsubscribeNewsletterCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         NewsletterSubscriberEntity subscriber =

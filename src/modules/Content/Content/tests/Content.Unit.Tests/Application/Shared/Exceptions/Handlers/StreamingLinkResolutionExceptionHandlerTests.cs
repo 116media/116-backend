@@ -39,7 +39,7 @@ public class StreamingLinkResolutionExceptionHandlerTests
     [Fact]
     public void ExceptionType_ShouldReturnStreamingLinkResolutionExceptionType()
     {
-        _handler.ExceptionType.Should().Be(typeof(StreamingLinkResolutionException));
+        _handler.ExceptionType.Should().Be<StreamingLinkResolutionException>();
     }
 
     [Fact]

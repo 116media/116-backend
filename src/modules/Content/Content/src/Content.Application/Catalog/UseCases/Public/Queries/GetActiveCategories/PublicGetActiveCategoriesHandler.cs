@@ -19,7 +19,7 @@ public class PublicGetActiveCategoriesHandler(
     /// <inheritdoc />
     public async Task<PublicGetActiveCategoriesResult> Handle(
         PublicGetActiveCategoriesQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         IReadOnlyList<CategoryEntity> categories = await categoryRepository.GetActiveByContentTypeAsync(

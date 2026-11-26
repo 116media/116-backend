@@ -19,8 +19,6 @@ namespace _116.Identity.Unit.Tests.Domain.Entities;
 /// </summary>
 public class UserEntityTests
 {
-    private readonly UserErrors _userErrors = TestErrorsFactory.CreateUserErrors();
-
     #region Create Tests
 
     [Fact]

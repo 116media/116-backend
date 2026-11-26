@@ -20,7 +20,7 @@ public class PublicGetPublicShortsHandler(
     /// <inheritdoc />
     public async Task<PublicGetPublicShortsResult> Handle(
         PublicGetPublicShortsQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageSize = query.PaginatedRequest.PageSize;

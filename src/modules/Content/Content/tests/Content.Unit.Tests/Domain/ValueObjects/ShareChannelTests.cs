@@ -37,7 +37,7 @@ public class ShareChannelTests
         var invalid = (EnumShareChannel)999;
 
         // Act & Assert
-        Action act = () => new ShareChannel(invalid);
+        Action act = () => _ = new ShareChannel(invalid);
         act.Should().ThrowExactly<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.InvalidShareChannel);
     }
 
@@ -72,7 +72,7 @@ public class ShareChannelTests
     public void Constructor_WithInvalidStringValue_ShouldThrowArgumentException(string input)
     {
         // Act & Assert
-        Action act = () => new ShareChannel(input);
+        Action act = () => _ = new ShareChannel(input);
         act.Should().ThrowExactly<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.InvalidShareChannel);
     }
 

@@ -1,5 +1,4 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtist.Contracts;
-using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Helpers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -10,9 +9,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtis
 /// Resolves and applies an artist creation for the admin create-artist use case.
 /// </summary>
 /// <param name="artistRepository">Repository checking the slug and staging the artist.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 /// <param name="timeProvider">Clock the birthdate guard reads today from.</param>
-public class AdminCreateArtistService(IArtistRepository artistRepository, ContentI18n i18n, TimeProvider timeProvider)
+public class AdminCreateArtistService(IArtistRepository artistRepository, TimeProvider timeProvider)
     : IAdminCreateArtistService
 {
     /// <inheritdoc />

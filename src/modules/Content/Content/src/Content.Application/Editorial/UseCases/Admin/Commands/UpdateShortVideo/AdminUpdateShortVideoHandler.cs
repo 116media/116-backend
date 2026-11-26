@@ -21,7 +21,7 @@ public class AdminUpdateShortVideoHandler(
     /// <inheritdoc />
     public async Task<AdminUpdateShortVideoResult> Handle(
         AdminUpdateShortVideoCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);

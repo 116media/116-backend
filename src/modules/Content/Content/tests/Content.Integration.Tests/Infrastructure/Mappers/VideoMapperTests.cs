@@ -16,8 +16,6 @@ namespace _116.Content.Integration.Tests.Infrastructure.Mappers;
 [Collection("Database")]
 public class VideoMapperTests(PostgresFixture postgres) : BaseRepositoryTest(postgres)
 {
-    private readonly IMapper _mapper = ContentMapperFactory.Create();
-
     [Fact]
     public async Task CreateManyAsync_ShouldMapAllFields()
     {

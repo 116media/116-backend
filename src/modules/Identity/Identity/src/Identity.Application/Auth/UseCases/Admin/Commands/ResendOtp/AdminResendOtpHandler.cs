@@ -24,7 +24,10 @@ public class AdminResendOtpHandler(IAdminResendOtpService otpService, IAuthRepos
     /// <returns>The result indicating success or failure of the OTP resend operation.</returns>
     /// <exception cref="NotFoundException">Thrown when the admin user is not found.</exception>
     /// <exception cref="BadRequestException">Thrown when the admin account is inactive or not verified.</exception>
-    public async Task<AdminResendOtpResult> Handle(AdminResendOtpCommand command, CancellationToken cancellationToken)
+    public async Task<AdminResendOtpResult> Handle(
+        AdminResendOtpCommand command,
+        CancellationToken cancellationToken = default
+    )
     {
         var email = new Email(value: command.Email);
         var purpose = new OtpPurpose(value: command.Purpose);

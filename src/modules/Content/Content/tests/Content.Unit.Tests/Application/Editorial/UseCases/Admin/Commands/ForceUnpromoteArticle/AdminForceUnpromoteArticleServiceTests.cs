@@ -27,7 +27,6 @@ public class AdminForceUnpromoteArticleServiceTests
         _service = new AdminForceUnpromoteArticleService(
             _articleRepositoryMock.Object,
             currentActor,
-            TestErrorsFactory.CreateContentI18n(),
             TimeProvider.System
         );
     }

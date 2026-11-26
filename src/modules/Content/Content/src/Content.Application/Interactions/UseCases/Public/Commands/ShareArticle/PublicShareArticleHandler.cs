@@ -18,7 +18,7 @@ public class PublicShareArticleHandler(
     /// <inheritdoc />
     public async Task<PublicShareArticleResult> Handle(
         PublicShareArticleCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         await articleInteractionRepository.ExistsOrThrowAsync(

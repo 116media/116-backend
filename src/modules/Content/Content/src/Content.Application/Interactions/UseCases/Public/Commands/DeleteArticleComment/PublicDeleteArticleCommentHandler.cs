@@ -1,4 +1,5 @@
 using _116.BuildingBlocks.Application.CQRS;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -26,7 +27,7 @@ public class PublicDeleteArticleCommentHandler(
     /// <inheritdoc />
     public async Task<PublicDeleteArticleCommentResult> Handle(
         PublicDeleteArticleCommentCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArticleCommentEntity? comment = await articleCommentRepository.GetCommentByIdAsync(
@@ -37,7 +38,7 @@ public class PublicDeleteArticleCommentHandler(
 
         if (comment is null)
         {
-            throw i18n.ArticleInteraction.CommentNotFound(commentId: command.CommentId);
+            throw ArticleInteractionErrors.CommentNotFound(commentId: command.CommentId);
         }
 
         if (comment.UserId != command.UserId)

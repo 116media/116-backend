@@ -15,14 +15,12 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier;
 /// <param name="pricingTierRepository">Repository for pricing tier data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="contentOrderErrors">Content order domain error service.</param>
-/// <param name="categoryErrors">Category domain error service.</param>
 public class AdminAddItemTierService(
     IContentOrderRepository contentOrderRepository,
     ICategoryRepository categoryRepository,
     IPricingTierRepository pricingTierRepository,
     IContentUnitOfWork unitOfWork,
-    ContentOrderErrors contentOrderErrors,
-    CategoryErrors categoryErrors
+    ContentOrderErrors contentOrderErrors
 ) : IAddItemTierService
 {
     /// <inheritdoc />
@@ -49,7 +47,7 @@ public class AdminAddItemTierService(
 
             if (item is null)
             {
-                throw contentOrderErrors.ItemNotFound(itemId: orderItemId);
+                throw ContentOrderErrors.ItemNotFound(itemId: orderItemId);
             }
 
             bool alreadyAttached = item.Tiers.Any(t => t.PricingTierId == pricingTierId);
@@ -72,7 +70,7 @@ public class AdminAddItemTierService(
 
             if (categoryPricing is null)
             {
-                throw categoryErrors.PricingNotFound(categoryId: item.CategoryId, tierId: pricingTierId);
+                throw CategoryErrors.PricingNotFound(categoryId: item.CategoryId, tierId: pricingTierId);
             }
 
             ContentItemTierEntity tier = order.AddTier(
@@ -86,6 +84,6 @@ public class AdminAddItemTierService(
             return (tier, pricingTier.Name);
         }
 
-        throw contentOrderErrors.NotFound(id: orderId);
+        throw ContentOrderErrors.NotFound(id: orderId);
     }
 }

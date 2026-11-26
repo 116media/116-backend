@@ -172,10 +172,10 @@ public static class LyricsMapper
     /// <param name="mapper">The Mapster mapper used for tags.</param>
     /// <param name="userLookup">Service for resolving author profiles from the Identity module.</param>
     /// <param name="fileStorage">Storage's file contract.</param>
-    /// <param name="ct">Token to observe for cancellation requests.</param>
     /// <param name="isLiked">
     /// Whether the current user has liked this lyrics page. False when anonymous.
     /// </param>
+    /// <param name="ct">Token to observe for cancellation requests.</param>
     /// <returns>The mapped detail DTO.</returns>
     public static async Task<LyricsDetailDto> ToLyricsDetailDtoAsync(
         this LyricsEntity entity,
@@ -183,8 +183,8 @@ public static class LyricsMapper
         IMapper mapper,
         IUserLookupService userLookup,
         IFileStorageService fileStorage,
-        CancellationToken ct = default,
-        bool isLiked = false
+        bool isLiked = false,
+        CancellationToken ct = default
     )
     {
         string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileStorage, ct);
@@ -340,8 +340,8 @@ public static class LyricsMapper
         IMapper mapper,
         IUserLookupService userLookup,
         IFileStorageService fileStorage,
-        CancellationToken ct = default,
-        bool isLiked = false
+        bool isLiked = false,
+        CancellationToken ct = default
     )
     {
         string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileStorage, ct);

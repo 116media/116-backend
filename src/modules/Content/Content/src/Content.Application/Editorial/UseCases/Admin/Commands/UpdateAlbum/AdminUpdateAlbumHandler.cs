@@ -23,7 +23,7 @@ public class AdminUpdateAlbumHandler(
     /// <inheritdoc />
     public async Task<AdminUpdateAlbumResult> Handle(
         AdminUpdateAlbumCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         AlbumEntity album = await albumRepository.GetByIdOrThrowAsync(

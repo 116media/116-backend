@@ -30,7 +30,7 @@ public class AdminUpdatePermissionHandler(
     /// <returns>A <see cref="AdminUpdatePermissionResult" /> containing the updated permission.</returns>
     public async Task<AdminUpdatePermissionResult> Handle(
         AdminUpdatePermissionCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid permissionId = Guid.Parse(input: command.PermissionId);

@@ -31,7 +31,7 @@ public class AdminRefreshTokenHandler(
     /// <returns>An <see cref="AdminRefreshTokenResult" /> containing new authentication tokens.</returns>
     public async Task<AdminRefreshTokenResult> Handle(
         AdminRefreshTokenCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         RefreshTokenData authData = await refreshTokenRotationService.RefreshTokenAsync(

@@ -26,7 +26,7 @@ internal class AdminDeactivateUserHandler(IAuthRepository authRepository, IIdent
     /// <exception cref="NotFoundException">Thrown when no user is found with the specified ID.</exception>
     public async Task<AdminDeactivateUserResult> Handle(
         AdminDeactivateUserCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid userId = Guid.Parse(input: command.UserId);

@@ -14,7 +14,7 @@ public class AccountNotVerifiedExceptionHandlerTests
     [Fact]
     public void ExceptionType_ShouldReturnAccountNotVerifiedExceptionType()
     {
-        _handler.ExceptionType.Should().Be(typeof(AccountNotVerifiedException));
+        _handler.ExceptionType.Should().Be<AccountNotVerifiedException>();
     }
 
     [Fact]

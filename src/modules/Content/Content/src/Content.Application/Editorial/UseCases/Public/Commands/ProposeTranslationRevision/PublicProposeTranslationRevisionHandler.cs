@@ -21,7 +21,7 @@ public class PublicProposeTranslationRevisionHandler(
     /// <inheritdoc />
     public async Task<PublicProposeTranslationRevisionResult> Handle(
         PublicProposeTranslationRevisionCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         await translationRepository.GetByIdOrThrowAsync(

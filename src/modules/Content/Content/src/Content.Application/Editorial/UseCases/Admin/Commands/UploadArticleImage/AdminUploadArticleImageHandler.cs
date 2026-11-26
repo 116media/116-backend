@@ -32,7 +32,7 @@ public class AdminUploadArticleImageHandler(
     /// <inheritdoc />
     public async Task<AdminUploadArticleImageResult> Handle(
         AdminUploadArticleImageCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid articleId = Guid.Parse(command.ArticleId);

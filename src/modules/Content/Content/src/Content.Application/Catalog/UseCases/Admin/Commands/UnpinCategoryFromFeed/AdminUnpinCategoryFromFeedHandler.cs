@@ -22,7 +22,7 @@ public class AdminUnpinCategoryFromFeedHandler(
     /// <inheritdoc />
     public async Task<AdminUnpinCategoryFromFeedResult> Handle(
         AdminUnpinCategoryFromFeedCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);

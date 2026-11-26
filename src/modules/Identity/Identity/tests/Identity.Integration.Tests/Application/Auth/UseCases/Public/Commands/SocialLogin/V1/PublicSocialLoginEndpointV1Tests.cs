@@ -47,10 +47,10 @@ public class PublicSocialLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         await seedContext.SaveChangesAsync();
     }
 
-    private PublicSocialLoginRequest GoogleRequest() =>
+    private static PublicSocialLoginRequest GoogleRequest() =>
         new PublicSocialLoginRequestBuilder().WithProvider(nameof(EnumAuthProvider.Google)).Build();
 
-    private PublicSocialLoginRequest FacebookRequest() =>
+    private static PublicSocialLoginRequest FacebookRequest() =>
         new PublicSocialLoginRequestBuilder().WithProvider(nameof(EnumAuthProvider.Facebook)).Build();
 
     [Fact]

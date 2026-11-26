@@ -20,7 +20,7 @@ public class AdminGetNewsletterSubscribersHandler(INewsletterRepository newslett
     /// </summary>
     public async Task<AdminGetNewsletterSubscribersResult> Handle(
         AdminGetNewsletterSubscribersQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         PaginatedResult<NewsletterSubscriberEntity> page = await newsletterRepository.GetPagedAsync(

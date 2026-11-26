@@ -14,7 +14,10 @@ public class AdminDeleteTagHandler(ITagRepository tagRepository, IContentUnitOfW
     : ICommandHandler<AdminDeleteTagCommand, AdminDeleteTagResult>
 {
     /// <inheritdoc />
-    public async Task<AdminDeleteTagResult> Handle(AdminDeleteTagCommand command, CancellationToken cancellationToken)
+    public async Task<AdminDeleteTagResult> Handle(
+        AdminDeleteTagCommand command,
+        CancellationToken cancellationToken = default
+    )
     {
         Guid id = Guid.Parse(command.Id);
 

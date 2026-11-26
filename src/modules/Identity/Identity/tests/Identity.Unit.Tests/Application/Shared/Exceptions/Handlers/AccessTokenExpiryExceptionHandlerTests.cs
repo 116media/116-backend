@@ -19,7 +19,7 @@ public class AccessTokenExpiryExceptionHandlerTests
     public void ExceptionType_ShouldReturnAccessTokenExpiryExceptionType()
     {
         Type exceptionType = _handler.ExceptionType;
-        exceptionType.Should().Be(typeof(AccessTokenExpiryException));
+        exceptionType.Should().Be<AccessTokenExpiryException>();
     }
 
     [Fact]

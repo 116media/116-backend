@@ -64,7 +64,7 @@ public class RateLimitExceededExceptionHandlerTests
 
         // Assert
         context.Response.Headers.Should().ContainKey("Retry-After");
-        context.Response.Headers["Retry-After"].ToString().Should().Be("120");
+        context.Response.Headers.RetryAfter.ToString().Should().Be("120");
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public class RateLimitExceededExceptionHandlerTests
         _handler.CreateProblemDetails(exception, context);
 
         // Assert
-        context.Response.Headers["Retry-After"].ToString().Should().Be("300");
+        context.Response.Headers.RetryAfter.ToString().Should().Be("300");
     }
 
     [Fact]
@@ -110,7 +110,7 @@ public class RateLimitExceededExceptionHandlerTests
         _handler.CreateProblemDetails(exception, context);
 
         // Assert
-        context.Response.Headers["Retry-After"].ToString().Should().Be("45");
+        context.Response.Headers.RetryAfter.ToString().Should().Be("45");
     }
 
     [Fact]

@@ -24,7 +24,7 @@ public class AdminSubmitArticleHandler(
     /// <inheritdoc />
     public async Task<AdminSubmitArticleResult> Handle(
         AdminSubmitArticleCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);

@@ -24,7 +24,7 @@ public class AdminUpdateVideoTagsHandler(
     /// <inheritdoc />
     public async Task<AdminUpdateVideoTagsResult> Handle(
         AdminUpdateVideoTagsCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid videoId = Guid.Parse(command.VideoId);

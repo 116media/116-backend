@@ -66,9 +66,9 @@ public class MailerDbContextTests
         using var context = new MailerDbContext(CreateOptions());
         IModel model = context.Model;
 
-        model.FindEntityType(typeof(OutboxEmailEntity))?.GetSchema().Should().Be("mailer");
-        model.FindEntityType(typeof(NewsletterSubscriberEntity))?.GetSchema().Should().Be("mailer");
-        model.FindEntityType(typeof(NotificationEntity))?.GetSchema().Should().Be("mailer");
+        model.FindEntityType(typeof(OutboxEmailEntity))!.GetSchema().Should().Be("mailer");
+        model.FindEntityType(typeof(NewsletterSubscriberEntity))!.GetSchema().Should().Be("mailer");
+        model.FindEntityType(typeof(NotificationEntity))!.GetSchema().Should().Be("mailer");
     }
 
     [Fact]

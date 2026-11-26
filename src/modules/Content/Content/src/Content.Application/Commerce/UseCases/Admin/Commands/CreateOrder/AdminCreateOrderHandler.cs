@@ -17,7 +17,7 @@ public class AdminCreateOrderHandler(ICreateOrderService createOrderService, ICo
     /// <inheritdoc />
     public async Task<AdminCreateOrderResult> Handle(
         AdminCreateOrderCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         CreatedOrderData created = await createOrderService.CreateAsync(

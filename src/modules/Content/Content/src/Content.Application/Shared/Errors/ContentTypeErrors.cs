@@ -25,7 +25,7 @@ public class ContentTypeErrors(ContentTypeErrorMessage i18n)
     /// <summary>
     /// Throws when a content type is not found by its identifier.
     /// </summary>
-    public NotFoundException NotFound(Guid id)
+    public static NotFoundException NotFound(Guid id)
     {
         return new NotFoundException("ContentType", "id", keyValue: id);
     }

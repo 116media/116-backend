@@ -23,7 +23,7 @@ public class AdminUploadVideoThumbnailHandler(
     /// <inheritdoc />
     public async Task<AdminUploadVideoThumbnailResult> Handle(
         AdminUploadVideoThumbnailCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid videoId = Guid.Parse(command.VideoId);

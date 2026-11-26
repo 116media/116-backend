@@ -21,7 +21,7 @@ public class PublicBookmarkArticleHandler(
     /// <inheritdoc />
     public async Task<PublicBookmarkArticleResult> Handle(
         PublicBookmarkArticleCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         await articleInteractionRepository.ExistsOrThrowAsync(

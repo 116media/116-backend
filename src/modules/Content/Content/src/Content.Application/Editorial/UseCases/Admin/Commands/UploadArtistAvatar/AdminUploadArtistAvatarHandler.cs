@@ -25,7 +25,7 @@ public class AdminUploadArtistAvatarHandler(
     /// <inheritdoc />
     public async Task<AdminUploadArtistAvatarResult> Handle(
         AdminUploadArtistAvatarCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArtistEntity artist = await artistRepository.GetByIdOrThrowAsync(

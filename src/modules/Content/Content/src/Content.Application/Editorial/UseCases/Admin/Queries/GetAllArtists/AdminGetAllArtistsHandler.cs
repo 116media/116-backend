@@ -20,7 +20,7 @@ public class AdminGetAllArtistsHandler(IArtistRepository artistRepository, IArti
     /// <inheritdoc />
     public async Task<AdminGetAllArtistsResult> Handle(
         AdminGetAllArtistsQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageSize = query.PaginatedRequest.PageSize;

@@ -30,7 +30,7 @@ public class AdminBulkUpdateRolePermissionsHandler(
     /// <returns>A <see cref="AdminBulkUpdateRolePermissionsResult" /> containing the updated role.</returns>
     public async Task<AdminBulkUpdateRolePermissionsResult> Handle(
         AdminBulkUpdateRolePermissionsCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid roleId = Guid.Parse(input: command.RoleId);

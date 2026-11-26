@@ -22,7 +22,7 @@ public class PublicGetOwnSharedShortVideosHandler(
     /// <inheritdoc />
     public async Task<PublicGetOwnSharedShortVideosResult> Handle(
         PublicGetOwnSharedShortVideosQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageIndex = query.PaginatedRequest.PageIndex;

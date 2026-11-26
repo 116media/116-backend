@@ -94,7 +94,6 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
-        string slug = TestConstants.Category.ValidSlug;
 
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: contentType.Id.ToString(),
@@ -123,7 +122,6 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
-        string slug = TestConstants.Category.ValidSlug;
 
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: contentType.Id.ToString(),

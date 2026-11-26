@@ -126,7 +126,7 @@ public class PublicGetAllTagsEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         var secondBody = await secondResponse.ReadAsAsync<PublicGetAllTagsResponse>();
 
         firstBody.Tags.Should().Contain(t => t.Id == tag.Id);
-        secondBody.Tags.Select(t => t.Id).Should().Equal(firstBody.Tags.Select(t => t.Id));
+        secondBody.Tags.Should().Equal(firstBody.Tags, (actual, expected) => actual.Id == expected.Id);
     }
 
     [Fact]

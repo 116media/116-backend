@@ -17,7 +17,7 @@ public class PublicGetUnreadNotificationCountHandler(INotificationRepository not
     /// </summary>
     public async Task<PublicGetUnreadNotificationCountResult> Handle(
         PublicGetUnreadNotificationCountQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int count = await notificationRepository.CountUnreadAsync(

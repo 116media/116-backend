@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem.Contracts;
 using _116.Content.Application.Shared.DTOs;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 
@@ -12,17 +12,15 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="addOrderItemService">Service for the order item creation flow.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminAddOrderItemHandler(
     IContentOrderRepository contentOrderRepository,
-    IAddOrderItemService addOrderItemService,
-    ContentI18n i18n
+    IAddOrderItemService addOrderItemService
 ) : ICommandHandler<AdminAddOrderItemCommand, AdminAddOrderItemResult>
 {
     /// <inheritdoc />
     public async Task<AdminAddOrderItemResult> Handle(
         AdminAddOrderItemCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid orderId = Guid.Parse(command.OrderId);
@@ -36,7 +34,7 @@ public class AdminAddOrderItemHandler(
 
         if (order is null)
         {
-            throw i18n.ContentOrder.NotFound(id: orderId);
+            throw ContentOrderErrors.NotFound(id: orderId);
         }
 
         (ContentOrderItemEntity item, string categoryName, string? promotionLevelName) =

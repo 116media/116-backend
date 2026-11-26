@@ -16,7 +16,10 @@ public class AdminGetOwnRolesHandler(IAuthRepository authRepository, IMapper map
     : IQueryHandler<AdminGetOwnRolesQuery, AdminGetOwnRolesResult>
 {
     /// <inheritdoc />
-    public async Task<AdminGetOwnRolesResult> Handle(AdminGetOwnRolesQuery query, CancellationToken cancellationToken)
+    public async Task<AdminGetOwnRolesResult> Handle(
+        AdminGetOwnRolesQuery query,
+        CancellationToken cancellationToken = default
+    )
     {
         UserEntity? user = await authRepository.GetUserWithRolesAndPermissionsByIdOrThrow(
             userId: query.UserId,

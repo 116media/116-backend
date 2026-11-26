@@ -21,7 +21,7 @@ public class PublicUnbookmarkArticleHandler(
     /// <inheritdoc />
     public async Task<PublicUnbookmarkArticleResult> Handle(
         PublicUnbookmarkArticleCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         await articleInteractionRepository.ExistsOrThrowAsync(

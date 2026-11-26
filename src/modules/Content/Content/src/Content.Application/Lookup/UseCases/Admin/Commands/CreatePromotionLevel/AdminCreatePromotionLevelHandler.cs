@@ -25,7 +25,7 @@ public class AdminCreatePromotionLevelHandler(
     /// <inheritdoc />
     public async Task<AdminCreatePromotionLevelResult> Handle(
         AdminCreatePromotionLevelCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         bool exists = await promotionLevelRepository.ExistsByNameAsync(

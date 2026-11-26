@@ -19,7 +19,7 @@ public class PublicGetOwnLikedArticlesHandler(
     /// <inheritdoc />
     public async Task<PublicGetOwnLikedArticlesResult> Handle(
         PublicGetOwnLikedArticlesQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageIndex = query.PaginatedRequest.PageIndex;

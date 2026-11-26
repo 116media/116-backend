@@ -21,7 +21,7 @@ public class PublicGetOwnArticleBookmarksHandler(
     /// <inheritdoc />
     public async Task<PublicGetOwnArticleBookmarksResult> Handle(
         PublicGetOwnArticleBookmarksQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageIndex = query.PaginatedRequest.PageIndex;

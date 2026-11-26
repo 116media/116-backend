@@ -54,8 +54,7 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
             new AdminCreateLyricsService(
                 _categoryRepositoryMock.Object,
                 _lyricsRepositoryMock.Object,
-                _videoRepositoryMock.Object,
-                TestErrorsFactory.CreateContentI18n()
+                _videoRepositoryMock.Object
             ),
             _lyricsRepositoryMock.Object,
             _unitOfWorkMock.Object,

@@ -23,7 +23,7 @@ public class PublicGetVideoFeedHandler(
     /// <inheritdoc />
     public async Task<PublicGetVideoFeedResult> Handle(
         PublicGetVideoFeedQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         IReadOnlyList<VideoFeed> feeds = await feedService.GetPinnedFeedsAsync(cancellationToken);

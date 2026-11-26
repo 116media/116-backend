@@ -29,8 +29,7 @@ public class AdminEditOrderItemServiceTests
         _service = new AdminEditOrderItemService(
             _orderRepositoryMock.Object,
             _categoryRepositoryMock.Object,
-            _promotionLevelRepositoryMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            _promotionLevelRepositoryMock.Object
         );
     }
 

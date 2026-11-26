@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment.Contracts;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 
@@ -13,18 +13,16 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPaymen
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="orderPaymentService">Shared service for fetching and validating payment records.</param>
 /// <param name="verifyPaymentService">Service for the full payment verification and content stamping flow.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminVerifyPaymentHandler(
     IContentOrderRepository contentOrderRepository,
     IOrderPaymentService orderPaymentService,
-    IVerifyPaymentService verifyPaymentService,
-    ContentI18n i18n
+    IVerifyPaymentService verifyPaymentService
 ) : ICommandHandler<AdminVerifyPaymentCommand, AdminVerifyPaymentResult>
 {
     /// <inheritdoc />
     public async Task<AdminVerifyPaymentResult> Handle(
         AdminVerifyPaymentCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid orderId = Guid.Parse(command.OrderId);
@@ -52,6 +50,6 @@ public class AdminVerifyPaymentHandler(
             return new AdminVerifyPaymentResult(IsSuccess: true);
         }
 
-        throw i18n.ContentOrder.NotFound(id: orderId);
+        throw ContentOrderErrors.NotFound(id: orderId);
     }
 }

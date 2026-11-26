@@ -14,7 +14,10 @@ public class PublicRateVideoHandler(IVideoRepository videoRepository, IContentUn
     : ICommandHandler<PublicRateVideoCommand, PublicRateVideoResult>
 {
     /// <inheritdoc />
-    public async Task<PublicRateVideoResult> Handle(PublicRateVideoCommand command, CancellationToken cancellationToken)
+    public async Task<PublicRateVideoResult> Handle(
+        PublicRateVideoCommand command,
+        CancellationToken cancellationToken = default
+    )
     {
         await videoRepository.ExistsOrThrowAsync(videoId: command.VideoId, cancellationToken: cancellationToken);
 

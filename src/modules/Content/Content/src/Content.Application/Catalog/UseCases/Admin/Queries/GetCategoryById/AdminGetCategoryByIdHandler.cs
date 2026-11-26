@@ -16,7 +16,7 @@ public class AdminGetCategoryByIdHandler(ICategoryRepository categoryRepository,
     /// <inheritdoc />
     public async Task<AdminGetCategoryByIdResult> Handle(
         AdminGetCategoryByIdQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         CategoryEntity category = await categoryRepository.GetByIdOrThrowAsync(

@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Editorial.Specifications;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -13,17 +13,13 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBy
 /// </summary>
 /// <param name="lyricsRepository">Repository resolving the lyrics and the like state.</param>
 /// <param name="lyricsDtoService">Service assembling the public lyrics detail.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
-public class PublicGetLyricsByVideoIdHandler(
-    ILyricsRepository lyricsRepository,
-    ILyricsDtoService lyricsDtoService,
-    ContentI18n i18n
-) : IQueryHandler<PublicGetLyricsByVideoIdQuery, PublicGetLyricsByVideoIdResult>
+public class PublicGetLyricsByVideoIdHandler(ILyricsRepository lyricsRepository, ILyricsDtoService lyricsDtoService)
+    : IQueryHandler<PublicGetLyricsByVideoIdQuery, PublicGetLyricsByVideoIdResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetLyricsByVideoIdResult> Handle(
         PublicGetLyricsByVideoIdQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid videoId = Guid.Parse(query.VideoId);
@@ -36,7 +32,7 @@ public class PublicGetLyricsByVideoIdHandler(
 
         if (lyrics is null || !published.IsSatisfiedBy(lyrics))
         {
-            throw i18n.Lyrics.NotFound(id: videoId);
+            throw LyricsErrors.NotFound(id: videoId);
         }
 
         bool isLiked =

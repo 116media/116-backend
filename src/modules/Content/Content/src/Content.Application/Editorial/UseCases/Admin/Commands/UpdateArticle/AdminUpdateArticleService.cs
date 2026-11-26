@@ -1,6 +1,5 @@
 using System.Text.RegularExpressions;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticle.Contracts;
-using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -12,11 +11,9 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtic
 /// </summary>
 /// <param name="categoryRepository">Repository validating the category.</param>
 /// <param name="articleRepository">Repository loading the article and checking the slug.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public partial class AdminUpdateArticleService(
     ICategoryRepository categoryRepository,
-    IArticleRepository articleRepository,
-    ContentI18n i18n
+    IArticleRepository articleRepository
 ) : IAdminUpdateArticleService
 {
     private static readonly Regex CloudinaryUrlRegex = MyRegex();

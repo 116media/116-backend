@@ -18,7 +18,7 @@ public class PublicGetActivePromotionLevelsHandler(IPromotionLevelRepository pro
     /// <inheritdoc />
     public async Task<PublicGetActivePromotionLevelsResult> Handle(
         PublicGetActivePromotionLevelsQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         IReadOnlyList<PromotionLevelEntity> promotionLevels = await promotionLevelRepository.GetActiveAsync(

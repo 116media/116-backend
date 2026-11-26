@@ -36,7 +36,7 @@ public class CategoryErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = _errors.NotFound(id);
+        NotFoundException exception = CategoryErrors.NotFound(id);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
@@ -78,7 +78,7 @@ public class CategoryErrorsTests
         var tierId = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = _errors.PricingNotFound(categoryId, tierId);
+        NotFoundException exception = CategoryErrors.PricingNotFound(categoryId, tierId);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();

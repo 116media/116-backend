@@ -25,7 +25,7 @@ public class AdminUpdateContentTypeHandler(
     /// <inheritdoc />
     public async Task<AdminUpdateContentTypeResult> Handle(
         AdminUpdateContentTypeCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);

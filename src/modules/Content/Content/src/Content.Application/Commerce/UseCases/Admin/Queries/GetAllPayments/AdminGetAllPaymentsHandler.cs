@@ -24,7 +24,7 @@ public class AdminGetAllPaymentsHandler(
     /// <inheritdoc />
     public async Task<AdminGetAllPaymentsResult> Handle(
         AdminGetAllPaymentsQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageSize = query.PaginatedRequest.PageSize;

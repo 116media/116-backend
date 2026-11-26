@@ -29,7 +29,7 @@ public class AdminGetOwnProfileHandler(IAuthRepository authRepository, IAvatarSe
     /// <exception cref="BadRequestException">Thrown when the account is not active.</exception>
     public async Task<AdminGetOwnProfileResult> Handle(
         AdminGetOwnProfileQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         UserEntity? user = await authRepository.GetUserWithRolesAndPermissionsByIdOrThrow(

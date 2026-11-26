@@ -28,7 +28,7 @@ public class AdminDeleteArticleHandler(
     /// <inheritdoc />
     public async Task<AdminDeleteArticleResult> Handle(
         AdminDeleteArticleCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);

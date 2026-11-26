@@ -26,7 +26,10 @@ public class PublicVerifyOtpHandler(
 ) : ICommandHandler<PublicVerifyOtpCommand, PublicVerifyOtpResult>
 {
     /// <inheritdoc />
-    public async Task<PublicVerifyOtpResult> Handle(PublicVerifyOtpCommand command, CancellationToken cancellationToken)
+    public async Task<PublicVerifyOtpResult> Handle(
+        PublicVerifyOtpCommand command,
+        CancellationToken cancellationToken = default
+    )
     {
         var email = new Email(value: command.Email);
         var purpose = new OtpPurpose(value: command.Purpose);

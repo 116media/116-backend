@@ -47,8 +47,7 @@ public class PublicGetArtistBySlugHandlerTests : BaseContentHandlerTest
                     _videoRepositoryMock.Object,
                     CreateContentLookupService()
                 )
-            ),
-            TestErrorsFactory.CreateContentI18n()
+            )
         );
     }
 

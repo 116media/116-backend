@@ -24,8 +24,6 @@ public class UserErrorsTests
     private const string MissingRoleName = "SuperAdmin";
     private const string PermissionResource = "users";
     private const string PermissionAction = "read";
-    private const string MalformedUsername = "bad username!";
-    private const string MalformedEmail = "not-an-email";
 
     private readonly UserErrors _errors = TestErrorsFactory.CreateUserErrors();
     private readonly ConflictErrorMessage _conflict = LocalizerFactory.CreateMessage<ConflictErrorMessage>();
@@ -243,7 +241,7 @@ public class UserErrorsTests
         ),
         [nameof(UserErrors.RoleNotFoundByName)] = new(
             typeof(NotFoundException),
-            e => e.RoleNotFoundByName(MissingRoleName),
+            e => UserErrors.RoleNotFoundByName(MissingRoleName),
             _ => $"Could not find Role with name: {MissingRoleName}"
         ),
         [nameof(UserErrors.OtpExpired)] = new(
@@ -272,7 +270,7 @@ public class UserErrorsTests
     {
         // Arrange
         IEnumerable<string> declared = typeof(UserErrors)
-            .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly)
             .Where(m => !m.IsSpecialName && typeof(Exception).IsAssignableFrom(m.ReturnType))
             .Select(m => m.Name);
 

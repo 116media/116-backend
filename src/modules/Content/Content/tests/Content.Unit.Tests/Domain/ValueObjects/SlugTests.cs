@@ -43,7 +43,7 @@ public class SlugTests
     public void Constructor_WithMalformedValue_ShouldThrowInvalidSlug(string? value)
     {
         // Act
-        Action act = () => new Slug(value!);
+        Action act = () => _ = new Slug(value!);
 
         // Assert
         act.Should().ThrowExactly<ContentRuleException>().Which.Code.Should().Be(ContentRuleCodes.InvalidSlug);

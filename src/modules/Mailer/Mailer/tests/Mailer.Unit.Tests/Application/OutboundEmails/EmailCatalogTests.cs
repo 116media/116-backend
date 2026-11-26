@@ -32,85 +32,122 @@ public class EmailCatalogTests
     }
 
     /// <summary>
-    /// One representative instance of every shipped message record, with the class it must
-    /// declare. A new record that is not listed here fails
+    /// One representative instance of every shipped message record, keyed by the record's name,
+    /// with the class it must declare. A new record that is not listed here fails
     /// <see cref="Catalogue_ShouldCoverEveryShippedMessageRecord" />.
     /// </summary>
-    public static TheoryData<OutboundEmail, EnumEmailClass> AllMessages()
+    private static readonly Dictionary<string, (OutboundEmail Message, EnumEmailClass Class)> Catalogue = new()
     {
-        return new TheoryData<OutboundEmail, EnumEmailClass>
-        {
-            { new WelcomeEmail(User()), EnumEmailClass.Transactional },
-            {
-                new OtpIssuedEmail(User(), IdentityEmailTemplates.EmailVerificationOtp, "123456", 60),
-                EnumEmailClass.Transactional
-            },
-            { new PasswordChangedEmail(User(), EnumPasswordChangeOrigin.Reset, At), EnumEmailClass.Transactional },
-            { new SignedOutAllDevicesEmail(User(), ByAdmin: true, At), EnumEmailClass.Transactional },
-            { new EmailChangedAlertEmail(User(), "f***@example.com", At), EnumEmailClass.Transactional },
-            { new EmailChangedConfirmationEmail(User(), At), EnumEmailClass.Transactional },
-            { new RoleChangedEmail(User(), "Admin", "granted"), EnumEmailClass.Transactional },
-            { new RefreshTokenReplayEmail(User(), At), EnumEmailClass.Transactional },
-            {
-                new OrderInvoiceEmail(User(), "AB12CD34", "150.00", "BankTransfer", "Musique"),
-                EnumEmailClass.Transactional
-            },
-            {
-                new PaymentReceiptEmail(User(), "AB12CD34", "150.00", "https://res.example/r.png", At),
-                EnumEmailClass.Transactional
-            },
-            { new PaymentRejectedEmail(User(), "AB12CD34", "Reference missing"), EnumEmailClass.Transactional },
-            { new OrderCancelledEmail(User(), "AB12CD34"), EnumEmailClass.Transactional },
-            { new PromotionRemovedEmail(User(), "Eloko Oyo", "Policy violation", At), EnumEmailClass.Transactional },
-            {
-                new CommissionedContentPublishedEmail(User(), "Eloko Oyo", "https://app.example/a/eloko-oyo"),
-                EnumEmailClass.Transactional
-            },
-            {
-                new CommissionedContentRejectedEmail(User(), "Eloko Oyo", "Policy violation"),
-                EnumEmailClass.Transactional
-            },
-            { new ShootScheduledEmail(User(), "Eloko Oyo", At.UtcDateTime), EnumEmailClass.Transactional },
-            {
-                new ArtistVerifiedEmail(User(), "Fally Ipupa", "https://app.example/artists/fally"),
-                EnumEmailClass.Notification
-            },
-            {
-                new RevisionDecidedEmail(User(), "Eloko Oyo", "accepted", "https://app.example/l/eloko-oyo"),
-                EnumEmailClass.Notification
-            },
-            {
-                new SubmissionDecidedEmail(User(), "Eloko Oyo", "approved", "Great transcription."),
-                EnumEmailClass.Notification
-            },
-            {
-                new CommentReplyEmail(User(), "Aline", "Eloko Oyo review", "Agreed", "https://app.example/a/x"),
-                EnumEmailClass.Notification
-            },
-            { new NewsletterConfirmEmail(User(), "https://app.example/confirm/x"), EnumEmailClass.Transactional },
-            { new NewsletterWelcomeEmail(User(), "https://app.example/unsubscribe/x"), EnumEmailClass.Subscription },
-        };
-    }
+        [nameof(WelcomeEmail)] = (new WelcomeEmail(User()), EnumEmailClass.Transactional),
+        [nameof(OtpIssuedEmail)] = (
+            new OtpIssuedEmail(User(), IdentityEmailTemplates.EmailVerificationOtp, "123456", 60),
+            EnumEmailClass.Transactional
+        ),
+        [nameof(PasswordChangedEmail)] = (
+            new PasswordChangedEmail(User(), EnumPasswordChangeOrigin.Reset, At),
+            EnumEmailClass.Transactional
+        ),
+        [nameof(SignedOutAllDevicesEmail)] = (
+            new SignedOutAllDevicesEmail(User(), ByAdmin: true, At),
+            EnumEmailClass.Transactional
+        ),
+        [nameof(EmailChangedAlertEmail)] = (
+            new EmailChangedAlertEmail(User(), "f***@example.com", At),
+            EnumEmailClass.Transactional
+        ),
+        [nameof(EmailChangedConfirmationEmail)] = (
+            new EmailChangedConfirmationEmail(User(), At),
+            EnumEmailClass.Transactional
+        ),
+        [nameof(RoleChangedEmail)] = (new RoleChangedEmail(User(), "Admin", "granted"), EnumEmailClass.Transactional),
+        [nameof(RefreshTokenReplayEmail)] = (new RefreshTokenReplayEmail(User(), At), EnumEmailClass.Transactional),
+        [nameof(OrderInvoiceEmail)] = (
+            new OrderInvoiceEmail(User(), "AB12CD34", "150.00", "BankTransfer", "Musique"),
+            EnumEmailClass.Transactional
+        ),
+        [nameof(PaymentReceiptEmail)] = (
+            new PaymentReceiptEmail(User(), "AB12CD34", "150.00", "https://res.example/r.png", At),
+            EnumEmailClass.Transactional
+        ),
+        [nameof(PaymentRejectedEmail)] = (
+            new PaymentRejectedEmail(User(), "AB12CD34", "Reference missing"),
+            EnumEmailClass.Transactional
+        ),
+        [nameof(OrderCancelledEmail)] = (new OrderCancelledEmail(User(), "AB12CD34"), EnumEmailClass.Transactional),
+        [nameof(PromotionRemovedEmail)] = (
+            new PromotionRemovedEmail(User(), "Eloko Oyo", "Policy violation", At),
+            EnumEmailClass.Transactional
+        ),
+        [nameof(CommissionedContentPublishedEmail)] = (
+            new CommissionedContentPublishedEmail(User(), "Eloko Oyo", "https://app.example/a/eloko-oyo"),
+            EnumEmailClass.Transactional
+        ),
+        [nameof(CommissionedContentRejectedEmail)] = (
+            new CommissionedContentRejectedEmail(User(), "Eloko Oyo", "Policy violation"),
+            EnumEmailClass.Transactional
+        ),
+        [nameof(ShootScheduledEmail)] = (
+            new ShootScheduledEmail(User(), "Eloko Oyo", At.UtcDateTime),
+            EnumEmailClass.Transactional
+        ),
+        [nameof(ArtistVerifiedEmail)] = (
+            new ArtistVerifiedEmail(User(), "Fally Ipupa", "https://app.example/artists/fally"),
+            EnumEmailClass.Notification
+        ),
+        [nameof(RevisionDecidedEmail)] = (
+            new RevisionDecidedEmail(User(), "Eloko Oyo", "accepted", "https://app.example/l/eloko-oyo"),
+            EnumEmailClass.Notification
+        ),
+        [nameof(SubmissionDecidedEmail)] = (
+            new SubmissionDecidedEmail(User(), "Eloko Oyo", "approved", "Great transcription."),
+            EnumEmailClass.Notification
+        ),
+        [nameof(CommentReplyEmail)] = (
+            new CommentReplyEmail(User(), "Aline", "Eloko Oyo review", "Agreed", "https://app.example/a/x"),
+            EnumEmailClass.Notification
+        ),
+        [nameof(NewsletterConfirmEmail)] = (
+            new NewsletterConfirmEmail(User(), "https://app.example/confirm/x"),
+            EnumEmailClass.Transactional
+        ),
+        [nameof(NewsletterWelcomeEmail)] = (
+            new NewsletterWelcomeEmail(User(), "https://app.example/unsubscribe/x"),
+            EnumEmailClass.Subscription
+        ),
+    };
+
+    /// <summary>
+    /// The catalogue keys as theory rows. Keying by name rather than by the record itself keeps the
+    /// rows serializable, so the runner enumerates one case per message.
+    /// </summary>
+    /// <returns>The message record names.</returns>
+    public static TheoryData<string> AllMessages() => new(Catalogue.Keys.OrderBy(name => name, StringComparer.Ordinal));
 
     [Theory]
     [MemberData(nameof(AllMessages))]
-    public void EveryMessage_ShouldDeclareItsPolicyClass(OutboundEmail message, EnumEmailClass expected)
+    public void EveryMessage_ShouldDeclareItsPolicyClass(string messageName)
     {
+        (OutboundEmail message, EnumEmailClass expected) = Catalogue[messageName];
+
         message.Class.Should().Be(expected);
     }
 
     [Theory]
     [MemberData(nameof(AllMessages))]
-    public void EveryMessage_ShouldResolveAtLeastOneRecipient(OutboundEmail message, EnumEmailClass _)
+    public void EveryMessage_ShouldResolveAtLeastOneRecipient(string messageName)
     {
+        OutboundEmail message = Catalogue[messageName].Message;
+
         message.Recipients.Should().NotBeEmpty();
         message.Recipients.Should().AllSatisfy(recipient => recipient.Address.Should().NotBeNullOrWhiteSpace());
     }
 
     [Theory]
     [MemberData(nameof(AllMessages))]
-    public void EveryMessage_ShouldNameATemplateThatRendersInEveryCulture(OutboundEmail message, EnumEmailClass _)
+    public void EveryMessage_ShouldNameATemplateThatRendersInEveryCulture(string messageName)
     {
+        OutboundEmail message = Catalogue[messageName].Message;
+
         foreach (string culture in (string[])["en", "fr"])
         {
             RenderedEmail rendered = Renderer.Render(message.TemplateName, message.Tokens, culture);
@@ -132,7 +169,7 @@ public class EmailCatalogTests
             .Where(type => type.IsSubclassOf(typeof(OutboundEmail)) && !type.IsAbstract)
             .Distinct();
 
-        IEnumerable<Type> covered = AllMessages().Select(row => row.Data.Item1.GetType());
+        IEnumerable<Type> covered = Catalogue.Values.Select(entry => entry.Message.GetType());
 
         shipped.Except(covered).Should().BeEmpty("every shipped OutboundEmail record must be listed in AllMessages()");
     }

@@ -33,8 +33,7 @@ public class AdminVerifyPaymentHandlerTests
         _handler = new AdminVerifyPaymentHandler(
             _orderRepositoryMock.Object,
             _orderPaymentServiceMock.Object,
-            _verifyPaymentServiceMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            _verifyPaymentServiceMock.Object
         );
     }
 

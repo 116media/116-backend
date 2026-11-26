@@ -36,7 +36,7 @@ public class TranslationErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException ex = _errors.NotFound(id);
+        NotFoundException ex = TranslationErrors.NotFound(id);
 
         // Assert
         ex.Should().BeOfType<NotFoundException>();
@@ -51,7 +51,7 @@ public class TranslationErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException ex = _errors.RevisionNotFound(id);
+        NotFoundException ex = TranslationErrors.RevisionNotFound(id);
 
         // Assert
         ex.Should().BeOfType<NotFoundException>();

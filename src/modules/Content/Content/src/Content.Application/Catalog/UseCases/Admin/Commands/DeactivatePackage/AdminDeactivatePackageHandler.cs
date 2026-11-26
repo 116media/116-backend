@@ -26,7 +26,7 @@ public class AdminDeactivatePackageHandler(
     /// <inheritdoc />
     public async Task<AdminDeactivatePackageResult> Handle(
         AdminDeactivatePackageCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);

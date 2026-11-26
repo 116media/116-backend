@@ -297,7 +297,7 @@ public class AuthRepository(
 
         if (visitorRole == null)
         {
-            throw userErrors.RoleNotFoundByName(nameof(EnumCoreUserRole.Visitor));
+            throw UserErrors.RoleNotFoundByName(nameof(EnumCoreUserRole.Visitor));
         }
 
         user?.GrantInitialRole(roleId: visitorRole.Id);

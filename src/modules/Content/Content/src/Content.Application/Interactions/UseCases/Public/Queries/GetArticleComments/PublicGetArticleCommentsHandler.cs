@@ -30,7 +30,7 @@ public class PublicGetArticleCommentsHandler(
     /// <inheritdoc />
     public async Task<PublicGetArticleCommentsResult> Handle(
         PublicGetArticleCommentsQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageIndex = query.PaginatedRequest.PageIndex;

@@ -1,5 +1,5 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrder.Contracts;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 
@@ -10,11 +10,9 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrder;
 /// </summary>
 /// <param name="contentOrderRepository">Repository loading the order with its items.</param>
 /// <param name="customerRepository">Repository validating the new customer.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminEditOrderService(
     IContentOrderRepository contentOrderRepository,
-    ICustomerRepository customerRepository,
-    ContentI18n i18n
+    ICustomerRepository customerRepository
 ) : IAdminEditOrderService
 {
     /// <inheritdoc />
@@ -32,7 +30,7 @@ public class AdminEditOrderService(
 
         if (order is null)
         {
-            throw i18n.ContentOrder.NotFound(id: orderId);
+            throw ContentOrderErrors.NotFound(id: orderId);
         }
 
         if (customerId is { } newCustomerId)

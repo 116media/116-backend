@@ -30,12 +30,7 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
     {
         _tagRepositoryMock = MockTagRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new AdminUpdateTagHandler(
-            _tagRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            Mapper,
-            TestErrorsFactory.CreateContentI18n()
-        );
+        _handler = new AdminUpdateTagHandler(_tagRepositoryMock.Object, _unitOfWorkMock.Object, Mapper);
     }
 
     #region Success Cases

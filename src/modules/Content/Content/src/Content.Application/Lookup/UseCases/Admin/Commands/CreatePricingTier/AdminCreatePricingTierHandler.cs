@@ -25,7 +25,7 @@ public class AdminCreatePricingTierHandler(
     /// <inheritdoc />
     public async Task<AdminCreatePricingTierResult> Handle(
         AdminCreatePricingTierCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         bool exists = await pricingTierRepository.ExistsByNameAsync(

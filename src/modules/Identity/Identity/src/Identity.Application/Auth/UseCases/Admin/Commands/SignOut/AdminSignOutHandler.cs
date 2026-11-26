@@ -17,7 +17,10 @@ public class AdminSignOutHandler(IAdminSignOutSessionService sessionService, IAu
     /// Handles the admin sign-out command by invalidating the specific session.
     /// This operation is idempotent - if the session doesn't exist, user is already logged out.
     /// </summary>
-    public async Task<AdminSignOutResult> Handle(AdminSignOutCommand command, CancellationToken cancellationToken)
+    public async Task<AdminSignOutResult> Handle(
+        AdminSignOutCommand command,
+        CancellationToken cancellationToken = default
+    )
     {
         UserEntity? user = await authRepository.FindUserByIdOrThrow(
             userId: command.UserId,

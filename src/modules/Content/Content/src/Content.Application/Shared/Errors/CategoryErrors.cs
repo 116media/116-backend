@@ -25,7 +25,7 @@ public class CategoryErrors(CategoryErrorMessage i18n)
     /// <summary>
     /// Throws when a category is not found by its identifier.
     /// </summary>
-    public NotFoundException NotFound(Guid id)
+    public static NotFoundException NotFound(Guid id)
     {
         return new NotFoundException("Category", "id", keyValue: id);
     }
@@ -68,7 +68,7 @@ public class CategoryErrors(CategoryErrorMessage i18n)
     /// <summary>
     /// Throws when a category pricing row is not found.
     /// </summary>
-    public NotFoundException PricingNotFound(Guid categoryId, Guid tierId)
+    public static NotFoundException PricingNotFound(Guid categoryId, Guid tierId)
     {
         return new NotFoundException("CategoryPricing", "categoryId+tierId", keyValue: $"{categoryId}/{tierId}");
     }

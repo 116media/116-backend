@@ -24,7 +24,7 @@ public class AdminPublishArticleHandler(
     /// <inheritdoc />
     public async Task<AdminPublishArticleResult> Handle(
         AdminPublishArticleCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);

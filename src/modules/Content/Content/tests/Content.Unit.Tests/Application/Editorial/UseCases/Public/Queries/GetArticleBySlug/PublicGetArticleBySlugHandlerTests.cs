@@ -39,8 +39,7 @@ public class PublicGetArticleBySlugHandlerTests : BaseContentHandlerTest
         _handler = new PublicGetArticleBySlugHandler(
             _articleRepositoryMock.Object,
             _articleInteractionRepositoryMock.Object,
-            CreateArticleDtoService(_fileStorageMock.Object),
-            TestErrorsFactory.CreateContentI18n()
+            CreateArticleDtoService(_fileStorageMock.Object)
         );
     }
 

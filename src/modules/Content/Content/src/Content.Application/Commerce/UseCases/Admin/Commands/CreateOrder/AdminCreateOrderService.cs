@@ -1,6 +1,6 @@
 using _116.Content.Application.Catalog.Specifications;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder.Contracts;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -16,14 +16,12 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder;
 /// <param name="contentOrderRepository">Repository staging the order.</param>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="contentTypeRepository">Repository resolving the slot categories' content types.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminCreateOrderService(
     ICustomerRepository customerRepository,
     IPackageRepository packageRepository,
     IContentOrderRepository contentOrderRepository,
     ICategoryRepository categoryRepository,
-    IContentTypeRepository contentTypeRepository,
-    ContentI18n i18n
+    IContentTypeRepository contentTypeRepository
 ) : ICreateOrderService
 {
     /// <inheritdoc />
@@ -33,7 +31,7 @@ public class AdminCreateOrderService(
 
         if (customer is null)
         {
-            throw i18n.Customer.NotFound(id: customerId);
+            throw CustomerErrors.NotFound(id: customerId);
         }
 
         PackageEntity? package = null;
@@ -44,7 +42,7 @@ public class AdminCreateOrderService(
 
             if (package is null || !new ActivePackageSpecification().IsSatisfiedBy(package))
             {
-                throw i18n.Package.NotFound(id: id);
+                throw PackageErrors.NotFound(id: id);
             }
         }
 

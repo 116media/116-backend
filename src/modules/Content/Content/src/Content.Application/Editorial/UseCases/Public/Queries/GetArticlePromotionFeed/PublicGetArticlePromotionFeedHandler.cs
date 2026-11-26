@@ -27,7 +27,7 @@ public class PublicGetArticlePromotionFeedHandler(
     /// <inheritdoc />
     public async Task<PublicGetArticlePromotionFeedResult> Handle(
         PublicGetArticlePromotionFeedQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         CategoryEntity? gossipCategory = await categoryRepository.GetGossipCategoryAsync(cancellationToken);

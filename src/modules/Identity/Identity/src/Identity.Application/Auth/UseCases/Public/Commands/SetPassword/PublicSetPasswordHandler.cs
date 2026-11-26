@@ -34,7 +34,7 @@ public class PublicSetPasswordHandler(
     /// <exception cref="BadRequestException">Thrown when user's auth provider is already Local.</exception>
     public async Task<PublicSetPasswordResult> Handle(
         PublicSetPasswordCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         UserEntity? user = await authRepository.FindUserByIdOrThrow(

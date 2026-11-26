@@ -27,12 +27,7 @@ public class PublicGetOwnSessionByIdHandlerTests : BaseHandlerTest
 
         IdentityI18n identityI18n = TestErrorsFactory.CreateIdentityI18n();
 
-        _handler = new PublicGetOwnSessionByIdHandler(
-            _sessionRepositoryMock.Object,
-            Mapper,
-            identityI18n,
-            TimeProvider.System
-        );
+        _handler = new PublicGetOwnSessionByIdHandler(_sessionRepositoryMock.Object, Mapper, TimeProvider.System);
     }
 
     #region Success Cases

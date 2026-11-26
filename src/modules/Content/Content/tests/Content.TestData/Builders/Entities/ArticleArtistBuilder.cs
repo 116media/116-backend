@@ -10,7 +10,6 @@ namespace _116.Content.TestData.Builders.Entities;
 /// </summary>
 public class ArticleArtistBuilder
 {
-    private Guid _id = Guid.NewGuid();
     private ArticleEntity? _article;
     private Guid _artistId = Guid.NewGuid();
 

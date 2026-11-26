@@ -17,7 +17,7 @@ public class AdminCancelOrderHandler(IContentOrderRepository contentOrderReposit
     /// <inheritdoc />
     public async Task<AdminCancelOrderResult> Handle(
         AdminCancelOrderCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid orderId = Guid.Parse(command.OrderId);

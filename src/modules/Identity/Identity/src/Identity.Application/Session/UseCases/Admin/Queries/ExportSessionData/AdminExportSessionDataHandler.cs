@@ -26,7 +26,7 @@ public class AdminExportSessionDataHandler(
     /// <returns>A <see cref="AdminExportSessionDataResult" /> containing the session data for export.</returns>
     public async Task<AdminExportSessionDataResult> Handle(
         AdminExportSessionDataQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         List<SessionEntity> sessions = await sessionRepository.GetSessionsForExportAsync(

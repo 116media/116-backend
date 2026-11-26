@@ -25,7 +25,7 @@ public class AdminActivateContentTypeHandler(
     /// <inheritdoc />
     public async Task<AdminActivateContentTypeResult> Handle(
         AdminActivateContentTypeCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);

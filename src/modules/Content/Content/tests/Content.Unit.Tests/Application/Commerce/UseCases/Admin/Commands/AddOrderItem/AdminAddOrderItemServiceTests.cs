@@ -39,8 +39,7 @@ public class AdminAddOrderItemServiceTests
             _categoryRepositoryMock.Object,
             _promotionLevelRepositoryMock.Object,
             _packageRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateCategoryErrors()
+            _unitOfWorkMock.Object
         );
     }
 

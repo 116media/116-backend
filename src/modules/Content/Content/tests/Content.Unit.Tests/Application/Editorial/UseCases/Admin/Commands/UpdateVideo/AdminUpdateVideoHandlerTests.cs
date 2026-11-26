@@ -44,11 +44,7 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminUpdateVideoHandler(
-            new AdminUpdateVideoService(
-                _categoryRepositoryMock.Object,
-                _videoRepositoryMock.Object,
-                TestErrorsFactory.CreateContentI18n()
-            ),
+            new AdminUpdateVideoService(_categoryRepositoryMock.Object, _videoRepositoryMock.Object),
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
             new VideoDtoService(

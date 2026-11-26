@@ -19,7 +19,7 @@ public class AdminRejectVideoHandler(IVideoRepository videoRepository, IContentU
     /// <inheritdoc />
     public async Task<AdminRejectVideoResult> Handle(
         AdminRejectVideoCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);

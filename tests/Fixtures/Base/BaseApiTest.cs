@@ -237,6 +237,8 @@ public abstract class BaseApiTest : IAsyncLifetime
         }
 
         _scopes.Clear();
+
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>

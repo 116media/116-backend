@@ -37,11 +37,7 @@ public class AdminCreateArtistHandlerTests : BaseContentHandlerTest
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         Mock<IFileStorageService> fileStorageMock = MockFileStorageService.Create();
         _handler = new AdminCreateArtistHandler(
-            new AdminCreateArtistService(
-                _artistRepositoryMock.Object,
-                TestErrorsFactory.CreateContentI18n(),
-                TimeProvider.System
-            ),
+            new AdminCreateArtistService(_artistRepositoryMock.Object, TimeProvider.System),
             _unitOfWorkMock.Object,
             new ArtistDtoService(fileStorageMock.Object)
         );

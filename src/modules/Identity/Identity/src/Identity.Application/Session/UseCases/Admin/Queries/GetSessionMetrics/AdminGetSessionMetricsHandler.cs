@@ -19,7 +19,7 @@ public class AdminGetSessionMetricsHandler(ISessionRepository sessionRepository)
     /// <returns>A <see cref="AdminGetSessionMetricsResult" /> containing session metrics.</returns>
     public async Task<AdminGetSessionMetricsResult> Handle(
         AdminGetSessionMetricsQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Dictionary<EnumBrowser, int> browserCounts = await sessionRepository.GetActiveSessionCountByBrowserAsync(

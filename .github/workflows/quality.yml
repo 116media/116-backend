@@ -84,6 +84,7 @@ jobs:
                     /d:sonar.token="${SONAR_TOKEN}" \
                     /d:sonar.scanner.scanAll=false \
                     /d:sonar.coverage.exclusions="**/*" \
+                    /d:sonar.exclusions="**/Migrations/**,**/*.g.cs,**/*.Designer.cs" \
                     "${args[@]}"
 
                   dotnet build --configuration Release --no-incremental

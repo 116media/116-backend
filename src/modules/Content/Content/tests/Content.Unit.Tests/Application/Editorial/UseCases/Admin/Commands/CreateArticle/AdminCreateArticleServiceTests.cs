@@ -22,11 +22,7 @@ public class AdminCreateArticleServiceTests
 
     public AdminCreateArticleServiceTests()
     {
-        _service = new AdminCreateArticleService(
-            _categoryRepositoryMock.Object,
-            _articleRepositoryMock.Object,
-            TestErrorsFactory.CreateContentI18n()
-        );
+        _service = new AdminCreateArticleService(_categoryRepositoryMock.Object, _articleRepositoryMock.Object);
     }
 
     private static AdminCreateArticleCommand Command(Guid categoryId, Guid? customerId = null)

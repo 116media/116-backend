@@ -21,7 +21,10 @@ public class AdminGetAllRolesHandler(IRoleRepository roleRepository, IMapper map
     /// <param name="query">The query containing pagination and filter parameters.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>A <see cref="AdminGetAllRolesResult" /> containing paginated role DTOs.</returns>
-    public async Task<AdminGetAllRolesResult> Handle(AdminGetAllRolesQuery query, CancellationToken cancellationToken)
+    public async Task<AdminGetAllRolesResult> Handle(
+        AdminGetAllRolesQuery query,
+        CancellationToken cancellationToken = default
+    )
     {
         int pageSize = query.PaginatedRequest.PageSize;
         int pageIndex = query.PaginatedRequest.PageIndex;

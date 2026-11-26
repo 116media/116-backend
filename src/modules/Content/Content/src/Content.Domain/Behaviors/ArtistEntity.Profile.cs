@@ -172,7 +172,13 @@ public sealed partial class ArtistEntity
             return string.Empty;
         }
 
-        string collapsed = Regex.Replace(input: name.Trim(), pattern: @"\s+", replacement: " ");
+        string collapsed = Regex.Replace(
+            input: name.Trim(),
+            pattern: @"\s+",
+            replacement: " ",
+            options: RegexOptions.None,
+            matchTimeout: TimeSpan.FromSeconds(1)
+        );
         string decomposed = collapsed.Normalize(normalizationForm: NormalizationForm.FormD);
 
         var builder = new StringBuilder(capacity: decomposed.Length);

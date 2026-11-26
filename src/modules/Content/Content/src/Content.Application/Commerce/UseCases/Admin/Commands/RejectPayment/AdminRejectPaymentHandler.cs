@@ -1,6 +1,6 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.Content.Application.Commerce.Services;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -12,17 +12,13 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.RejectPaymen
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
-public class AdminRejectPaymentHandler(
-    IContentOrderRepository contentOrderRepository,
-    IContentUnitOfWork unitOfWork,
-    ContentI18n i18n
-) : ICommandHandler<AdminRejectPaymentCommand, AdminRejectPaymentResult>
+public class AdminRejectPaymentHandler(IContentOrderRepository contentOrderRepository, IContentUnitOfWork unitOfWork)
+    : ICommandHandler<AdminRejectPaymentCommand, AdminRejectPaymentResult>
 {
     /// <inheritdoc />
     public async Task<AdminRejectPaymentResult> Handle(
         AdminRejectPaymentCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid orderId = Guid.Parse(command.OrderId);
@@ -31,7 +27,7 @@ public class AdminRejectPaymentHandler(
 
         if (order.Payment is null)
         {
-            throw i18n.ContentOrder.PaymentNotFound(orderId: orderId);
+            throw ContentOrderErrors.PaymentNotFound(orderId: orderId);
         }
 
         order.RejectPayment(notes: command.Notes);

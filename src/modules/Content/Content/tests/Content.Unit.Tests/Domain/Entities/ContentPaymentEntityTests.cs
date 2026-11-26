@@ -17,8 +17,6 @@ namespace _116.Content.Unit.Tests.Domain.Entities;
 /// </summary>
 public class ContentPaymentEntityTests
 {
-    private readonly ContentOrderErrors _errors = TestErrorsFactory.CreateContentOrderErrors();
-
     #region Create
 
     [Fact]

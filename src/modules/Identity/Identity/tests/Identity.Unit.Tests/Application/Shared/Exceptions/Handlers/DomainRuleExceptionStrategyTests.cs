@@ -20,6 +20,7 @@ namespace _116.Identity.Unit.Tests.Application.Shared.Exceptions.Handlers;
 public class DomainRuleExceptionStrategyTests
 {
     private readonly DomainRuleExceptionStrategy _strategy = new();
+    private static readonly string[] ExpectedArgs = ["user@example.com"];
 
     private static DefaultHttpContext CreateContext()
     {
@@ -43,7 +44,7 @@ public class DomainRuleExceptionStrategyTests
     public void ExceptionType_ShouldReturnIdentityRuleExceptionType()
     {
         // Act & Assert
-        _strategy.ExceptionType.Should().Be(typeof(IdentityRuleException));
+        _strategy.ExceptionType.Should().Be<IdentityRuleException>();
     }
 
     [Fact]
@@ -98,7 +99,7 @@ public class DomainRuleExceptionStrategyTests
         problem.Status.Should().Be(StatusCodes.Status423Locked);
         problem.Title.Should().Be("AccountInactiveException");
         problem.Detail.Should().Be(expected);
-        problem.Extensions["args"].Should().BeEquivalentTo(new[] { "user@example.com" });
+        problem.Extensions["args"].Should().BeEquivalentTo(ExpectedArgs);
     }
 
     [Fact]
@@ -183,6 +184,6 @@ public class DomainRuleExceptionStrategyTests
         problem.Detail.Should().NotBeNullOrWhiteSpace(code);
         problem.Detail.Should().NotBe(code, "the catalog must phrase the rule, not echo its code");
         problem.Title.Should().NotBeNullOrWhiteSpace(code);
-        problem.Status.Should().BeGreaterThan(0, code);
+        problem.Status.Should().BePositive(code);
     }
 }

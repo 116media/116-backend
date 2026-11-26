@@ -25,7 +25,6 @@ public class SuperAdminSeedingStrategyTests : IDisposable
     private readonly Mock<ILogger<SuperAdminRepositoryManager>> _repositoryLoggerMock;
     private readonly Mock<ILogger<SuperAdminSeedingStrategy>> _loggerMock;
     private readonly Mock<IPasswordService> _passwordServiceMock;
-    private readonly UserErrors _userErrors = TestErrorsFactory.CreateUserErrors();
     private readonly string? _originalPassword;
 
     public SuperAdminSeedingStrategyTests()
@@ -48,7 +47,7 @@ public class SuperAdminSeedingStrategyTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private DbContextOptions<IdentityDbContext> CreateOptions()
+    private static DbContextOptions<IdentityDbContext> CreateOptions()
     {
         return new DbContextOptionsBuilder<IdentityDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())

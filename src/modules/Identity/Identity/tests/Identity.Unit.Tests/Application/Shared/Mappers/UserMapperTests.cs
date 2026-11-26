@@ -19,7 +19,7 @@ namespace _116.Identity.Unit.Tests.Application.Shared.Mappers;
 /// </summary>
 public class UserMapperTests
 {
-    private readonly IMapper _mapper;
+    private readonly Mapper _mapper;
 
     public UserMapperTests()
     {

@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.DTOs;
-using _116.Identity.Application.Shared.Errors.Facade;
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Entities;
 using MapsterMapper;
@@ -13,11 +13,9 @@ namespace _116.Identity.Application.Session.UseCases.Public.Queries.GetOwnSessio
 /// </summary>
 /// <param name="sessionRepository">Repository for session data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="i18n">Single i18n entry point for the Identity module.</param>
 public class PublicGetOwnSessionByIdHandler(
     ISessionRepository sessionRepository,
     IMapper mapper,
-    IdentityI18n i18n,
     TimeProvider timeProvider
 ) : IQueryHandler<PublicGetOwnSessionByIdQuery, PublicGetOwnSessionByIdResult>
 {
@@ -29,7 +27,7 @@ public class PublicGetOwnSessionByIdHandler(
     /// <returns>A <see cref="PublicGetOwnSessionByIdResult" /> containing the session DTO.</returns>
     public async Task<PublicGetOwnSessionByIdResult> Handle(
         PublicGetOwnSessionByIdQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         SessionEntity? session = await sessionRepository.GetByIdAsync(
@@ -40,7 +38,7 @@ public class PublicGetOwnSessionByIdHandler(
         // Verify the session belongs to the user
         if (session is null || session.UserId != query.UserId)
         {
-            throw i18n.Session.SessionNotFound(sessionId: query.SessionId);
+            throw SessionErrors.SessionNotFound(sessionId: query.SessionId);
         }
 
         PublicSessionDto sessionDto = session

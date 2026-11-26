@@ -27,7 +27,7 @@ public class PublicGetExclusiveCategoryHandler(
     /// <inheritdoc />
     public async Task<PublicGetExclusiveCategoryResult> Handle(
         PublicGetExclusiveCategoryQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         CategoryEntity? category = await categoryRepository.GetExclusiveCategoryAsync(

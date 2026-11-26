@@ -20,7 +20,7 @@ public class PublicGetOwnRatedVideosHandler(
     /// <inheritdoc />
     public async Task<PublicGetOwnRatedVideosResult> Handle(
         PublicGetOwnRatedVideosQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageIndex = query.PaginatedRequest.PageIndex;

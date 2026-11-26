@@ -22,7 +22,7 @@ public class ShortVideoErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = _errors.NotFound(id);
+        NotFoundException exception = ShortVideoErrors.NotFound(id);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();

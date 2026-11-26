@@ -36,7 +36,7 @@ public class LyricsRevisionErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException ex = _errors.RevisionNotFound(id);
+        NotFoundException ex = LyricsRevisionErrors.RevisionNotFound(id);
 
         // Assert
         ex.Should().BeOfType<NotFoundException>();

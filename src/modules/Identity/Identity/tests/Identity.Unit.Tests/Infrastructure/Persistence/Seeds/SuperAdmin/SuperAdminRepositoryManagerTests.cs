@@ -19,14 +19,12 @@ public class SuperAdminRepositoryManagerTests
 {
     private readonly Mock<ILogger<SuperAdminRepositoryManager>> _loggerMock;
 
-    private readonly UserErrors _userErrors = TestErrorsFactory.CreateUserErrors();
-
     public SuperAdminRepositoryManagerTests()
     {
         _loggerMock = new Mock<ILogger<SuperAdminRepositoryManager>>();
     }
 
-    private DbContextOptions<IdentityDbContext> CreateOptions()
+    private static DbContextOptions<IdentityDbContext> CreateOptions()
     {
         return new DbContextOptionsBuilder<IdentityDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())

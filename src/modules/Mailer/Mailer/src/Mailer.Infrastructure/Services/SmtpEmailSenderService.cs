@@ -64,7 +64,7 @@ public class SmtpEmailSenderService : IEmailSenderService
     /// Builds the MIME message: configured sender identity, the recipient, and
     /// a multipart/alternative body carrying both the text and HTML parts.
     /// </summary>
-    private MimeMessage BuildMime(EmailMessage message)
+    private static MimeMessage BuildMime(EmailMessage message)
     {
         string fromAddress = MailEnv.FromAddress.Value;
         if (string.IsNullOrWhiteSpace(fromAddress))

@@ -26,7 +26,7 @@ public class AdminForceUnpromoteLyricsHandler(
     /// <inheritdoc />
     public async Task<AdminForceUnpromoteLyricsResult> Handle(
         AdminForceUnpromoteLyricsCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         LyricsEntity lyrics = await lyricsRepository.GetByIdOrThrowAsync(

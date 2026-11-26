@@ -16,7 +16,7 @@ namespace _116.EndToEnd.Tests;
 /// English and French satellites, with matching format placeholders and a French value that is
 /// actually translated.
 /// </summary>
-public class ResourceCompletenessTests
+public partial class ResourceCompletenessTests
 {
     private const string ResourcesSuffix = ".resources";
 
@@ -24,7 +24,8 @@ public class ResourceCompletenessTests
 
     private static readonly string[] Cultures = ["en", "fr"];
 
-    private static readonly Regex PlaceholderPattern = new(@"\{(\d+)(?::[^}]*)?\}", RegexOptions.Compiled);
+    [GeneratedRegex(@"\{(\d+)(?::[^}]*)?\}", RegexOptions.Compiled, matchTimeoutMilliseconds: 1000)]
+    private static partial Regex PlaceholderPattern();
 
     /// <summary>
     /// Keys whose French value is legitimately identical to the neutral English value — proper
@@ -88,12 +89,12 @@ public class ResourceCompletenessTests
     {
         ResourceManager manager = CreateManager(assemblyName, baseName);
 
-        IReadOnlyDictionary<string, string> neutral = ReadSet(manager, CultureInfo.InvariantCulture);
+        Dictionary<string, string> neutral = ReadSet(manager, CultureInfo.InvariantCulture);
         neutral.Keys.Should().NotBeEmpty($"{baseName} defines no keys");
 
         foreach (string culture in Cultures)
         {
-            IReadOnlyDictionary<string, string> translated = ReadSet(manager, new CultureInfo(culture));
+            Dictionary<string, string> translated = ReadSet(manager, new CultureInfo(culture));
 
             translated
                 .Keys.Should()
@@ -121,8 +122,8 @@ public class ResourceCompletenessTests
     {
         ResourceManager manager = CreateManager(assemblyName, baseName);
 
-        IReadOnlyDictionary<string, string> neutral = ReadSet(manager, CultureInfo.InvariantCulture);
-        IReadOnlyDictionary<string, string> french = ReadSet(manager, new CultureInfo("fr"));
+        Dictionary<string, string> neutral = ReadSet(manager, CultureInfo.InvariantCulture);
+        Dictionary<string, string> french = ReadSet(manager, new CultureInfo("fr"));
 
         IEnumerable<string> untranslated = neutral
             .Where(entry =>
@@ -149,7 +150,7 @@ public class ResourceCompletenessTests
     /// Reads one culture's resource set without falling back to a parent culture, so a missing
     /// satellite is observable as an empty set rather than silently resolving to the neutral strings.
     /// </summary>
-    private static IReadOnlyDictionary<string, string> ReadSet(ResourceManager manager, CultureInfo culture)
+    private static Dictionary<string, string> ReadSet(ResourceManager manager, CultureInfo culture)
     {
         ResourceSet? set = manager.GetResourceSet(culture, createIfNotExists: true, tryParents: false);
 
@@ -167,9 +168,9 @@ public class ResourceCompletenessTests
     /// Extracts the composite-format argument indexes used by a message, so that a translation
     /// dropping or inventing a placeholder fails before it reaches a caller of <c>string.Format</c>.
     /// </summary>
-    private static IReadOnlyCollection<string> Placeholders(string value)
+    private static List<string> Placeholders(string value)
     {
-        return PlaceholderPattern
+        return PlaceholderPattern()
             .Matches(value)
             .Select(match => match.Groups[1].Value)
             .Distinct(StringComparer.Ordinal)

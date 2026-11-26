@@ -17,7 +17,10 @@ public class PublicGetArtistsHandler(IArtistRepository artistRepository, IFileSt
     : IQueryHandler<PublicGetArtistsQuery, PublicGetArtistsResult>
 {
     /// <inheritdoc />
-    public async Task<PublicGetArtistsResult> Handle(PublicGetArtistsQuery query, CancellationToken cancellationToken)
+    public async Task<PublicGetArtistsResult> Handle(
+        PublicGetArtistsQuery query,
+        CancellationToken cancellationToken = default
+    )
     {
         (List<ArtistDirectoryRow> rows, int totalCount) = await artistRepository.GetPublicDirectoryAsync(
             page: query.Page.PageIndex + 1,

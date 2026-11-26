@@ -24,7 +24,7 @@ public class AdminCreateCategoryHandler(
     /// <inheritdoc />
     public async Task<AdminCreateCategoryResult> Handle(
         AdminCreateCategoryCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         CategoryEntity category = await createCategoryService.CreateAsync(command, cancellationToken);

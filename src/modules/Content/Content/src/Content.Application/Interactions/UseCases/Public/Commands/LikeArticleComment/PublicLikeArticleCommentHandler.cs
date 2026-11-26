@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Application.CQRS;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -13,17 +13,15 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.LikeArt
 /// </summary>
 /// <param name="articleCommentRepository">Repository for article comment data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicLikeArticleCommentHandler(
     IArticleCommentRepository articleCommentRepository,
-    IContentUnitOfWork unitOfWork,
-    ContentI18n i18n
+    IContentUnitOfWork unitOfWork
 ) : ICommandHandler<PublicLikeArticleCommentCommand, PublicLikeArticleCommentResult>
 {
     /// <inheritdoc />
     public async Task<PublicLikeArticleCommentResult> Handle(
         PublicLikeArticleCommentCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArticleCommentEntity? comment = await articleCommentRepository.GetCommentByIdAsync(
@@ -33,7 +31,7 @@ public class PublicLikeArticleCommentHandler(
 
         if (comment is null || comment.IsDeleted)
         {
-            throw i18n.ArticleInteraction.CommentNotFound(command.CommentId);
+            throw ArticleInteractionErrors.CommentNotFound(command.CommentId);
         }
 
         bool alreadyLiked = await articleCommentRepository.HasLikedCommentAsync(

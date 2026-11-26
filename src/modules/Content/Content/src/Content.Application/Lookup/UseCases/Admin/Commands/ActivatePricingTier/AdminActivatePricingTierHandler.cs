@@ -25,7 +25,7 @@ public class AdminActivatePricingTierHandler(
     /// <inheritdoc />
     public async Task<AdminActivatePricingTierResult> Handle(
         AdminActivatePricingTierCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);

@@ -12,7 +12,7 @@ namespace _116.Identity.Unit.Tests.Infrastructure.Persistence;
 /// </summary>
 public class IdentityUnitOfWorkTests
 {
-    private DbContextOptions<IdentityDbContext> CreateOptions()
+    private static DbContextOptions<IdentityDbContext> CreateOptions()
     {
         return new DbContextOptionsBuilder<IdentityDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())

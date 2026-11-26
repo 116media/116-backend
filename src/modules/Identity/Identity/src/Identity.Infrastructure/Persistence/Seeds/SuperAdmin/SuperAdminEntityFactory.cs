@@ -35,7 +35,7 @@ public class SuperAdminEntityFactory(IPasswordService passwordService)
     /// Creates the Super Admin role entity.
     /// </summary>
     /// <returns>A configured <see cref="RoleEntity" /> for Super Admin.</returns>
-    public RoleEntity CreateSuperAdminRole()
+    public static RoleEntity CreateSuperAdminRole()
     {
         return RoleEntity.Create(
             Guid.NewGuid(),
@@ -48,7 +48,7 @@ public class SuperAdminEntityFactory(IPasswordService passwordService)
     /// Creates the system-wide "system.all" permission entity.
     /// </summary>
     /// <returns>A configured <see cref="PermissionEntity" /> for system-wide access.</returns>
-    public PermissionEntity CreateSystemAllPermission()
+    public static PermissionEntity CreateSystemAllPermission()
     {
         return PermissionEntity.Create(
             Guid.NewGuid(),

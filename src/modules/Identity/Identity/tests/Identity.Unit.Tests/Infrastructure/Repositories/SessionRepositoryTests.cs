@@ -660,9 +660,9 @@ public class SessionRepositoryTests : IDisposable
 
         // Assert
         result.Should().ContainKey(EnumBrowser.Chrome);
-        result[EnumBrowser.Chrome].Should().Be(2);
+        result.Should().Contain(EnumBrowser.Chrome, 2);
         result.Should().ContainKey(EnumBrowser.Firefox);
-        result[EnumBrowser.Firefox].Should().Be(1);
+        result.Should().Contain(EnumBrowser.Firefox, 1);
     }
 
     [Fact]

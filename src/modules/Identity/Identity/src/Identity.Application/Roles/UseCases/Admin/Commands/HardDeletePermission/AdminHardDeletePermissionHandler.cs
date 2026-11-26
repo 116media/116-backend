@@ -23,7 +23,7 @@ public class AdminHardDeletePermissionHandler(
     /// <returns>A <see cref="AdminHardDeletePermissionResult" /> indicating success.</returns>
     public async Task<AdminHardDeletePermissionResult> Handle(
         AdminHardDeletePermissionCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid permissionId = Guid.Parse(input: command.PermissionId);

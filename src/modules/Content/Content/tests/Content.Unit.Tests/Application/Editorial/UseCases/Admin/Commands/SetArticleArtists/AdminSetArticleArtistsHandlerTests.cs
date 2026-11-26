@@ -34,8 +34,7 @@ public class AdminSetArticleArtistsHandlerTests
         _handler = new AdminSetArticleArtistsHandler(
             _articleRepositoryMock.Object,
             _artistRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            _unitOfWorkMock.Object
         );
     }
 

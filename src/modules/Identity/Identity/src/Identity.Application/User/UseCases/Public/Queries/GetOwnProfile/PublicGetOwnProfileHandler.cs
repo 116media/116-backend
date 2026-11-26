@@ -30,7 +30,7 @@ public class PublicGetOwnProfileHandler(IAuthRepository authRepository, IAvatarS
     /// <exception cref="BadRequestException">Thrown when the account is not active or verified.</exception>
     public async Task<PublicGetOwnProfileResult> Handle(
         PublicGetOwnProfileQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         UserEntity? user = await authRepository.GetUserWithRolesAndPermissionsByIdOrThrow(

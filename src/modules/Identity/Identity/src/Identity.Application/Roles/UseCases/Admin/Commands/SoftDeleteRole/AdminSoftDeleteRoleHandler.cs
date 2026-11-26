@@ -22,7 +22,7 @@ public class AdminSoftDeleteRoleHandler(
     /// <inheritdoc />
     public async Task<AdminSoftDeleteRoleResult> Handle(
         AdminSoftDeleteRoleCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid roleId = Guid.Parse(input: command.RoleId);

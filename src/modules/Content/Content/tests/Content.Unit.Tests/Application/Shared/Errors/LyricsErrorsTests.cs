@@ -22,7 +22,7 @@ public class LyricsErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = _errors.NotFound(id);
+        NotFoundException exception = LyricsErrors.NotFound(id);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();

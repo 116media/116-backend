@@ -157,7 +157,7 @@ public class ExceptionHandlerTests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.GetAsync(ApiRoutes.Admin.Roles);
 
-        response.Content.Headers.ContentType?.MediaType.Should().Be("application/problem+json");
+        response.Content.Headers.ContentType!.MediaType.Should().Be("application/problem+json");
     }
 
     [Fact]

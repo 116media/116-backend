@@ -26,7 +26,7 @@ public class AdminGetActiveVideosHandler(IVideoRepository videoRepository, IVide
     /// <inheritdoc />
     public async Task<AdminGetActiveVideosResult> Handle(
         AdminGetActiveVideosQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         List<VideoEntity> videos = await videoRepository.GetActiveAsync(cancellationToken);

@@ -57,7 +57,7 @@ public class ArticleInteractionErrorsTests
     {
         var commentId = Guid.NewGuid();
 
-        NotFoundException ex = _errors.CommentNotFound(commentId);
+        NotFoundException ex = ArticleInteractionErrors.CommentNotFound(commentId);
 
         ex.Should().NotBeNull();
         ex.Should().BeOfType<NotFoundException>();

@@ -24,7 +24,7 @@ public class AdminCreateLyricsHandler(
     /// <inheritdoc />
     public async Task<AdminCreateLyricsResult> Handle(
         AdminCreateLyricsCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         LyricsEntity lyrics = await createLyricsService.CreateAsync(command, cancellationToken);

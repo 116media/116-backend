@@ -26,7 +26,7 @@ public class AdminUploadCategoryPosterHandler(
     /// <inheritdoc />
     public async Task<AdminUploadCategoryPosterResult> Handle(
         AdminUploadCategoryPosterCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);

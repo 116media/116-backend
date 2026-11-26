@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.BuildingBlocks.Application.Pagination;
 using _116.Content.Application.Shared.DTOs;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -14,20 +14,19 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnCo
 /// </summary>
 public class PublicGetOwnCommentsForArticleHandler(
     IArticleRepository articleRepository,
-    IArticleCommentRepository articleCommentRepository,
-    ContentI18n i18n
+    IArticleCommentRepository articleCommentRepository
 ) : IQueryHandler<PublicGetOwnCommentsForArticleQuery, PublicGetOwnCommentsForArticleResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetOwnCommentsForArticleResult> Handle(
         PublicGetOwnCommentsForArticleQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         ArticleEntity? article = await articleRepository.GetByIdAsync(query.ArticleId, cancellationToken);
         if (article is null || article.Status != EnumContentStatus.Published)
         {
-            throw i18n.Article.NotFound(query.ArticleId);
+            throw ArticleErrors.NotFound(query.ArticleId);
         }
 
         int pageIndex = query.PaginatedRequest.PageIndex;

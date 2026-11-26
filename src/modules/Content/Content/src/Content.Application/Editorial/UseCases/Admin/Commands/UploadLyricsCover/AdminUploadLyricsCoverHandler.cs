@@ -25,7 +25,7 @@ public class AdminUploadLyricsCoverHandler(
     /// <inheritdoc />
     public async Task<AdminUploadLyricsCoverResult> Handle(
         AdminUploadLyricsCoverCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         LyricsEntity lyrics = await lyricsRepository.GetByIdOrThrowAsync(

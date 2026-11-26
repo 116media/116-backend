@@ -22,7 +22,7 @@ public class PublicGetNotificationsHandler(INotificationRepository notificationR
     /// </summary>
     public async Task<PublicGetNotificationsResult> Handle(
         PublicGetNotificationsQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         PaginatedResult<NotificationEntity> page = await notificationRepository.GetPagedForUserAsync(

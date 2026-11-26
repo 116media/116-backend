@@ -23,7 +23,7 @@ public class PublicSignOutFromAllDevicesHandler(
     /// </summary>
     public async Task<PublicSignOutFromAllDevicesResult> Handle(
         PublicSignOutFromAllDevicesCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         UserEntity? user = await authRepository.FindUserByIdOrThrow(

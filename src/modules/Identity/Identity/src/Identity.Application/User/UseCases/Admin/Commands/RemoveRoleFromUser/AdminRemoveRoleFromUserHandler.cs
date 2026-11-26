@@ -28,7 +28,7 @@ public class AdminRemoveRoleFromUserHandler(
     /// <inheritdoc />
     public async Task<AdminRemoveRoleFromUserResult> Handle(
         AdminRemoveRoleFromUserCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid userId = Guid.Parse(input: command.UserId);

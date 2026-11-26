@@ -20,7 +20,7 @@ public class PublicGetOwnCommentedArticlesHandler(
     /// <inheritdoc />
     public async Task<PublicGetOwnCommentedArticlesResult> Handle(
         PublicGetOwnCommentedArticlesQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageIndex = query.PaginatedRequest.PageIndex;

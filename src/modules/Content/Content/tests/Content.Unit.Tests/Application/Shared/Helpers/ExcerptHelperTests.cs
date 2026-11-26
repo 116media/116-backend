@@ -57,7 +57,7 @@ public class ExcerptHelperTests
         string result = ExcerptHelper.Truncate(text);
 
         // Assert
-        result.Length.Should().Be(200);
+        result.Should().HaveLength(200);
     }
 
     [Fact]

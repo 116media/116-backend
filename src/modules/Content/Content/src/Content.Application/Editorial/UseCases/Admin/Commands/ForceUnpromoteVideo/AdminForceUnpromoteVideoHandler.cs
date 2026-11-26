@@ -18,7 +18,7 @@ public class AdminForceUnpromoteVideoHandler(
     /// <inheritdoc />
     public async Task<AdminForceUnpromoteVideoResult> Handle(
         AdminForceUnpromoteVideoCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         VideoEntity video = await unpromoteService.UnpromoteAsync(

@@ -316,7 +316,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
             Mapper,
             Lookups(),
             _fileStorageMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert
@@ -335,7 +335,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
             Mapper,
             Lookups(),
             _fileStorageMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert
@@ -355,7 +355,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
             Mapper,
             Lookups(),
             _fileStorageMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert
@@ -374,7 +374,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
             Mapper,
             Lookups(),
             _fileStorageMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert
@@ -396,7 +396,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
             Mapper,
             Lookups(),
             _fileStorageMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert
@@ -426,7 +426,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
             Mapper,
             Lookups(),
             _fileStorageMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert
@@ -445,7 +445,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
             Mapper,
             Lookups(category),
             _fileStorageMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert
@@ -467,7 +467,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
             Mapper,
             Lookups(),
             _fileStorageMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert
@@ -486,7 +486,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
             Mapper,
             Lookups(),
             _fileStorageMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert
@@ -503,7 +503,12 @@ public class ArticleMapperTests : BaseContentHandlerTest
 
         // Act
         Func<Task> act = async () =>
-            await article.ToArticleDetailDtoAsync(Mapper, Lookups(), _fileStorageMock.Object, CancellationToken.None);
+            await article.ToArticleDetailDtoAsync(
+                Mapper,
+                Lookups(),
+                _fileStorageMock.Object,
+                ct: CancellationToken.None
+            );
 
         // Assert — must not NPE
         await act.Should().NotThrowAsync();
@@ -525,7 +530,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
             Mapper,
             Lookups(),
             _fileStorageMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert — Math.Max(1, ceil(0/200)) = 1
@@ -548,7 +553,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
             Mapper,
             Lookups(),
             _fileStorageMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert
@@ -573,7 +578,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
             Mapper,
             Lookups(),
             _fileStorageMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert
@@ -598,7 +603,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
             Mapper,
             Lookups(category),
             _fileStorageMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert
@@ -626,7 +631,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
             Mapper,
             Lookups(category, customer: customer),
             _fileStorageMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert
@@ -649,7 +654,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
             Mapper,
             Lookups(),
             _fileStorageMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert
@@ -726,7 +731,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
             Mapper,
             Lookups(),
             _fileStorageMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert
@@ -747,7 +752,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
             Mapper,
             Lookups(),
             _fileStorageMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert
@@ -769,7 +774,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
             Mapper,
             Lookups(),
             _fileStorageMock.Object,
-            CancellationToken.None
+            ct: CancellationToken.None
         );
 
         // Assert

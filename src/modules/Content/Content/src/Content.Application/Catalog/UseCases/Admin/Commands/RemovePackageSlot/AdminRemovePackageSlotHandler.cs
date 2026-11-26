@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Application.CQRS;
 using _116.Content.Application.Catalog.Services;
 using _116.Content.Application.Shared.DTOs;
-using _116.Content.Application.Shared.Errors.Facade;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -15,18 +15,16 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.RemovePackage
 /// <param name="packageRepository">Repository for package data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="packageDtoService">Builds package projections with their categories resolved.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminRemovePackageSlotHandler(
     IPackageRepository packageRepository,
     IContentUnitOfWork unitOfWork,
-    IPackageDtoService packageDtoService,
-    ContentI18n i18n
+    IPackageDtoService packageDtoService
 ) : ICommandHandler<AdminRemovePackageSlotCommand, AdminRemovePackageSlotResult>
 {
     /// <inheritdoc />
     public async Task<AdminRemovePackageSlotResult> Handle(
         AdminRemovePackageSlotCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid packageId = Guid.Parse(command.PackageId);
@@ -39,7 +37,7 @@ public class AdminRemovePackageSlotHandler(
 
         if (!package.RemoveSlot(slotId: slotId))
         {
-            throw i18n.Package.SlotNotFound(slotId: slotId);
+            throw PackageErrors.SlotNotFound(slotId: slotId);
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

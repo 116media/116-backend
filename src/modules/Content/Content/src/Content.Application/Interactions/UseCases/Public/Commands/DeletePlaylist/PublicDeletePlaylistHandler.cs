@@ -21,7 +21,7 @@ public class PublicDeletePlaylistHandler(
     /// <inheritdoc />
     public async Task<PublicDeletePlaylistResult> Handle(
         PublicDeletePlaylistCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         PlaylistEntity? playlist = await playlistRepository.GetByIdAsync(

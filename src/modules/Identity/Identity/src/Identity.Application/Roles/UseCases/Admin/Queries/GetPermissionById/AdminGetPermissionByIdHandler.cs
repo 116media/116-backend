@@ -22,7 +22,7 @@ public class AdminGetPermissionByIdHandler(IPermissionRepository permissionRepos
     /// <returns>A <see cref="AdminGetPermissionByIdResult" /> containing the permission.</returns>
     public async Task<AdminGetPermissionByIdResult> Handle(
         AdminGetPermissionByIdQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         PermissionEntity? permission = await permissionRepository.GetPermissionByIdOrThrowAsync(

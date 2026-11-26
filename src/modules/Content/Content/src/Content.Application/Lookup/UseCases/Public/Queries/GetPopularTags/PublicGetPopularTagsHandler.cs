@@ -15,7 +15,7 @@ public class PublicGetPopularTagsHandler(ITagRepository tagRepository)
     /// <inheritdoc />
     public async Task<PublicGetPopularTagsResult> Handle(
         PublicGetPopularTagsQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         IReadOnlyList<TagCountRow> rows = await tagRepository.GetPopularAsync(

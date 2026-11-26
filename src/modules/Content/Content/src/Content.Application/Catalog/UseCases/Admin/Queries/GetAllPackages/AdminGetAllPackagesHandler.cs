@@ -19,7 +19,7 @@ public class AdminGetAllPackagesHandler(IPackageRepository packageRepository, IP
     /// <inheritdoc />
     public async Task<AdminGetAllPackagesResult> Handle(
         AdminGetAllPackagesQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageSize = query.PaginatedRequest.PageSize;

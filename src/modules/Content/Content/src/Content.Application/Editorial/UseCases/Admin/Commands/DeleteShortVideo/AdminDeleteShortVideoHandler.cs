@@ -19,7 +19,7 @@ public class AdminDeleteShortVideoHandler(IShortVideoRepository shortVideoReposi
     /// <inheritdoc />
     public async Task<AdminDeleteShortVideoResult> Handle(
         AdminDeleteShortVideoCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid id = Guid.Parse(command.Id);

@@ -1,3 +1,4 @@
+using System.Reflection;
 using _116.BuildingBlocks.Infrastructure.Outbox;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
@@ -67,7 +68,7 @@ public class ContentDbContextTests
     /// walk the type system, never to reach private state.
     /// </summary>
     /// <returns>The domain entity types, ordered by name for stable test output.</returns>
-    private static IReadOnlyList<Type> DomainEntityTypes() =>
+    private static List<Type> DomainEntityTypes() =>
         typeof(ContentTypeEntity)
             .Assembly.GetTypes()
             .Where(t =>
@@ -90,7 +91,7 @@ public class ContentDbContextTests
     [Fact]
     public void DomainEntities_ShouldDiscoverEveryDeclaredEntityType()
     {
-        DomainEntityTypes().Count.Should().Be(DomainEntityCount);
+        DomainEntityTypes().Should().HaveCount(DomainEntityCount);
     }
 
     [Theory]
@@ -145,7 +146,7 @@ public class ContentDbContextTests
     /// answer to no aggregate, so the one-set-per-entity rule does not reach them.
     /// </summary>
     /// <returns>The DbSet property infos, ordered by name for stable test output.</returns>
-    private static IReadOnlyList<System.Reflection.PropertyInfo> DbSetProperties() =>
+    private static List<PropertyInfo> DbSetProperties() =>
         typeof(ContentDbContext)
             .GetProperties()
             .Where(p => p.PropertyType.IsGenericType && p.PropertyType.GetGenericTypeDefinition() == typeof(DbSet<>))
@@ -157,7 +158,7 @@ public class ContentDbContextTests
     /// Enumerates the public <see cref="DbSet{TEntity}"/> properties over projections.
     /// </summary>
     /// <returns>The read-model DbSet property infos, ordered by name.</returns>
-    private static IReadOnlyList<System.Reflection.PropertyInfo> ReadModelSetProperties() =>
+    private static List<PropertyInfo> ReadModelSetProperties() =>
         typeof(ContentDbContext)
             .GetProperties()
             .Where(p => p.PropertyType.IsGenericType && p.PropertyType.GetGenericTypeDefinition() == typeof(DbSet<>))
@@ -176,7 +177,7 @@ public class ContentDbContextTests
     public void DbSetProperties_ShouldExposeOneSetPerDomainEntity()
     {
         // Arrange & Act — the count guard keeps the getter sweep below from silently shrinking
-        DbSetProperties().Count.Should().Be(DomainEntityCount);
+        DbSetProperties().Should().HaveCount(DomainEntityCount);
     }
 
     [Fact]
@@ -186,7 +187,7 @@ public class ContentDbContextTests
         using var context = new ContentDbContext(CreateOptions());
 
         // Act & Assert
-        foreach (System.Reflection.PropertyInfo property in DbSetProperties())
+        foreach (PropertyInfo property in DbSetProperties())
         {
             property.GetValue(context).Should().NotBeNull($"{property.Name} must expose a usable DbSet");
         }

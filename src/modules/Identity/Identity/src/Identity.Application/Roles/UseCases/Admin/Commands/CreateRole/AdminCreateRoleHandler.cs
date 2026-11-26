@@ -28,7 +28,10 @@ public class AdminCreateRoleHandler(
     /// <param name="command">The command containing role name and description.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>A <see cref="AdminCreateRoleResult" /> containing the created role.</returns>
-    public async Task<AdminCreateRoleResult> Handle(AdminCreateRoleCommand command, CancellationToken cancellationToken)
+    public async Task<AdminCreateRoleResult> Handle(
+        AdminCreateRoleCommand command,
+        CancellationToken cancellationToken = default
+    )
     {
         bool roleExists = await roleRepository.ExistsByNameAsync(
             name: command.Name,

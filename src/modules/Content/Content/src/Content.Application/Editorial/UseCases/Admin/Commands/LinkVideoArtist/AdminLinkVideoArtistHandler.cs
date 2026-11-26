@@ -21,7 +21,7 @@ public class AdminLinkVideoArtistHandler(
     /// <inheritdoc />
     public async Task<AdminLinkVideoArtistResult> Handle(
         AdminLinkVideoArtistCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         VideoEntity video = await videoRepository.GetByIdOrThrowAsync(

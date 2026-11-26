@@ -38,7 +38,7 @@ public class ArtistErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException ex = _errors.NotFound(id);
+        NotFoundException ex = ArtistErrors.NotFound(id);
 
         // Assert
         ex.Should().BeOfType<NotFoundException>();
@@ -141,7 +141,7 @@ public class ArtistErrorsTests
     [Fact]
     public void SocialLinkNotFound_ShouldReturnNotFoundExceptionNamingThePlatform()
     {
-        NotFoundException exception = _errors.SocialLinkNotFound("Instagram");
+        NotFoundException exception = ArtistErrors.SocialLinkNotFound("Instagram");
 
         exception.Should().BeOfType<NotFoundException>();
         exception.Message.Should().Contain("Instagram");

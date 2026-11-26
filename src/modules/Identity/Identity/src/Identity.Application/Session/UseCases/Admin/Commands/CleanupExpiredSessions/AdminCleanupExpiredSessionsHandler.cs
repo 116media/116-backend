@@ -20,7 +20,7 @@ public class AdminCleanupExpiredSessionsHandler(ISessionRepository sessionReposi
     /// <returns>A <see cref="AdminCleanupExpiredSessionsResult" /> containing the number of deleted sessions.</returns>
     public async Task<AdminCleanupExpiredSessionsResult> Handle(
         AdminCleanupExpiredSessionsCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int deletedCount = await sessionRepository.DeleteExpiredSessionsAsync(cancellationToken: cancellationToken);

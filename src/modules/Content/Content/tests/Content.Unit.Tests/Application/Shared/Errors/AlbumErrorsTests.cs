@@ -36,7 +36,7 @@ public class AlbumErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException ex = _errors.NotFound(id);
+        NotFoundException ex = AlbumErrors.NotFound(id);
 
         // Assert
         ex.Should().BeOfType<NotFoundException>();

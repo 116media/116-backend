@@ -22,7 +22,7 @@ public class AdminAttachPaymentProofHandler(
     /// <inheritdoc />
     public async Task<AdminAttachPaymentProofResult> Handle(
         AdminAttachPaymentProofCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         Guid orderId = Guid.Parse(command.OrderId);

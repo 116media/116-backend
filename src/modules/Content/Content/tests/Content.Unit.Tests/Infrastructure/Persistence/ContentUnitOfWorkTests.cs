@@ -13,7 +13,7 @@ namespace _116.Content.Unit.Tests.Infrastructure.Persistence;
 /// </summary>
 public class ContentUnitOfWorkTests
 {
-    private DbContextOptions<ContentDbContext> CreateOptions()
+    private static DbContextOptions<ContentDbContext> CreateOptions()
     {
         return new DbContextOptionsBuilder<ContentDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())

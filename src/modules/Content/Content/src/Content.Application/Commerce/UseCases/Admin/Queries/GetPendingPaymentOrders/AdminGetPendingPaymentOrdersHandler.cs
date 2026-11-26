@@ -21,7 +21,7 @@ public class AdminGetPendingPaymentOrdersHandler(
     /// <inheritdoc />
     public async Task<AdminGetPendingPaymentOrdersResult> Handle(
         AdminGetPendingPaymentOrdersQuery query,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         int pageSize = query.PaginatedRequest.PageSize;

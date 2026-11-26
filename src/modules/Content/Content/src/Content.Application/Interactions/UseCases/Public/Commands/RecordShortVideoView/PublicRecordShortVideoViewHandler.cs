@@ -26,7 +26,7 @@ public class PublicRecordShortVideoViewHandler(
     /// <inheritdoc />
     public async Task<PublicRecordShortVideoViewResult> Handle(
         PublicRecordShortVideoViewCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         await shortVideoRepository.ExistsOrThrowAsync(

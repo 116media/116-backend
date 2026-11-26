@@ -200,7 +200,7 @@ public class TokenDeliveryServiceTests : IDisposable
     }
 
     [Fact]
-    public void SetTokenCookies_InDevelopment_ShouldNotSetSecureFlag()
+    public void SetTokenCookies_InDevelopment_ShouldStillSetSecureFlag()
     {
         // Arrange
         Environment.SetEnvironmentVariable(AspNetCoreEnvVar, "Development");
@@ -213,7 +213,7 @@ public class TokenDeliveryServiceTests : IDisposable
 
         // Assert
         string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
-        setCookieHeader.Should().NotContain("secure");
+        setCookieHeader.Should().Contain("secure");
     }
 
     [Fact]
@@ -378,7 +378,7 @@ public class TokenDeliveryServiceTests : IDisposable
         // Assert
         string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
         setCookieHeader.Should().Contain("samesite=lax");
-        setCookieHeader.Should().NotContain("secure");
+        setCookieHeader.Should().Contain("secure");
     }
 
     [Fact]

@@ -22,7 +22,7 @@ public class AdminRejectLyricsSubmissionHandler(
     /// <inheritdoc />
     public async Task<AdminRejectLyricsSubmissionResult> Handle(
         AdminRejectLyricsSubmissionCommand command,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         LyricsSubmissionEntity submission = await submissionRepository.GetByIdOrThrowAsync(

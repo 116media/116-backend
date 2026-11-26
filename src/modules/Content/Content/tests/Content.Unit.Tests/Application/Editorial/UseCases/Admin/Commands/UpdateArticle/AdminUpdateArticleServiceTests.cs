@@ -22,11 +22,7 @@ public class AdminUpdateArticleServiceTests
 
     public AdminUpdateArticleServiceTests()
     {
-        _service = new AdminUpdateArticleService(
-            _categoryRepositoryMock.Object,
-            _articleRepositoryMock.Object,
-            TestErrorsFactory.CreateContentI18n()
-        );
+        _service = new AdminUpdateArticleService(_categoryRepositoryMock.Object, _articleRepositoryMock.Object);
     }
 
     private static AdminUpdateArticleCommand Command(ArticleEntity article, string slug)

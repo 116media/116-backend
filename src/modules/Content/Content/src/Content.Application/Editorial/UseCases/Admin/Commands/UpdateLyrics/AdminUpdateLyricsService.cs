@@ -1,5 +1,4 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyrics.Contracts;
-using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 
@@ -11,12 +10,10 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyric
 /// <param name="categoryRepository">Repository validating the category.</param>
 /// <param name="lyricsRepository">Repository loading the lyrics and checking the slug.</param>
 /// <param name="videoRepository">Repository validating the linked video.</param>
-/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminUpdateLyricsService(
     ICategoryRepository categoryRepository,
     ILyricsRepository lyricsRepository,
-    IVideoRepository videoRepository,
-    ContentI18n i18n
+    IVideoRepository videoRepository
 ) : IAdminUpdateLyricsService
 {
     /// <inheritdoc />
