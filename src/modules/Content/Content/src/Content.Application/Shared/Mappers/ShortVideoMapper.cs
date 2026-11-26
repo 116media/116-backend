@@ -149,18 +149,12 @@ public static class ShortVideoMapper
                 ? videoFile.StorageUrl
                 : null;
 
-        string? thumbnailUrl;
-        if (
+        string? thumbnailUrl =
             entity.ThumbnailFileId is { } thumbnailFileId
             && files.TryGetValue(thumbnailFileId, out FileReferenceDto? thumb)
-        )
-        {
-            thumbnailUrl = thumb.StorageUrl;
-        }
-        else
-        {
-            thumbnailUrl = videoUrl is not null ? GenerateThumbnailUrl(videoUrl) : null;
-        }
+                ? thumb.StorageUrl
+            : videoUrl is not null ? GenerateThumbnailUrl(videoUrl)
+            : null;
 
         AdminAuthorDto? author = null;
         if (authors.TryGetValue(entity.AuthorId, out UserProfileDto? authorInfo))
@@ -407,12 +401,9 @@ public static class ShortVideoMapper
                 fileIds.Add(thumbnailFileId);
             }
         }
-        foreach (UserProfileDto authorInfo in authors.Values)
+        foreach (Guid avatarFileId in authors.Values.Select(author => author.AvatarFileId).OfType<Guid>())
         {
-            if (authorInfo.AvatarFileId is { } avatarFileId)
-            {
-                fileIds.Add(avatarFileId);
-            }
+            fileIds.Add(avatarFileId);
         }
 
         IReadOnlyDictionary<Guid, FileReferenceDto> files =

@@ -8,25 +8,30 @@
 # actionable review feedback, whereas "the method you just edited is complex and
 # uncovered" is. The full report ships as the `crap-report` artifact either way.
 #
-# Usage: crap-comment.sh <report.json> <changed-files.txt> <output.md>
+# Usage: crap-comment.sh <report.json> <changed-files.txt> <output.md> [repo] [sha]
+#   [repo] [sha]  used to turn each row into a link to the exact line on GitHub
 
 set -euo pipefail
 
 REPORT="${1:-crap/crap-report.json}"
 CHANGED="${2:-}"
 OUT="${3:-coverage/comment.md}"
+REPO="${4:-}"
+SHA="${5:-}"
 
 if [[ ! -f "$REPORT" ]]; then
     echo "No CRAP report at $REPORT — skipping section" >&2
     exit 0
 fi
 
-python3 - "$REPORT" "$CHANGED" "$OUT" <<'PY'
+python3 - "$REPORT" "$CHANGED" "$OUT" "$REPO" "$SHA" <<'PY'
 import json
 import pathlib
 import sys
 
 report_path, changed_path, out_path = sys.argv[1], sys.argv[2], sys.argv[3]
+repo = sys.argv[4] if len(sys.argv) > 4 else ""
+sha = sys.argv[5] if len(sys.argv) > 5 else ""
 
 report = json.loads(pathlib.Path(report_path).read_text())
 threshold = report.get("threshold", 30)
@@ -83,23 +88,39 @@ else:
         "| | CRAP | Method | Complexity | Coverage | File |",
         "| --- | ---: | --- | ---: | ---: | --- |",
     ]
-    for method in in_diff[:15]:
+    def row(method):
         name = f"{method.get('className', '?')}.{method.get('methodName', '?')}".replace("|", "\\|")
-        path = (method.get("filePath") or "").replace("\\", "/").split("/")[-1]
+        full = (method.get("filePath") or "").replace("\\", "/")
+        # The report holds absolute runner paths, so trim back to the repository root.
+        rel = full.rsplit(f"{repo.split('/')[-1]}/", 1)[-1] if repo else full
         line_no = method.get("lineNumber", "")
-        lines.append(
+        label = f"{rel.split('/')[-1]}:{line_no}"
+        where = (
+            f"[`{label}`](https://github.com/{repo}/blob/{sha}/{rel}#L{line_no})"
+            if repo and sha
+            else f"`{label}`"
+        )
+        return (
             f"| {badge.get(method.get('severity'), '⚪')} "
             f"| {method.get('crap', 0):.0f} "
             f"| `{name}` "
             f"| {method.get('complexity', 0)} "
             f"| {method.get('coverage', 0):.0%} "
-            f"| `{path}:{line_no}` |"
+            f"| {where} |"
         )
-    if len(in_diff) > 15:
-        lines.append(f"| | … | _{len(in_diff) - 15} more_ | | | |")
+
+    lines += [row(m) for m in in_diff[:15]]
     lines.append("")
 
-lines += ["Full report: the **crap-report** artifact on this run.", ""]
+    if len(in_diff) > 15:
+        lines += [
+            f"<details><summary>{len(in_diff) - 15} more</summary>",
+            "",
+            "| | CRAP | Method | Complexity | Coverage | File |",
+            "| --- | ---: | --- | ---: | ---: | --- |",
+        ]
+        lines += [row(m) for m in in_diff[15:]]
+        lines += ["", "</details>", ""]
 
 with pathlib.Path(out_path).open("a", encoding="utf-8") as handle:
     handle.write("\n".join(lines))

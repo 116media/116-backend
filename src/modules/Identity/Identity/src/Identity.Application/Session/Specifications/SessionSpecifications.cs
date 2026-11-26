@@ -99,7 +99,7 @@ public class SessionIsNotRevokedSpecification : Specification<SessionEntity>
 {
     public override Expression<Func<SessionEntity, bool>> ToExpression()
     {
-        return session => session.IsRevoked == false;
+        return session => !session.IsRevoked;
     }
 }
 
@@ -111,7 +111,7 @@ public class SessionIsRevokedSpecification : Specification<SessionEntity>
 {
     public override Expression<Func<SessionEntity, bool>> ToExpression()
     {
-        return session => session.IsRevoked == true;
+        return session => session.IsRevoked;
     }
 }
 

@@ -12,7 +12,13 @@
                 <Configuration>
                     <Format>opencover,cobertura</Format>
                     <Exclude>[*Tests*]*,[*Migrations*]*,[Fixtures]*,[TestData]*,[*.TestData]*</Exclude>
-                    <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
+                    <!--
+                        CompilerGeneratedAttribute is deliberately absent: an async method
+                        body compiles into a generated state machine, so excluding it hid
+                        every async method from the report. CRAP then read them as
+                        uncovered and flagged well-tested handlers.
+                    -->
+                    <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute</ExcludeByAttribute>
                     <ExcludeByFile>**/Migrations/*.cs,**/*.Designer.cs,**/*EndpointV1.cs</ExcludeByFile>
                     <SingleHit>false</SingleHit>
                     <UseSourceLink>true</UseSourceLink>

@@ -221,6 +221,36 @@ public class ArtistEntityTests
 
     #endregion
 
+    [Fact]
+    public void ReviseProfile_AfterEventsAreDrained_ShouldRaiseAFreshChangeNotice()
+    {
+        // Arrange — Create already raised one, so drain it the way a commit would.
+        ArtistEntity artist = CreateArtist();
+        artist.ClearDomainEvents();
+
+        // Act
+        bool changed = artist.ReviseProfile("Updated Bio", null, null, null, null, TestConstants.Clock.Today);
+
+        // Assert
+        changed.Should().BeTrue();
+        artist.DomainEvents.OfType<ArtistChangedEvent>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void ReviseProfile_TwiceInOneUnitOfWork_ShouldRaiseOneChangeNotice()
+    {
+        // Arrange
+        ArtistEntity artist = CreateArtist();
+        artist.ClearDomainEvents();
+
+        // Act
+        artist.ReviseProfile("First Bio", null, null, null, null, TestConstants.Clock.Today);
+        artist.ReviseProfile("Second Bio", null, null, null, null, TestConstants.Clock.Today);
+
+        // Assert
+        artist.DomainEvents.OfType<ArtistChangedEvent>().Should().ContainSingle();
+    }
+
     #region SetAvatarFileId Tests
 
     [Fact]

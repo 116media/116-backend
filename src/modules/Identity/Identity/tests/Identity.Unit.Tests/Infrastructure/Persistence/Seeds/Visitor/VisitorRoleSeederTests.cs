@@ -291,5 +291,23 @@ public class VisitorRoleSeederTests
         visitorRole.Description.Should().Contain("content access");
     }
 
+    [Fact]
+    public async Task SeedAsync_WhenTheContextIsUnusable_ShouldLogAndRethrow()
+    {
+        // Arrange — a seeding failure must surface at startup, not be swallowed into a
+        // half-seeded database.
+        DbContextOptions<IdentityDbContext> options = CreateOptions();
+        var context = new IdentityDbContext(options);
+        await context.DisposeAsync();
+
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+
+        // Act
+        Func<Task> act = () => seeder.SeedAsync();
+
+        // Assert
+        await act.Should().ThrowAsync<ObjectDisposedException>();
+    }
+
     #endregion
 }

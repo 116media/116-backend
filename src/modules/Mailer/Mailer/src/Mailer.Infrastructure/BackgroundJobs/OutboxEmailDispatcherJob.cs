@@ -141,7 +141,7 @@ public class OutboxEmailDispatcherJob(IServiceScopeFactory scopeFactory, ILogger
                 email.AttemptCount
             );
         }
-        catch (Exception exception)
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
             email.RegisterFailure(exception.Message, isTransient: true, DateTime.UtcNow);
             logger.LogError(

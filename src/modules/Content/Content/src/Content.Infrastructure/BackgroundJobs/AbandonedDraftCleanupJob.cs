@@ -87,13 +87,13 @@ public class AbandonedDraftCleanupJob(IServiceScopeFactory scopeFactory, ILogger
 
                     logger.LogInformation("Purged abandoned draft {ArticleId}.", draft.Id);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     logger.LogError(ex, "Failed to purge abandoned draft {ArticleId}.", draft.Id);
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             logger.LogError(ex, "AbandonedDraftCleanupJob encountered an unexpected error.");
         }

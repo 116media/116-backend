@@ -58,6 +58,27 @@ public class DispatchDomainEventsInterceptorTests(PostgresFixture db) : BaseApiT
     }
 
     [Fact]
+    public async Task SaveChangesAsync_InsideAnExplicitTransaction_ShouldDeferDispatchToTheCommit()
+    {
+        // Arrange — with a transaction open the save is not durable yet, so dispatching here
+        // would publish events for work that may still roll back.
+        await using var context = CreateDbContext<IdentityDbContext>();
+        await using var transaction = await context.Database.BeginTransactionAsync();
+
+        var role = RoleFactory.Create();
+        context.Roles.Add(role);
+
+        // Act
+        await context.SaveChangesAsync();
+        await transaction.CommitAsync();
+
+        // Assert
+        await using var queryContext = CreateDbContext<IdentityDbContext>();
+        RoleEntity? persisted = await queryContext.Roles.FindAsync(role.Id);
+        persisted.Should().NotBeNull("the row still commits with the transaction");
+    }
+
+    [Fact]
     public async Task SaveChangesAsync_WhenTheSaveFails_ShouldLeaveTheAggregateClean()
     {
         // Arrange

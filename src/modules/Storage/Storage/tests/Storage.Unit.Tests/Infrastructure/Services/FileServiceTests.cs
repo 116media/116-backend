@@ -1,7 +1,9 @@
 using System.Net;
+using System.Net.Http.Headers;
 using _116.BuildingBlocks.Application.Exceptions;
 using _116.Storage.Application.Errors.Facade;
 using _116.Storage.Application.Ports;
+using _116.Storage.Contracts.Domain.Enums;
 using _116.Storage.Infrastructure.Services;
 using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
@@ -46,6 +48,108 @@ public class FileServiceTests
     }
 
     #region UploadFileAsync Tests
+
+    /// <summary>
+    /// A form file standing in for an upload; the service only forwards it.
+    /// </summary>
+    private static IFormFile FormFile(string fileName)
+    {
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.FileName).Returns(fileName);
+        fileMock.Setup(f => f.Length).Returns(1024);
+        fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
+
+        return fileMock.Object;
+    }
+
+    [Fact]
+    public async Task UploadRawFileAsync_ShouldReturnWhatTheProviderStored()
+    {
+        // Arrange
+        var uploadResult = new CloudinaryUploadResult(
+            PublicId: "raw-id",
+            SecureUrl: "https://cloudinary.com/document.pdf",
+            Format: "pdf",
+            Width: 0,
+            Height: 0,
+            Bytes: 2048,
+            ResourceType: "raw"
+        );
+
+        _cloudinaryServiceMock
+            .Setup(x =>
+                x.UploadRawAsync(
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(uploadResult);
+
+        // Act
+        FileUploadResult result = await _service.UploadRawFileAsync(FormFile("document.pdf"), "raw-public-id");
+
+        // Assert
+        result.FileId.Should().NotBeEmpty();
+        result.SecureUrl.Should().Be("https://cloudinary.com/document.pdf");
+        result.Format.Should().Be("pdf");
+        result.Bytes.Should().Be(2048);
+        result.PublicId.Should().Be("raw-id");
+    }
+
+    [Fact]
+    public async Task UploadVideoFileAsync_ShouldReturnWhatTheProviderStored()
+    {
+        // Arrange
+        var uploadResult = new CloudinaryUploadResult(
+            PublicId: "video-id",
+            SecureUrl: "https://cloudinary.com/clip.mp4",
+            Format: "mp4",
+            Width: 1920,
+            Height: 1080,
+            Bytes: 9999,
+            ResourceType: "video"
+        );
+
+        _cloudinaryServiceMock
+            .Setup(x =>
+                x.UploadVideoAsync(
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(uploadResult);
+
+        // Act
+        FileUploadResult result = await _service.UploadVideoFileAsync(FormFile("clip.mp4"), "video-public-id");
+
+        // Assert
+        result.FileId.Should().NotBeEmpty();
+        result.SecureUrl.Should().Be("https://cloudinary.com/clip.mp4");
+        result.Width.Should().Be(1920);
+        result.Height.Should().Be(1080);
+        result.PublicId.Should().Be("video-id");
+    }
+
+    [Fact]
+    public async Task DeleteFileAsync_ShouldReportWhatTheProviderReturned()
+    {
+        // Arrange
+        _cloudinaryServiceMock
+            .Setup(x =>
+                x.DeleteAsync(It.IsAny<string>(), It.IsAny<EnumStoredFileKind>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(true);
+
+        // Act
+        bool deleted = await _service.DeleteFileAsync("some/storage/key", EnumStoredFileKind.Image);
+
+        // Assert
+        deleted.Should().BeTrue();
+    }
 
     [Fact]
     public async Task UploadFileAsync_WithValidFile_ShouldReturnFileUploadResult()
@@ -191,6 +295,74 @@ public class FileServiceTests
         // Act & Assert
         Func<Task> act = async () => await _service.DownloadFileAsync("not-a-valid-url");
         await act.Should().ThrowExactlyAsync<BadRequestException>();
+    }
+
+    [Fact]
+    public async Task DownloadFileAsync_WhenTheUrlRedirects_ShouldFollowItAndGuardEachHop()
+    {
+        // Arrange — every hop is re-checked, so a redirect cannot smuggle the server onto a
+        // private address.
+        const string fileUrl = "https://example.com/redirect.jpg";
+        var finalUri = new Uri("https://cdn.example.com/final.jpg");
+
+        var redirect = new HttpResponseMessage(HttpStatusCode.Found);
+        redirect.Headers.Location = finalUri;
+
+        var delivered = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new ByteArrayContent([1, 2, 3]) { Headers = { ContentLength = 3 } },
+        };
+        delivered.Content.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+
+        _httpMessageHandlerMock
+            .Protected()
+            .SetupSequence<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync(redirect)
+            .ReturnsAsync(delivered)
+            .ReturnsAsync(() =>
+            {
+                var again = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new ByteArrayContent([1, 2, 3]) { Headers = { ContentLength = 3 } },
+                };
+                again.Content.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+
+                return again;
+            });
+
+        // Act
+        FileDownloadResult result = await _service.DownloadFileAsync(fileUrl);
+
+        // Assert
+        result.Should().NotBeNull();
+        _urlSafetyGuardMock.Verify(
+            x => x.EnsureSafeAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>()),
+            Times.AtLeast(2)
+        );
+    }
+
+    [Fact]
+    public async Task DownloadFileAsync_WhenARedirectCarriesNoLocation_ShouldFail()
+    {
+        // Arrange — a 302 with nothing to follow is a broken response, not a download.
+        const string fileUrl = "https://example.com/headless-redirect.jpg";
+
+        _httpMessageHandlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync(() => new HttpResponseMessage(HttpStatusCode.Found));
+
+        // Act & Assert
+        Func<Task> act = async () => await _service.DownloadFileAsync(fileUrl);
+        await act.Should().ThrowAsync<Exception>();
     }
 
     [Fact]

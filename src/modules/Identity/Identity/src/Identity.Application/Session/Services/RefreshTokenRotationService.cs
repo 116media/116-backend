@@ -125,7 +125,7 @@ public class RefreshTokenRotationService(
         {
             await DetectReplayAsync(refreshTokenHash: refreshTokenHash, cancellationToken: cancellationToken);
         }
-        catch (Exception exception)
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(exception, "Refresh token replay detection failed; the token is still rejected.");
         }

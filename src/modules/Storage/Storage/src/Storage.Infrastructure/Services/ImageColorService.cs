@@ -1,14 +1,12 @@
 using _116.Storage.Application.Helpers;
 using _116.Storage.Application.Ports;
 using Microsoft.AspNetCore.Http;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
+using SkiaSharp;
 
 namespace _116.Storage.Infrastructure.Services;
 
 /// <summary>
-/// Extracts the dominant color from an image with SixLabors.ImageSharp and
+/// Extracts the dominant color from an image with SkiaSharp and
 /// derives a contrasting foreground via <see cref="ColorContrastHelper" />.
 /// </summary>
 /// <remarks>
@@ -54,36 +52,62 @@ public class ImageColorService : IImageColorService
     /// <inheritdoc />
     public async Task<ImageColors?> ExtractAsync(IFormFile file, CancellationToken cancellationToken = default)
     {
+        ImageColors? result;
+
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             await using Stream stream = file.OpenReadStream();
-            using Image<Rgba32> image = await Image.LoadAsync<Rgba32>(stream, cancellationToken);
+            using SKBitmap? decoded = SKBitmap.Decode(stream);
+            if (decoded is null)
+            {
+                return null;
+            }
 
-            image.Mutate(context =>
-                context.Resize(
-                    new ResizeOptions
-                    {
-                        Sampler = KnownResamplers.Box,
-                        Size = new Size(MaxAnalyzedDimension, MaxAnalyzedDimension),
-                        Mode = ResizeMode.Max,
-                    }
-                )
-            );
+            // Analyzing at full size is slower but still correct,
+            // so a refused resize is not a reason to abandon extraction.
+            using SKBitmap? resized = Downscale(decoded);
 
-            string? dominant = FindDominantColor(image);
+            string? dominant = FindDominantColor(resized ?? decoded);
             if (dominant is null)
             {
                 return null;
             }
 
             string? foreground = ColorContrastHelper.ForegroundFor(dominant);
-            return foreground is null ? null : new ImageColors(dominant, foreground);
+            result = foreground is null ? null : new ImageColors(dominant, foreground);
         }
-        catch (Exception)
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
             // Color extraction is best-effort and must never block the upload.
             return null;
         }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Scales the image so its longest edge is at most <see cref="MaxAnalyzedDimension" />,
+    /// into unpremultiplied RGBA so channel values read back exactly as encoded.
+    /// </summary>
+    /// <param name="source">The decoded image.</param>
+    /// <returns>The downscaled image, or <c>null</c> when scaling fails.</returns>
+    private static SKBitmap? Downscale(SKBitmap source)
+    {
+        int longest = Math.Max(source.Width, source.Height);
+
+        // Enlarging costs time and tells the histogram nothing it does not already know.
+        double scale = longest <= MaxAnalyzedDimension ? 1d : (double)MaxAnalyzedDimension / longest;
+
+        var info = new SKImageInfo(
+            Math.Max(1, (int)Math.Round(source.Width * scale)),
+            Math.Max(1, (int)Math.Round(source.Height * scale)),
+            SKColorType.Rgba8888,
+            SKAlphaType.Unpremul
+        );
+
+        return source.Resize(info, new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None));
     }
 
     /// <summary>
@@ -92,26 +116,23 @@ public class ImageColorService : IImageColorService
     /// </summary>
     /// <param name="image">The (already downscaled) image to analyze.</param>
     /// <returns>The dominant color, or <c>null</c> when no opaque pixels exist.</returns>
-    private static string? FindDominantColor(Image<Rgba32> image)
+    private static string? FindDominantColor(SKBitmap image)
     {
-        var pixels = new Rgba32[image.Width * image.Height];
-        image.CopyPixelDataTo(pixels);
-
         var buckets = new ColorAccumulator[BucketCount];
 
-        foreach (ref readonly Rgba32 pixel in pixels.AsSpan())
+        foreach (SKColor pixel in image.Pixels)
         {
-            if (pixel.A < MinOpaqueAlpha)
+            if (pixel.Alpha < MinOpaqueAlpha)
             {
                 continue;
             }
 
             int key =
-                ((pixel.R >> ChannelShift) << (2 * LevelBits))
-                | ((pixel.G >> ChannelShift) << LevelBits)
-                | (pixel.B >> ChannelShift);
+                ((pixel.Red >> ChannelShift) << (2 * LevelBits))
+                | ((pixel.Green >> ChannelShift) << LevelBits)
+                | (pixel.Blue >> ChannelShift);
 
-            buckets[key] = buckets[key].Add(pixel.R, pixel.G, pixel.B);
+            buckets[key] = buckets[key].Add(pixel.Red, pixel.Green, pixel.Blue);
         }
 
         ColorAccumulator dominant = buckets.MaxBy(bucket => bucket.Count);

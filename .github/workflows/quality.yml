@@ -1,14 +1,21 @@
 name: Quality
 
-# SonarQube Cloud: maintainability, bugs, duplication and the new-code gate, plus the CRAP
-# metric. Security scanning lives in `security.yml`.
+# SonarQube Cloud and the CRAP metric. Security scanning lives in `security.yml`.
 #
-# CRAP is computed from the coverage the `Tests` run produced, downloaded here as an
-# artifact — the same files Sonar is given.
+# The two analysers are triggered differently on purpose. Sonar needs no coverage, so it
+# starts as soon as a pull request opens. CRAP is complexity weighed against coverage, and
+# unit coverage alone scores integration-only code as untested, so it waits for the `Tests`
+# run and reads every suite's artifacts. A pull request therefore produces two runs of this
+# workflow: Sonar immediately, CRAP once the suites are green.
 #
-# Gated on `Tests` completing: a PR whose suites are red gets its test failures reported
-# first, not buried under scanner output.
+# Sonar also runs on develop, because new-code gating on a pull request is measured
+# against the main branch analysis. Automatic Analysis must stay disabled in the project
+# settings: SonarQube refuses a CI analysis while it is on.
 on:
+    pull_request:
+        branches: [main, develop]
+    push:
+        branches: [develop]
     workflow_run:
         workflows: [Tests]
         types: [completed]
@@ -22,40 +29,15 @@ env:
     DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 jobs:
-    # `workflow_run` fires in the context of the default branch, so the pull request behind
-    # the triggering run has to be looked up rather than read from `github.event`.
-    context:
-        name: Resolve PR context
-        runs-on: ubuntu-latest
-        if: github.event.workflow_run.conclusion == 'success'
-        outputs:
-            pr: ${{ steps.pr.outputs.number }}
-            sha: ${{ github.event.workflow_run.head_sha }}
-            branch: ${{ github.event.workflow_run.head_branch }}
-            base: ${{ steps.pr.outputs.base }}
-        steps:
-            - name: Find the pull request
-              id: pr
-              env:
-                  GH_TOKEN: ${{ github.token }}
-              run: |
-                  pr=$(gh pr list \
-                    --repo "${{ github.repository }}" \
-                    --head "${{ github.event.workflow_run.head_branch }}" \
-                    --state open --json number,baseRefName --jq '.[0] // empty')
-                  echo "number=$(echo "$pr" | jq -r '.number // empty')" >> "$GITHUB_OUTPUT"
-                  echo "base=$(echo "$pr" | jq -r '.baseRefName // "develop"')" >> "$GITHUB_OUTPUT"
-                  echo "Pull request: ${pr:-none}"
-
     sonar:
         name: SonarQube Cloud
         runs-on: ubuntu-latest
-        needs: [context]
+        # Needs no coverage, so it does not wait. The `workflow_run` path is CRAP's.
+        if: github.event_name != 'workflow_run'
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
               with:
-                  ref: ${{ needs.context.outputs.sha }}
                   # Sonar needs full history to attribute blame and compute new-code periods.
                   fetch-depth: 0
 
@@ -70,46 +52,70 @@ jobs:
                   distribution: temurin
                   java-version: '17'
 
-            - name: Download unit coverage
-              uses: actions/download-artifact@v4
+            - name: Cache the scanner and its analysis data
+              uses: actions/cache@v4
               with:
-                  name: unit-coverage
-                  path: coverage/unit
-                  run-id: ${{ github.event.workflow_run.id }}
-                  github-token: ${{ github.token }}
-
-            - name: Download integration coverage
-              uses: actions/download-artifact@v4
-              with:
-                  name: integration-coverage
-                  path: coverage/integration
-                  run-id: ${{ github.event.workflow_run.id }}
-                  github-token: ${{ github.token }}
+                  path: |
+                      ~/.sonar/cache
+                      ~/.dotnet/tools
+                  key: sonar-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+                  restore-keys: sonar-${{ runner.os }}-
 
             # The scanner must wrap the build: it attaches a Roslyn analyser, so a cached
             # or `--no-build` compile produces an empty analysis.
             - name: Install SonarScanner
-              run: dotnet tool install --global dotnet-sonarscanner
+              run: dotnet tool install --global dotnet-sonarscanner || true
 
             - name: Analyse
               env:
                   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
               run: |
+                  args=()
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    args+=(/d:sonar.pullrequest.key="${{ github.event.pull_request.number }}")
+                    args+=(/d:sonar.pullrequest.branch="${{ github.event.pull_request.head.ref }}")
+                    args+=(/d:sonar.pullrequest.base="${{ github.event.pull_request.base.ref }}")
+                  fi
+
                   dotnet sonarscanner begin \
                     /k:"116media_116-backend" \
                     /o:"116media" \
                     /d:sonar.host.url="https://sonarcloud.io" \
                     /d:sonar.token="${SONAR_TOKEN}" \
-                    /d:sonar.cs.opencover.reportsPaths="coverage/**/coverage.opencover.xml" \
-                    /d:sonar.coverage.exclusions="**/Migrations/**,**/*Tests*/**,**/TestData/**" \
                     /d:sonar.scanner.scanAll=false \
-                    ${{ needs.context.outputs.pr && format('/d:sonar.pullrequest.key={0}', needs.context.outputs.pr) || '' }} \
-                    ${{ needs.context.outputs.pr && format('/d:sonar.pullrequest.branch={0}', needs.context.outputs.branch) || '' }} \
-                    ${{ needs.context.outputs.pr && '/d:sonar.pullrequest.base=develop' || '' }}
+                    /d:sonar.coverage.exclusions="**/*" \
+                    "${args[@]}"
 
                   dotnet build --configuration Release --no-incremental
 
                   dotnet sonarscanner end /d:sonar.token="${SONAR_TOKEN}"
+
+    # `workflow_run` fires in the context of the default branch, so the pull request behind
+    # the triggering run has to be looked up rather than read from `github.event`.
+    context:
+        name: Resolve PR context
+        runs-on: ubuntu-latest
+        if: >-
+            github.event_name == 'workflow_run' &&
+            github.event.workflow_run.conclusion == 'success' &&
+            github.event.workflow_run.event == 'pull_request'
+        outputs:
+            pr: ${{ steps.pr.outputs.number }}
+            sha: ${{ github.event.workflow_run.head_sha }}
+            base: ${{ steps.pr.outputs.base }}
+        steps:
+            - name: Find the pull request
+              id: pr
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  pr=$(gh pr list \
+                    --repo "${{ github.repository }}" \
+                    --head "${{ github.event.workflow_run.head_branch }}" \
+                    --state open --json number,baseRefName --jq '.[0] // empty')
+                  echo "number=$(echo "$pr" | jq -r '.number // empty')" >> "$GITHUB_OUTPUT"
+                  echo "base=$(echo "$pr" | jq -r '.baseRefName // "develop"')" >> "$GITHUB_OUTPUT"
+                  echo "Pull request: ${pr:-none}"
 
     crap:
         name: CRAP
@@ -147,28 +153,34 @@ jobs:
                   run-id: ${{ github.event.workflow_run.id }}
                   github-token: ${{ github.token }}
 
+            - name: Download end-to-end coverage
+              uses: actions/download-artifact@v4
+              with:
+                  name: e2e-coverage
+                  path: coverage/e2e
+                  run-id: ${{ github.event.workflow_run.id }}
+                  github-token: ${{ github.token }}
+
             - name: Compute changed source files
               run: |
                   mkdir -p crap
-                  base="${{ needs.context.outputs.base }}"
-                  if [ -n "${{ needs.context.outputs.pr }}" ]; then
-                    git fetch --no-tags --depth=1 origin "$base"
-                    git diff --name-only --diff-filter=ACMR FETCH_HEAD HEAD -- src \
-                      > crap/changed-src.txt || true
-                  else
-                    : > crap/changed-src.txt
-                  fi
+                  git fetch --no-tags --depth=1 origin "${{ needs.context.outputs.base }}"
+                  git diff --name-only --diff-filter=ACMR FETCH_HEAD HEAD -- src \
+                    > crap/changed-src.txt || true
                   echo "Changed source files:"
                   cat crap/changed-src.txt
 
-            # Threshold lives in crap4dotnet-config.json, not here, so a local run and CI
-            # agree. Exit 1 means methods breached it; that is reported, not fatal.
+            # Every test project writes its own report, so all of them are passed: a subset
+            # reads as uncovered elsewhere and invents breaches. Threshold lives in
+            # crap4dotnet-config.json so a local run and CI agree.
             - name: Analyse CRAP
               run: |
                   args=()
                   while IFS= read -r file; do
                     args+=(--coverage "$file")
-                  done < <(find coverage/unit coverage/integration -name 'coverage.cobertura.xml')
+                  done < <(find coverage -name 'coverage.cobertura.xml')
+
+                  echo "coverage reports: ${#args[@]}"
 
                   dotnet tool run dotnet-crap -- analyze ./116_backend.sln \
                     "${args[@]}" \
@@ -185,7 +197,7 @@ jobs:
     report:
         name: Quality Report
         runs-on: ubuntu-latest
-        needs: [context, sonar, crap]
+        needs: [context, crap]
         if: always() && needs.context.outputs.pr != ''
         permissions:
             contents: read
@@ -205,21 +217,15 @@ jobs:
             - name: Build the report
               run: |
                   bash scripts/quality-comment.sh \
-                    "${{ needs.sonar.result }}" \
                     "${{ needs.crap.result }}" \
                     quality-comment.md
 
                   bash scripts/crap-comment.sh \
                     crap/crap-report.json \
                     crap/changed-src.txt \
-                    quality-comment.md
-
-                  {
-                    echo ""
-                    echo "---"
-                    echo "<sub>Runs after the Tests workflow completes. Machine-readable output:"
-                    echo "the \`quality-report-md\` and \`crap-report\` artifacts on this run.</sub>"
-                  } >> quality-comment.md
+                    quality-comment.md \
+                    "${{ github.repository }}" \
+                    "${{ needs.context.outputs.sha }}"
 
             - name: Post the report
               uses: marocchino/sticky-pull-request-comment@v2

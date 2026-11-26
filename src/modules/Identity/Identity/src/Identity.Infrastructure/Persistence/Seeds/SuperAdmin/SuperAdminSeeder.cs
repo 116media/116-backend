@@ -58,7 +58,7 @@ public class SuperAdminSeeder : IDataSeeder
             await ExecuteSeedingWithTransactionAsync();
             _logger.LogInformation("Super Admin seeding completed successfully!");
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(exception: ex, "Failed to seed Super Admin data");
             throw;
@@ -87,7 +87,7 @@ public class SuperAdminSeeder : IDataSeeder
                 await transaction.CommitAsync();
                 _logger.LogInformation("Super Admin seeding transaction committed successfully");
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 await transaction.RollbackAsync();
                 _logger.LogError(exception: ex, "Error occurred during Super Admin seeding. Transaction rolled back.");

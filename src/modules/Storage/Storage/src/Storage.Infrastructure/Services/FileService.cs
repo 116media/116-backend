@@ -157,7 +157,12 @@ public class FileService(
             throw i18n.File.FileDownloadFailed();
         }
         catch (Exception ex)
-            when (ex is not ArgumentException and not BadRequestException and not InternalServerException)
+            when (ex
+                    is not OperationCanceledException
+                        and not ArgumentException
+                        and not BadRequestException
+                        and not InternalServerException
+            )
         {
             logger.LogWarning(ex, "Remote file download failed unexpectedly");
             throw i18n.File.FileDownloadFailed();

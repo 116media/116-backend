@@ -148,9 +148,10 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
 
         foreach (IAggregate aggregate in aggregates)
         {
-            foreach (IDomainEvent raised in aggregate.ClearDomainEvents())
+            foreach (
+                IDomainEvent domainEvent in aggregate.ClearDomainEvents().Select(raised => StampOccurredOn(raised, now))
+            )
             {
-                IDomainEvent domainEvent = StampOccurredOn(raised, now);
                 buffer.Add(domainEvent);
 
                 if (!hasOutbox)
@@ -223,7 +224,7 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
                 row?.MarkDispatched();
                 outcomeRecorded |= row is not null;
             }
-            catch (Exception exception)
+            catch (Exception exception) when (exception is not OperationCanceledException)
             {
                 _logger.LogError(
                     exception,
@@ -254,7 +255,7 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
         {
             await context.SaveChangesAsync(CancellationToken.None);
         }
-        catch (Exception exception)
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
             _logger.LogError(exception, "Recording domain event dispatch outcomes failed; replay will retry them.");
         }

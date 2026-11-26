@@ -55,7 +55,7 @@ public class ExpiredOtpCleanupJob(IServiceScopeFactory scopeFactory, ILogger<Exp
 
             logger.LogInformation("Purged {Count} expired OTP(s).", purgedCount);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             logger.LogError(ex, "ExpiredOtpCleanupJob encountered an unexpected error.");
         }

@@ -112,13 +112,13 @@ public static partial class SlugHelper
     /// Whitespace is spelled out rather than <c>\s</c>, which covers a different set in .NET
     /// than in the browser, so both produce the same slug.
     /// </summary>
-    [GeneratedRegex(@"[^a-z0-9\t\n\v\f\r    -     　﻿-]")]
+    [GeneratedRegex(@"[^a-z0-9\t\n\v\f\r \u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff-]")]
     private static partial Regex NonAlphanumericRegex();
 
     /// <summary>
     /// Matches one or more whitespace or underscore characters for hyphen replacement.
     /// </summary>
-    [GeneratedRegex(@"[\t\n\v\f\r    -     　﻿_]+")]
+    [GeneratedRegex(@"[\t\n\v\f\r \u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff_]+")]
     private static partial Regex WhitespaceRegex();
 
     /// <summary>

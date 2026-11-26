@@ -132,6 +132,30 @@ public class OrderPaidEffectsHandlerTests
     }
 
     [Fact]
+    public async Task Handle_WhenVideoFulfilsAPromotedItem_ShouldStampThePromotion()
+    {
+        // Arrange
+        Guid orderItemId = Guid.NewGuid();
+        Guid promotionLevelId = Guid.NewGuid();
+        DateTimeOffset promotionUntil = DateTimeOffset.UtcNow.AddDays(14);
+        VideoEntity video = VideoFactory.Create(Guid.NewGuid());
+        _articleRepositoryMock.SetupGetByOrderItemIdAsync(orderItemId, null);
+        _videoRepositoryMock.SetupGetByOrderItemIdAsync(orderItemId, video);
+
+        // Act
+        await _handler.Handle(
+            PaidEvent(new PaidItemEffect(orderItemId, promotionLevelId, promotionUntil, SocialBoost: false)),
+            CancellationToken.None
+        );
+
+        // Assert
+        video.IsPromoted.Should().BeTrue();
+        video.PromotionLevelId.Should().Be(promotionLevelId);
+        video.Status.Should().Be(EnumContentStatus.PendingReview);
+        _unitOfWorkMock.VerifyExecutedInTransaction();
+    }
+
+    [Fact]
     public async Task Handle_WhenVideoFulfilsItem_ShouldStampEffectsInOneTransaction()
     {
         // Arrange

@@ -74,6 +74,8 @@ public class PopularVideosQueryBuilder : IPopularVideosQueryBuilder
         }
 
         query = query
+            // The cast is load-bearing: without it EF has to translate mixed decimal and int
+            // arithmetic in ORDER BY, which Npgsql rejects at runtime.
             .OrderByDescending(v =>
                 (ratingWeight * ((double)v.RatingAverage * v.RatingCount)) + (shareWeight * v.ShareCount)
             )

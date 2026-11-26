@@ -65,6 +65,53 @@ public class AdminCreateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
     }
 
     [Fact]
+    public async Task CreateCategory_WhenTwoNamesReduceToTheSameSlug_ReturnsCreatedWithASuffixedSlug()
+    {
+        ContentTypeEntity contentType = await SeedContentTypeAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        // Distinct names, so the unique name index stays quiet, but punctuation is stripped
+        // during slugification, so both reduce to the same slug.
+        string name = ShortName("dup");
+        string punctuatedName = $"{name}!";
+
+        object Request(string categoryName) =>
+            new
+            {
+                Name = categoryName,
+                Slug = ShortSlug("dup"),
+                Description = "Test desc",
+                IsFree = true,
+                IsGossip = false,
+                IsExclusive = false,
+            };
+
+        var first = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/{contentType.Id}", Request(name));
+        var second = await Client.PostAsJsonAsync(
+            $"{ApiRoutes.Admin.Categories}/{contentType.Id}",
+            Request(punctuatedName)
+        );
+
+        first.StatusCode.Should().Be(HttpStatusCode.Created);
+        second.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var firstBody = await first.ReadAsAsync<AdminCreateCategoryResponse>();
+        var secondBody = await second.ReadAsAsync<AdminCreateCategoryResponse>();
+
+        SlugHelper.ToSlug(punctuatedName).Should().Be(SlugHelper.ToSlug(name));
+        firstBody.Category.Slug.Should().Be(SlugHelper.ToSlug(name));
+        secondBody.Category.Slug.Should().MatchRegex($"^{SlugHelper.ToSlug(name)}-[a-z0-9]{{8}}$");
+
+        await using var verifyContext = CreateDbContext<ContentDbContext>();
+        CategoryEntity? persisted = await verifyContext.Categories.FirstOrDefaultAsync(c =>
+            c.Id == secondBody.Category.Id
+        );
+        persisted.Should().NotBeNull();
+        persisted!.Slug.Value.Should().Be(secondBody.Category.Slug);
+    }
+
+    [Fact]
     public async Task CreateCategory_AsAdmin_ReturnsForbidden()
     {
         ContentTypeEntity contentType = await SeedContentTypeAsync();

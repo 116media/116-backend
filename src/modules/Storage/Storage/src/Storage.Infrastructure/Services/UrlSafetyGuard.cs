@@ -54,17 +54,22 @@ public sealed class UrlSafetyGuard(IHostEnvironment environment, StorageI18n i18
             return true;
         }
 
-        if (address.AddressFamily == AddressFamily.InterNetwork)
-        {
-            byte[] b = address.GetAddressBytes();
-            return b[0] == 10 // 10.0.0.0/8
-                || (b[0] == 172 && b[1] >= 16 && b[1] <= 31) // 172.16.0.0/12
-                || (b[0] == 192 && b[1] == 168) // 192.168.0.0/16
-                || (b[0] == 169 && b[1] == 254) // 169.254.0.0/16 link-local
-                || b[0] == 127 // 127.0.0.0/8 loopback
-                || b[0] >= 224; // 224.0.0.0/4 multicast + reserved
-        }
-
-        return false;
+        return address.AddressFamily == AddressFamily.InterNetwork && IsReservedIPv4(address.GetAddressBytes());
     }
+
+    /// <summary>
+    /// Reports whether an IPv4 address sits in a private, link-local, loopback or reserved range.
+    /// </summary>
+    /// <param name="octets">The four address octets.</param>
+    /// <returns><c>true</c> when the address must not be reached.</returns>
+    private static bool IsReservedIPv4(byte[] octets) =>
+        octets[0] switch
+        {
+            10 => true, // 10.0.0.0/8
+            172 => octets[1] is >= 16 and <= 31, // 172.16.0.0/12
+            192 => octets[1] == 168, // 192.168.0.0/16
+            169 => octets[1] == 254, // 169.254.0.0/16 link-local
+            >= 224 => true, // 224.0.0.0/4 multicast + reserved
+            _ => false,
+        };
 }

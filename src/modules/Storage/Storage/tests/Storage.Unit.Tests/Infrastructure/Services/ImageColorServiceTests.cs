@@ -3,8 +3,8 @@ using _116.Storage.Infrastructure.Services;
 using _116.Tests.TestData.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
+using Moq;
+using SkiaSharp;
 using Xunit;
 
 namespace _116.Storage.Unit.Tests.Infrastructure.Services;
@@ -20,23 +20,29 @@ public class ImageColorServiceTests
     /// <summary>
     /// Encodes a solid-color image as PNG bytes for use as upload content.
     /// </summary>
-    private static byte[] SolidColorPng(Rgba32 color, int width = 32, int height = 32)
+    private static byte[] SolidColorPng(SKColor color, int width = 32, int height = 32)
     {
-        using var image = new Image<Rgba32>(width, height, color);
-        using var stream = new MemoryStream();
-        image.SaveAsPng(stream);
-        return stream.ToArray();
+        var pixels = new SKColor[width * height];
+        Array.Fill(pixels, color);
+        return EncodePng(pixels, width, height);
     }
 
     /// <summary>
     /// Encodes a fully transparent image as PNG bytes.
     /// </summary>
-    private static byte[] TransparentPng(int width = 32, int height = 32)
+    private static byte[] TransparentPng(int width = 32, int height = 32) =>
+        EncodePng(new SKColor[width * height], width, height);
+
+    /// <summary>
+    /// Encodes a pixel buffer as PNG bytes.
+    /// </summary>
+    private static byte[] EncodePng(SKColor[] pixels, int width, int height)
     {
-        using var image = new Image<Rgba32>(width, height, new Rgba32(0, 0, 0, 0));
-        using var stream = new MemoryStream();
-        image.SaveAsPng(stream);
-        return stream.ToArray();
+        using var bitmap = new SKBitmap(new SKImageInfo(width, height, SKColorType.Rgba8888, SKAlphaType.Unpremul));
+        bitmap.Pixels = pixels;
+
+        using SKData data = bitmap.Encode(SKEncodedImageFormat.Png, 100);
+        return data.ToArray();
     }
 
     private static IFormFile ImageFile(byte[] content) =>
@@ -45,7 +51,7 @@ public class ImageColorServiceTests
     [Fact]
     public async Task ExtractAsync_WithSolidYellowImage_ShouldReturnYellowBackgroundAndBlackForeground()
     {
-        IFormFile file = ImageFile(SolidColorPng(new Rgba32(255, 235, 59)));
+        IFormFile file = ImageFile(SolidColorPng(new SKColor(255, 235, 59)));
 
         ImageColors? colors = await _service.ExtractAsync(file);
 
@@ -57,7 +63,7 @@ public class ImageColorServiceTests
     [Fact]
     public async Task ExtractAsync_WithSolidNavyImage_ShouldReturnNavyBackgroundAndWhiteForeground()
     {
-        IFormFile file = ImageFile(SolidColorPng(new Rgba32(13, 27, 42)));
+        IFormFile file = ImageFile(SolidColorPng(new SKColor(13, 27, 42)));
 
         ImageColors? colors = await _service.ExtractAsync(file);
 
@@ -69,7 +75,7 @@ public class ImageColorServiceTests
     [Fact]
     public async Task ExtractAsync_WithSolidWhiteImage_ShouldReturnBlackForeground()
     {
-        IFormFile file = ImageFile(SolidColorPng(new Rgba32(255, 255, 255)));
+        IFormFile file = ImageFile(SolidColorPng(new SKColor(255, 255, 255)));
 
         ImageColors? colors = await _service.ExtractAsync(file);
 
@@ -86,19 +92,15 @@ public class ImageColorServiceTests
         // margin. The pixel buffer is built in a single pass — no nested loops.
         const int width = 100;
         const int height = 100;
-        var red = new Rgba32(200, 30, 30);
-        var blue = new Rgba32(30, 30, 200);
+        var red = new SKColor(200, 30, 30);
+        var blue = new SKColor(30, 30, 200);
 
-        Rgba32[] pixels = Enumerable
+        SKColor[] pixels = Enumerable
             .Range(0, width * height)
             .Select(index => index % width < 10 && index / width < 10 ? blue : red)
             .ToArray();
 
-        using var image = Image.LoadPixelData(pixels, width, height);
-
-        using var stream = new MemoryStream();
-        image.SaveAsPng(stream);
-        IFormFile file = ImageFile(stream.ToArray());
+        IFormFile file = ImageFile(EncodePng(pixels, width, height));
 
         ImageColors? colors = await _service.ExtractAsync(file);
 
@@ -128,5 +130,28 @@ public class ImageColorServiceTests
         ImageColors? colors = await _service.ExtractAsync(file);
 
         colors.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ExtractAsync_WhenTheStreamThrows_ShouldReturnNullAndNotThrow()
+    {
+        var file = new Mock<IFormFile>();
+        file.Setup(f => f.OpenReadStream()).Throws(new IOException("the upload stream died"));
+
+        ImageColors? colors = await _service.ExtractAsync(file.Object);
+
+        colors.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ExtractAsync_WhenCancelled_ShouldPropagateTheCancellation()
+    {
+        IFormFile file = ImageFile(SolidColorPng(new SKColor(255, 235, 59)));
+        using var cancelled = new CancellationTokenSource();
+        await cancelled.CancelAsync();
+
+        Func<Task> act = () => _service.ExtractAsync(file, cancelled.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
     }
 }

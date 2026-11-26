@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using _116.BuildingBlocks.Application.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
@@ -30,6 +31,11 @@ namespace _116.BuildingBlocks.Presentation.Exceptions.Handlers;
 public sealed class ExceptionHandler(ILogger<ExceptionHandler> logger, ExceptionStrategyRegistry strategyRegistry)
     : IExceptionHandler
 {
+    /// <summary>
+    /// Longest request path written to a log entry. Bounds what one request can add to a sink.
+    /// </summary>
+    private const int MaxLoggedPathLength = 512;
+
     /// <summary>
     /// Attempts to handle an unhandled exception using the appropriate strategy.
     /// </summary>
@@ -80,11 +86,25 @@ public sealed class ExceptionHandler(ILogger<ExceptionHandler> logger, Exception
                 + "TraceId: {TraceId}, User: {UserId}",
             exception.GetType().Name,
             context.Request.Method,
-            context.Request.Path,
+            Sanitize(context.Request.Path),
             DateTime.UtcNow,
             context.TraceIdentifier,
-            context.User.Identity?.Name ?? "Anonymous"
+            context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "Anonymous"
         );
+    }
+
+    /// <summary>
+    /// Strips control characters from a caller-supplied value before it reaches a log sink.
+    /// </summary>
+    /// <param name="value">The value to sanitize.</param>
+    /// <returns>The value with control characters removed, truncated to a sane length.</returns>
+    private static string Sanitize(string? value)
+    {
+        // A request path is attacker-controlled: newlines in a flat sink would let one request
+        // forge extra log entries.
+        var cleaned = new string([.. (value ?? string.Empty).Where(character => !char.IsControl(character))]);
+
+        return cleaned.Length <= MaxLoggedPathLength ? cleaned : cleaned[..MaxLoggedPathLength];
     }
 
     /// <summary>

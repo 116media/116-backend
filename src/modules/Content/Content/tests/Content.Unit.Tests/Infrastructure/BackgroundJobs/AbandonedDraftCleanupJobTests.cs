@@ -178,5 +178,55 @@ public class AbandonedDraftCleanupJobTests
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
+    [Fact]
+    public async Task Execute_WhenOneDraftFails_ShouldPurgeTheRest()
+    {
+        // Arrange
+        ArticleEntity failing = ArticleFactory.Create(CategoryId);
+        ArticleEntity healthy = ArticleFactory.Create(CategoryId);
+
+        _articleRepositoryMock
+            .Setup(x => x.GetAbandonedDraftsAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ArticleEntity> { failing, healthy }.AsReadOnly());
+
+        _articleRepositoryMock.Setup(x => x.Remove(failing)).Throws(new InvalidOperationException("row is locked"));
+
+        // Act
+        await _job.Execute(_jobContextMock.Object);
+
+        // Assert
+        _articleRepositoryMock.Verify(x => x.Remove(healthy), Times.Once);
+    }
+
+    [Fact]
+    public async Task Execute_WhenTheLookupFails_ShouldSwallowAndLeaveTheScheduleRunning()
+    {
+        // Arrange
+        _articleRepositoryMock
+            .Setup(x => x.GetAbandonedDraftsAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("the database went away"));
+
+        // Act
+        Func<Task> act = () => _job.Execute(_jobContextMock.Object);
+
+        // Assert
+        await act.Should().NotThrowAsync();
+    }
+
+    [Fact]
+    public async Task Execute_WhenCancelled_ShouldPropagateTheCancellation()
+    {
+        // Arrange
+        _articleRepositoryMock
+            .Setup(x => x.GetAbandonedDraftsAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        // Act
+        Func<Task> act = () => _job.Execute(_jobContextMock.Object);
+
+        // Assert
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
     #endregion
 }

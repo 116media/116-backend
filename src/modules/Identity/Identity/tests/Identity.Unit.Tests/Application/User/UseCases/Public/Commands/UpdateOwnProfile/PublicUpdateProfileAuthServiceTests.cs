@@ -615,5 +615,150 @@ public class PublicUpdateProfileAuthServiceTests
         );
     }
 
+    [Fact]
+    public async Task UpdateProfileAsync_WithAnEmailSomeoneElseHolds_ShouldReject()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        UserEntity user = UserFactory.CreateWithId(userId);
+
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
+        _authRepositoryMock.SetupIsSessionValid(sessionId);
+
+        _authRepositoryMock
+            .Setup(x => x.ExistsByEmailAsync(It.IsAny<Email>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        // Act
+        Func<Task> act = async () =>
+            await _service.UpdateProfileAsync(
+                userId,
+                sessionId,
+                "taken@example.com",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                CancellationToken.None
+            );
+
+        // Assert
+        await act.Should().ThrowAsync<Exception>();
+        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateProfileAsync_WithAUsernameSomeoneElseHolds_ShouldReject()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        UserEntity user = UserFactory.CreateWithId(userId);
+
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
+        _authRepositoryMock.SetupIsSessionValid(sessionId);
+
+        _authRepositoryMock
+            .Setup(x => x.ExistsByUserNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        // Act
+        Func<Task> act = async () =>
+            await _service.UpdateProfileAsync(
+                userId,
+                sessionId,
+                null,
+                "takenname",
+                null,
+                null,
+                null,
+                null,
+                null,
+                CancellationToken.None
+            );
+
+        // Assert
+        await act.Should().ThrowAsync<Exception>();
+        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateProfileAsync_WithAPhoneAnotherUserHolds_ShouldReject()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        UserEntity user = UserFactory.CreateWithId(userId);
+        UserEntity other = UserFactory.CreateWithId(Guid.NewGuid());
+
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
+        _authRepositoryMock.SetupIsSessionValid(sessionId);
+
+        _authRepositoryMock
+            .Setup(x => x.GetUserByPhoneNumberAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(other);
+
+        // Act
+        Func<Task> act = async () =>
+            await _service.UpdateProfileAsync(
+                userId,
+                sessionId,
+                null,
+                null,
+                "Rwanda",
+                "RW",
+                "+250",
+                "788123456",
+                null,
+                CancellationToken.None
+            );
+
+        // Assert
+        await act.Should().ThrowAsync<Exception>();
+        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateProfileAsync_WithAPreferredLocale_ShouldStoreIt()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        UserEntity user = UserFactory.CreateWithId(userId);
+
+        _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
+        _authRepositoryMock.SetupIsSessionValid(sessionId);
+
+        _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+        // Act
+        await _service.UpdateProfileAsync(
+            userId,
+            sessionId,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "fr",
+            CancellationToken.None
+        );
+
+        // Assert
+        user.PreferredLocale.Should().Be("fr");
+    }
+
     #endregion
 }

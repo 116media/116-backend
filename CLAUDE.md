@@ -757,27 +757,87 @@ A pull request description is read by people. Write it the way a colleague would
 
 ## Code Quality & Security Gates
 
-Three checks run locally, all of them through `scripts/ai-precheck.sh`. They are wired as
-Claude Code hooks in `.claude/settings.json`, so they fire without being asked for, but the
-script is the contract — run it by hand whenever the hooks are off.
+Not advisory. These steps run on every task that touches `.cs`, whether or not any hook is
+installed. Git hooks are deliberately not used for this: they would slow every commit and
+`--no-verify` bypasses them anyway.
 
-| Check | Tool | Runs |
-| --- | --- | --- |
-| Formatting | CSharpier | On the changed files, before every commit |
-| CRAP | crap4dotnet (`dotnet-crap`) | On every edited `.cs` file, and before every commit |
-| Vulnerable packages | `dotnet list package --vulnerable` | Before a commit that touches a `.csproj` or `Directory.Packages.props` |
+### Before writing any code
+
+Read what the analysers already object to, so the same rule is not broken again:
 
 ```bash
-scripts/ai-precheck.sh                 # the changed files
-scripts/ai-precheck.sh --staged        # what is about to be committed
-scripts/ai-precheck.sh --file Foo.cs   # one file, silent unless it breaches
-scripts/ai-precheck.sh --baseline      # capture crap/baseline.json before a refactor
+scripts/ai-ci-findings.sh              # open CodeQL and Trivy alerts on this branch
 ```
 
-The gate needs coverage on disk. Run `scripts/run-tests-with-coverage.sh` first; without it
-every method reads as uncovered and the CRAP numbers mean nothing. A `COVERAGE_STALE` warning
-in the output means the coverage predates the current source and the numbers are not
-trustworthy yet.
+Then write to the rule table below. Those rules are the ones SonarQube and CodeQL actually
+enforce on this repository, and neither runs locally, so the only chance to honour them is
+while the code is being written.
+
+### After editing a file
+
+```bash
+scripts/ai-precheck.sh --file <the file>   # silent unless that file breaches
+```
+
+### Before every commit
+
+This is the one that is not optional. Run it, read the output, and fix what it reports
+before staging anything:
+
+```bash
+scripts/run-tests-with-coverage.sh all     # only when source changed since the last run
+scripts/ai-precheck.sh --staged            # formatting, CRAP, vulnerable packages
+```
+
+The order matters. CRAP is complexity weighed against coverage, so coverage older than the
+source describes nothing: the gate refuses to score stale coverage and says so rather than
+inventing breaches. A run that prints `coverage is older than ...` has not checked anything
+yet.
+
+| Check | Tool | Scope |
+| --- | --- | --- |
+| Formatting | CSharpier | the changed files |
+| CRAP | crap4dotnet (`dotnet-crap`) | whole solution, blocking only on changed files |
+| Vulnerable packages | `dotnet list package --vulnerable` | only when a project or package file changed |
+| SonarQube, CodeQL | CI only | read their last verdict with `ai-ci-findings.sh` |
+
+### Other entry points
+
+```bash
+scripts/ai-precheck.sh                 # the working tree rather than the index
+scripts/ai-precheck.sh --all           # every tracked file, for a backlog sweep
+scripts/ai-precheck.sh --baseline      # capture crap/baseline.json before a refactor
+scripts/ai-precheck.sh --force-deps    # audit packages even with no package file changed
+```
+
+### Rules the analysers enforce
+
+SonarQube and CodeQL run only in CI, so nothing blocks a bad pattern locally. Write to these
+rules the first time rather than waiting for the pull-request comment. Each one below has
+actually fired on this codebase.
+
+| Rule | Write instead |
+| --- | --- |
+| S2077 | Parameterise every SQL string. Never interpolate into a command |
+| S5122 | Scope CORS to named origins, never `AllowAnyOrigin` |
+| S2092 | Set `Secure` on every auth cookie |
+| S6444 | Pass a timeout to `Regex` and to any HTTP call |
+| S8949 | Pass `context.RequestAborted` to async calls on the request path |
+| S2699 | Every test asserts something |
+| S6966 | Prefer the async overload, `RunAsync` over `Run` |
+| S3453 | A class EF materialises needs an accessible constructor |
+| `cs/catch-of-all-exceptions` | Give every `catch (Exception)` a `when (...)` filter, at minimum `when (ex is not OperationCanceledException)` |
+| `cs/log-forging` | Strip control characters from caller-supplied values before logging |
+| `cs/exposure-of-sensitive-information` | Log the user id, never the name or email |
+| `cs/local-not-disposed` | `using` every `IDisposable` local, or hand ownership to the return value |
+| `cs/complex-condition` | Coalesce rather than null-guard to keep a disjunction flat |
+| `cs/useless-assignment-to-local` | No variable written and never read |
+
+Read what the last run found before starting on a file:
+
+```bash
+scripts/ai-ci-findings.sh              # open CodeQL and Trivy alerts on this branch
+```
 
 ### Reacting to a CRAP breach
 
@@ -806,8 +866,10 @@ The delta line confirms total CRAP load went down and that nothing newly crossed
 
 Neither runs locally: the CodeQL CLI is a ~500MB download whose database build takes minutes
 across 39 projects, and Trivy's image scan needs a Docker build. Both run in `security.yml` and
-publish SARIF to GitHub code scanning. CRAP and SonarQube run in `quality.yml`, which reports
-both in one pull-request comment. Read the security findings with:
+publish SARIF to GitHub code scanning. CRAP runs in `quality.yml`, after Tests, because it needs coverage.
+SonarQube Cloud runs in `sonar.yml`, which needs no coverage and so starts as soon as a
+pull request opens. Automatic Analysis must stay off: SonarQube refuses a CI analysis
+while it is enabled. Read the security findings with:
 
 ```bash
 scripts/ai-ci-findings.sh              # open alerts on the current branch

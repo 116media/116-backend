@@ -24,10 +24,15 @@ jobs:
     context:
         name: Resolve PR context
         runs-on: ubuntu-latest
-        if: github.event.workflow_run.conclusion == 'success'
+        # Only follows a Tests run from a pull request. A merge to develop re-runs
+        # nothing here: the same commit was already scanned on its pull request.
+        if: >-
+            github.event.workflow_run.conclusion == 'success' &&
+            github.event.workflow_run.event == 'pull_request'
         outputs:
             pr: ${{ steps.pr.outputs.number }}
             sha: ${{ github.event.workflow_run.head_sha }}
+            ref: ${{ steps.pr.outputs.ref }}
         steps:
             - name: Find the pull request
               id: pr
@@ -39,6 +44,15 @@ jobs:
                     --head "${{ github.event.workflow_run.head_branch }}" \
                     --state open --json number --jq '.[0].number // empty')
                   echo "number=${number}" >> "$GITHUB_OUTPUT"
+
+                  # The code-scanning API wants a full ref. A bare SHA returns an empty
+                  # list, which would read as "no findings".
+                  if [ -n "$number" ]; then
+                    echo "ref=refs/pull/${number}/merge" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "ref=refs/heads/${{ github.event.workflow_run.head_branch }}" >> "$GITHUB_OUTPUT"
+                  fi
+
                   echo "Pull request: ${number:-none}"
 
     codeql:
@@ -64,6 +78,7 @@ jobs:
               with:
                   languages: csharp
                   queries: security-and-quality
+                  config-file: ./.github/codeql/codeql-config.yml
 
             # Autobuild is unreliable across 39 projects, so the build is explicit.
             - name: Build
@@ -164,7 +179,7 @@ jobs:
               run: |
                   bash scripts/security-comment.sh \
                     "${{ github.repository }}" \
-                    "${{ needs.context.outputs.sha }}" \
+                    "${{ needs.context.outputs.ref }}" \
                     "${{ needs.codeql.result }}" \
                     "${{ needs.trivy.result }}" \
                     sarif \

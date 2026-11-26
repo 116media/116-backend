@@ -68,7 +68,7 @@ public partial class ArtistEntity : Aggregate<Guid>
     /// <summary>
     /// Backing store for <see cref="Aliases" />, mapped to a Postgres text[] column.
     /// </summary>
-    private List<string> _aliases = [];
+    private readonly List<string> _aliases = [];
 
     /// <summary>
     /// The artist's date of birth as a civil date. Deliberately not a timestamp: a

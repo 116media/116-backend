@@ -648,5 +648,24 @@ public class RefreshTokenRotationServiceTests : IDisposable
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    [Fact]
+    public async Task RefreshTokenAsync_WhenReplayDetectionFails_ShouldStillRejectTheToken()
+    {
+        // Arrange
+        string refreshToken = "refresh_token_123";
+        string refreshTokenHash = "hashed_refresh_token";
+
+        _refreshTokenServiceMock.SetupHashRefreshToken(refreshToken, refreshTokenHash);
+        _sessionRepositoryMock.SetupGetByRefreshTokenHashReturnsNull(refreshTokenHash);
+
+        _sessionRepositoryMock
+            .Setup(x => x.GetRevokedSessionByRefreshTokenHashAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("the replay lookup went away"));
+
+        // Act & Assert — the rejection stands; detection failing must not become a 500.
+        Func<Task> act = async () => await _service.RefreshTokenAsync(refreshToken, CancellationToken.None);
+        await act.Should().ThrowExactlyAsync<RefreshTokenExpiryException>();
+    }
+
     #endregion
 }
